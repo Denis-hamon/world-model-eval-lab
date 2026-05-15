@@ -1,6 +1,6 @@
 ---
 layout: default
-image: /world-model-eval-lab/assets/architecture.svg
+image: /assets/architecture.svg
 ---
 
 # World Model Evaluation Lab
