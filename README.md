@@ -12,6 +12,8 @@ World models should not only be evaluated on prediction quality. They should be 
 
 The next bottleneck for world models is not only model quality. It is proof of usefulness.
 
+**Where to start**: if you have ten minutes, read [docs/06_demo.md](docs/06_demo.md) - a walkthrough of one scorecard and what a product person should read out of it. If you have more, the rest of [docs/](docs/) covers the thesis, the metric taxonomy, the benchmark cards, and a 30-day prototype plan.
+
 ## Why this matters
 
 Research on action-conditioned world models (JEPA-style predictors, latent dynamics models, video world models) is advancing quickly. Most public evaluation, however, still relies on:
@@ -100,7 +102,8 @@ world-model-eval-lab/
 │   ├── 02_metric_taxonomy.md
 │   ├── 03_benchmark_cards.md
 │   ├── 04_industrial_use_cases.md
-│   └── 05_30_day_prototype_plan.md
+│   ├── 05_30_day_prototype_plan.md
+│   └── 06_demo.md
 ├── src/wmel/
 │   ├── metrics.py
 │   ├── benchmark_runner.py

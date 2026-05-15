@@ -71,6 +71,8 @@ What remains for v0.5: a pluggable perturbation library (displacement, blocked-c
 
 **Exit criterion**: a product person can read the README, run the demo, and articulate the thesis without help.
 
+**Status**: `docs/06_demo.md` is shipped (a row-by-row product walkthrough of the maze horizon sweep). `CONTRIBUTING.md` is shipped. Tagged releases are at v0.3.1 and v0.4.0 with explicit non-affiliation disclaimers. CI runs the suite plus a smoke test of the three example scripts on Python 3.11/3.12/3.13. Screen capture remains optional and is not done.
+
 ---
 
 ## What is explicitly out of scope for the first 30 days
