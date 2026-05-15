@@ -23,6 +23,66 @@ This is the first pass of a decision-grade metric set for action-conditioned wor
 | Surprise Detection | Ability of the model to flag observations its predictor finds unlikely. | A precondition for safe behaviour - "I do not know what is going on" is a feature. | AUROC = 0.78 on held-out anomalous frames vs in-distribution frames. |
 | Latent Interpretability | Degree to which the latent state exposes task-relevant structure. | Helps debugging, safety review, and integration with classical control. | Linear probe on latent predicts agent position with R^2 = 0.93. |
 
+## Definitions in math notation
+
+Each metric is defined precisely below. Let $N$ be the number of episodes in a run. For episode $i$: $S_i$ is the number of executed steps, $K_i$ is the number of `plan()` calls, $\ell_{i,j}$ is the wall-clock latency in milliseconds of the $j$-th plan call.
+
+**Action success rate.** The headline number.
+
+$$
+\mathrm{success\_rate} \;=\; \frac{1}{N}\sum_{i=1}^{N} \mathbf{1}\!\left[\,\mathrm{success}_i\,\right]
+$$
+
+**Average steps to success.** Conditional on successful episodes.
+
+$$
+\mathrm{avg\_steps} \;=\; \frac{\sum_{i \,:\, \mathrm{success}_i} S_i}{\bigl|\{\, i \,:\, \mathrm{success}_i \,\}\bigr|}
+$$
+
+**Per-call planning latency.** Flattened across every `plan()` call in every episode, so a policy that replans more often pays for it instead of hiding behind a per-episode mean.
+
+$$
+\bar{\ell} \;=\; \frac{\sum_{i=1}^{N} \sum_{j=1}^{K_i} \ell_{i,j}}{\sum_{i=1}^{N} K_i}
+$$
+
+**Compute per decision.** Derived from the policy-declared cost $c_{\mathrm{plan}}$ of a single `plan()` call, divided by the actual number of executed actions.
+
+$$
+\bar{c} \;=\; \frac{c_{\mathrm{plan}} \cdot \sum_i K_i}{\sum_i S_i}
+$$
+
+For `TabularWorldModelPlanner` the declaration is $\;c_{\mathrm{plan}} = N_{\mathrm{cand}} \cdot H_{\mathrm{plan}}\;$ in rollout-units, where $N_{\mathrm{cand}}$ is the number of candidate action sequences sampled per call and $H_{\mathrm{plan}}$ is the planner lookahead.
+
+**Perturbation recovery rate.** Restricted to episodes where `env.perturb()` actually fired, not just episodes the runner intended to perturb (this is the bug Codex flagged on v0.3 and the v0.3.1 release fixed).
+
+$$
+r \;=\; \frac{\bigl|\{\, i \,:\, \mathrm{perturbed}_i \wedge \mathrm{success}_i \,\}\bigr|}{\bigl|\{\, i \,:\, \mathrm{perturbed}_i \,\}\bigr|}
+$$
+
+**Wilson 95% interval** for the success rate. Holds up near $\hat{p} = 0$ and $\hat{p} = 1$, where the normal approximation collapses and where horizon sweeps spend most of their data.
+
+$$
+\hat{p}_{95} \;=\; \frac{\hat{p} + \dfrac{z^{2}}{2n} \;\pm\; z\sqrt{\dfrac{\hat{p}(1-\hat{p})}{n} + \dfrac{z^{2}}{4n^{2}}}}{1 + \dfrac{z^{2}}{n}}
+$$
+
+with $\hat{p} = \mathrm{success\_rate}$, $n = N$, and $z = 1.96$ for a two-sided 95% interval.
+
+**Normal 95% interval** for the mean per-call latency.
+
+$$
+\bar{\ell}_{95} \;=\; \bar{\ell} \;\pm\; 1.96 \cdot \frac{\sigma_{\ell}}{\sqrt{n_{\ell}}}
+$$
+
+where $\sigma_{\ell}$ is the population standard deviation of the flattened per-call latency samples and $n_{\ell} = \sum_i K_i$.
+
+**Effective planning horizon.** The smallest lookahead beyond which success rate stops improving by more than a tolerance $\epsilon$:
+
+$$
+H^{\ast} \;=\; \min \Bigl\{ H \,:\; \mathrm{success\_rate}(H') - \mathrm{success\_rate}(H) \leq \epsilon \;\; \forall\, H' > H \Bigr\}
+$$
+
+For the maze toy with $\epsilon = 0.01$ the empirical answer is $H^{\ast} = 15$, exactly one step past the maze's optimal-path length.
+
 ## Planning-horizon curve (worked example)
 
 The "Planning Horizon" metric is operationalised by `wmel.experiments.horizon_sweep`. Running it on the maze toy environment with `TabularWorldModelPlanner` produces a textbook curve - per-call planning latency grows monotonically with horizon, success rate plateaus, and beyond the plateau steps-to-success starts to degrade because the planner over-commits before replanning:

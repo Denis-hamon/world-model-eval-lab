@@ -78,6 +78,42 @@ If you were integrating this model into a real product on the basis of this tabl
 3. **Tighten the success CI.** 100 percent in 30 episodes gives [0.89, 1.00]. Either run more episodes or accept 89 percent reliability with retry as the lower bound of what you are shipping.
 4. **Demand a perturbation profile.** The current run is in a clean environment. Before shipping, request the same scorecard under a perturbation library that captures the failure modes that matter in your domain - blocked paths, delayed actions, sensor noise. The roadmap calls this out as v0.5.
 
+## The math behind the decision
+
+Each of the four bullets above is a one-line formula evaluated against the scorecard. Spelled out:
+
+**Latency budget.** Pick a control rate $f$ in Hz. The cycle period is $T_{\mathrm{cycle}} = 1000 / f$ ms. Subtract the planner's per-call latency to get the budget left for everything else (sensing, actuation, business logic):
+
+$$
+T_{\mathrm{budget}} \;=\; T_{\mathrm{cycle}} \;-\; \bar{\ell}
+$$
+
+For a 100 Hz loop at horizon 15 on the maze: $T_{\mathrm{budget}} = 10 - 2.35 \approx 7.65 \text{ ms}$. At 1 kHz the budget collapses to $1 - 2.35 < 0$ ms; this configuration cannot run inside a millisecond loop.
+
+**Per-decision cost.** Once $\bar{c}$ is known (see [02_metric_taxonomy.html#definitions-in-math-notation](02_metric_taxonomy.html)), the cost per executed action is just unit-conversion:
+
+$$
+\mathrm{cost}_{\mathrm{decision}} \;=\; \bar{c} \;\cdot\; \mathrm{cost}_{\mathrm{rollout\text{-}unit}}
+$$
+
+where $\mathrm{cost}_{\mathrm{rollout\text{-}unit}}$ is whatever unit you account in - FLOPs per model forward pass, dollars per inference, watts. For horizon 15 on the maze, $\bar{c} \approx 280$, so a 100 Hz control loop running for one second burns $\approx 28{,}000 \cdot \mathrm{cost}_{\mathrm{rollout\text{-}unit}}$.
+
+**Reliability you are actually shipping.** A 95% Wilson interval $[\hat{p}_{\mathrm{lo}}, \hat{p}_{\mathrm{hi}}]$ over $n$ episodes means that under repeated sampling, 95% of constructed intervals contain the true success rate. You should be willing to ship the *lower bound*, not the point estimate:
+
+$$
+\mathrm{shipping\_reliability}(n) \;=\; \hat{p}_{\mathrm{lo}}(n)
+$$
+
+For 100% in 30 episodes the lower bound is $\approx 0.89$. To raise it to $\hat{p}_{\mathrm{lo}} \geq 0.95$ at the same observed success rate, you need $n \gtrsim 73$ (Wilson interval solved for $\hat{p}_{\mathrm{lo}} = 0.95$ with $\hat{p} = 1$).
+
+**Effective planning horizon.** Formally, the smallest $H$ for which any further increase fails to buy more than a tolerance $\epsilon$ of success rate:
+
+$$
+H^{\ast} \;=\; \min \Bigl\{ H \,:\; \mathrm{success\_rate}(H') - \mathrm{success\_rate}(H) \leq \epsilon \;\; \forall\, H' > H \Bigr\}
+$$
+
+For the maze toy with $\epsilon = 0.01$: $H^{\ast} = 15$. Below it you lose success; above it you spend more latency and more compute for nothing.
+
 ## How this generalises
 
 The same scorecard structure applies to every benchmark card in [03_benchmark_cards.md](03_benchmark_cards.md). The applied questions change - "Can a world model push a part into spec faster than a hand-tuned controller on a 50 ms decision loop?" for Push-T, "Does a stacking model transfer to a new goal without retraining?" for OGBench Cube - but the columns stay the same: success rate, steps, latency, compute, recovery. The thesis is unchanged from [00_thesis.md](00_thesis.md):

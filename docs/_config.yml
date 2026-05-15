@@ -17,3 +17,8 @@ defaults:
 
 plugins:
   - jekyll-seo-tag
+
+# Disable kramdown's own math handling so MathJax can scan the raw $...$ and
+# $$...$$ delimiters client-side without colliding with the kramdown engine.
+kramdown:
+  math_engine: null
