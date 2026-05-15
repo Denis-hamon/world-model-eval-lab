@@ -1,0 +1,714 @@
+{
+  "environment": "maze_toy",
+  "episodes": 30,
+  "horizon": 60,
+  "perturb_prob": 0.2,
+  "seed": 0,
+  "training": {
+    "epochs": 800,
+    "transitions": 64,
+    "model": "MazeDynamicsMLP(hidden=32)"
+  },
+  "runs": {
+    "oracle-dynamics": {
+      "scorecard": {
+        "policy_name": "tabular-world-model (oracle dynamics)",
+        "episodes": 30,
+        "success_rate": 1.0,
+        "average_steps_to_success": 33.8,
+        "average_planning_latency_ms": 3.2073768,
+        "perturbation_recovery_rate": 1.0,
+        "average_compute_per_decision": 256.4102564102564,
+        "perturbation_name": "env-default",
+        "extras": {}
+      },
+      "results": [
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            3.262691,
+            3.230244
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 40,
+          "planning_latencies_ms": [
+            3.239484,
+            3.230027
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 32,
+          "planning_latencies_ms": [
+            3.163172,
+            3.24813
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 31,
+          "planning_latencies_ms": [
+            3.140369,
+            3.077019,
+            3.082814
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            3.084353,
+            3.089508
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            3.105467,
+            3.099477
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 33,
+          "planning_latencies_ms": [
+            3.105583,
+            3.07651
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 31,
+          "planning_latencies_ms": [
+            3.086346,
+            3.071677
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 38,
+          "planning_latencies_ms": [
+            3.081255,
+            3.086378
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            3.087427,
+            3.073921
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            3.080444,
+            3.076246
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 35,
+          "planning_latencies_ms": [
+            3.171977,
+            3.159691
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 39,
+          "planning_latencies_ms": [
+            3.093836,
+            3.07802
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            3.086126,
+            3.211907
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 37,
+          "planning_latencies_ms": [
+            3.160886,
+            3.135713
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 34,
+          "planning_latencies_ms": [
+            3.084944,
+            3.083761
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 33,
+          "planning_latencies_ms": [
+            3.080162,
+            3.106177
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 29,
+          "planning_latencies_ms": [
+            3.0822,
+            3.083044,
+            3.087898
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            3.078281,
+            3.107215,
+            3.077235
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 38,
+          "planning_latencies_ms": [
+            3.082507,
+            3.068429
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 39,
+          "planning_latencies_ms": [
+            3.116393,
+            3.111186
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 37,
+          "planning_latencies_ms": [
+            3.094708,
+            3.084237
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            4.183394,
+            3.132444
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 30,
+          "planning_latencies_ms": [
+            3.088249,
+            3.083651
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 34,
+          "planning_latencies_ms": [
+            3.111797,
+            3.077935
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 34,
+          "planning_latencies_ms": [
+            3.091432,
+            3.065131,
+            5.282325
+          ],
+          "perturbed": true,
+          "recovered": true,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 32,
+          "planning_latencies_ms": [
+            6.091463,
+            3.102516
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 29,
+          "planning_latencies_ms": [
+            3.162112,
+            3.115152
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 37,
+          "planning_latencies_ms": [
+            3.078246,
+            3.075352,
+            3.109363
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            3.148466,
+            3.075389
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        }
+      ]
+    },
+    "learned-dynamics-mlp": {
+      "scorecard": {
+        "policy_name": "tabular-world-model (learned MLP dynamics)",
+        "episodes": 30,
+        "success_rate": 1.0,
+        "average_steps_to_success": 33.8,
+        "average_planning_latency_ms": 233.6562722153846,
+        "perturbation_recovery_rate": 1.0,
+        "average_compute_per_decision": 256.4102564102564,
+        "perturbation_name": "env-default",
+        "extras": {}
+      },
+      "results": [
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            230.396354,
+            245.319524
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 40,
+          "planning_latencies_ms": [
+            240.585382,
+            234.38898
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 32,
+          "planning_latencies_ms": [
+            236.147476,
+            234.744921
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 31,
+          "planning_latencies_ms": [
+            235.183662,
+            232.839498,
+            237.997428
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            235.899843,
+            233.777691
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            233.204462,
+            235.534176
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 33,
+          "planning_latencies_ms": [
+            233.899242,
+            231.24519
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 31,
+          "planning_latencies_ms": [
+            233.121887,
+            231.71681
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 38,
+          "planning_latencies_ms": [
+            231.876292,
+            236.226741
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            233.505226,
+            231.371934
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            234.163141,
+            240.386351
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 35,
+          "planning_latencies_ms": [
+            232.383165,
+            230.71067
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 39,
+          "planning_latencies_ms": [
+            229.695027,
+            230.591952
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            230.616369,
+            238.881217
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 37,
+          "planning_latencies_ms": [
+            231.947702,
+            231.219746
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 34,
+          "planning_latencies_ms": [
+            232.171523,
+            236.656405
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 33,
+          "planning_latencies_ms": [
+            240.633088,
+            232.318415
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 29,
+          "planning_latencies_ms": [
+            233.285901,
+            233.825802,
+            232.909517
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 36,
+          "planning_latencies_ms": [
+            236.636186,
+            234.099965,
+            231.115483
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 38,
+          "planning_latencies_ms": [
+            234.229052,
+            231.847211
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 39,
+          "planning_latencies_ms": [
+            231.272625,
+            230.380774
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 37,
+          "planning_latencies_ms": [
+            232.907279,
+            232.012123
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            231.730714,
+            231.996537
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 30,
+          "planning_latencies_ms": [
+            234.976538,
+            230.240449
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 34,
+          "planning_latencies_ms": [
+            231.556261,
+            230.986369
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 34,
+          "planning_latencies_ms": [
+            231.462792,
+            237.419824,
+            235.497423
+          ],
+          "perturbed": true,
+          "recovered": true,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 32,
+          "planning_latencies_ms": [
+            231.581458,
+            230.266633
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 29,
+          "planning_latencies_ms": [
+            232.441264,
+            232.325706
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 37,
+          "planning_latencies_ms": [
+            232.279696,
+            232.038109,
+            237.866574
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": true,
+          "steps": 28,
+          "planning_latencies_ms": [
+            234.816354,
+            232.295585
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        }
+      ]
+    }
+  }
+}

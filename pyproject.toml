@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wmel"
-version = "0.5.0"
+version = "0.6.0"
 description = "World Model Evaluation Lab - a product-oriented benchmark framework for action-conditioned world models."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,6 +43,11 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
+]
+learned = [
+    # Used by `wmel.adapters.learned_dynamics_torch` to demonstrate the
+    # contract on a PyTorch-trained MLP. CPU-only; no GPU required.
+    "torch>=2.0",
 ]
 
 [project.urls]

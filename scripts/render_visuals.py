@@ -15,11 +15,12 @@ Run from the repo root:
     python -m scripts.render_visuals
 
 Outputs:
-- docs/assets/architecture.svg       evaluation contract flow (animatable)
-- docs/assets/horizon_sweep.svg      success rate + latency vs plan horizon (interactive)
-- docs/assets/maze.svg               7x7 maze with an animated agent
-- docs/assets/policy_comparison.svg  three-up: random, greedy, world model
-- docs/assets/favicon.svg            small square favicon for the Pages site
+- docs/assets/architecture.svg              evaluation contract flow (animatable)
+- docs/assets/horizon_sweep.svg             success rate + latency vs plan horizon (interactive)
+- docs/assets/horizon_sweep_compare.svg     same chart, oracle dynamics vs learned MLP overlaid
+- docs/assets/maze.svg                      7x7 maze with an animated agent
+- docs/assets/policy_comparison.svg         three-up: random, greedy, world model
+- docs/assets/favicon.svg                   small square favicon for the Pages site
 """
 
 from __future__ import annotations
@@ -403,6 +404,231 @@ def render_maze() -> str:
     return "\n".join(parts)
 
 
+def render_horizon_sweep_compare(oracle_path: Path, learned_path: Path) -> str:
+    """Two stacked panels: success-rate identical, latency dramatically different.
+
+    Reads `horizon_sweep_report.json` (oracle dynamics, stdlib) and
+    `learned_horizon_sweep_report.json` (PyTorch MLP dynamics). Shows that
+    the framework's evaluation contract holds for both kinds of dynamics:
+    success rates coincide because the learned model recovers the oracle
+    transition table, but per-call planning latency diverges by an order
+    of magnitude because of torch invocation overhead.
+    """
+    with oracle_path.open() as f:
+        oracle = json.load(f)
+    with learned_path.open() as f:
+        learned = json.load(f)
+
+    o_pts = oracle["points"]
+    l_pts = learned["points"]
+    horizons = [p["plan_horizon"] for p in o_pts]
+    o_success = [p["scorecard"]["success_rate"] for p in o_pts]
+    l_success = [p["scorecard"]["success_rate"] for p in l_pts]
+    o_lat = [p["scorecard"]["average_planning_latency_ms"] for p in o_pts]
+    l_lat = [p["scorecard"]["average_planning_latency_ms"] for p in l_pts]
+
+    width, height = 760, 540
+    title_h = 50
+    panel_gap = 36
+    pad_l, pad_r, pad_b = 70, 50, 50
+    panel_h = (height - title_h - pad_b - panel_gap) // 2
+
+    parts = [_svg_open(width, height, ' class="figure figure-sweep-compare"')]
+    parts.append(f'<rect width="{width}" height="{height}" fill="{PALETTE["bg"]}"/>')
+
+    parts.append(
+        f'<text x="{width // 2}" y="22" font-size="15" font-weight="600" '
+        f'fill="{PALETTE["ink"]}" text-anchor="middle">Same contract, two dynamics</text>'
+    )
+    parts.append(
+        f'<text x="{width // 2}" y="40" font-size="12" fill="{PALETTE["muted"]}" '
+        f'text-anchor="middle">Oracle stdlib vs PyTorch-learned MLP, maze toy, 30 episodes per point.</text>'
+    )
+
+    x_min, x_max = min(horizons), max(horizons)
+    plot_w = width - pad_l - pad_r
+
+    def x_of(h: float) -> float:
+        return pad_l + (h - x_min) / (x_max - x_min) * plot_w
+
+    def panel_y_of(value: float, vmin: float, vmax: float, panel_top: int) -> float:
+        return panel_top + (1.0 - (value - vmin) / (vmax - vmin)) * panel_h
+
+    # ----- Panel A: success rate -----
+    panel_a_top = title_h + 8
+    y_min_a, y_max_a = 0.0, 1.05
+
+    for s in (0.0, 0.25, 0.5, 0.75, 1.0):
+        y = panel_y_of(s, y_min_a, y_max_a, panel_a_top)
+        parts.append(
+            f'<line x1="{pad_l}" y1="{y:.1f}" x2="{width - pad_r}" y2="{y:.1f}" '
+            f'stroke="{PALETTE["stroke"]}" stroke-dasharray="2,3" stroke-width="0.8"/>'
+        )
+        parts.append(
+            f'<text x="{pad_l - 8}" y="{y + 4:.1f}" font-size="11" fill="{PALETTE["muted"]}" '
+            f'text-anchor="end">{s:.2f}</text>'
+        )
+
+    parts.append(
+        f'<text x="{pad_l - 50}" y="{panel_a_top + panel_h // 2}" font-size="12" '
+        f'fill="{PALETTE["accent"]}" transform="rotate(-90 {pad_l - 50},{panel_a_top + panel_h // 2})" '
+        f'text-anchor="middle">success rate</text>'
+    )
+    parts.append(
+        f'<text x="{pad_l + 6}" y="{panel_a_top + 16}" font-size="11" '
+        f'font-weight="500" fill="{PALETTE["muted"]}">Success</text>'
+    )
+
+    # Oracle line + dots (solid blue).
+    line_pts = " ".join(f"{x_of(h):.1f},{panel_y_of(s, y_min_a, y_max_a, panel_a_top):.1f}"
+                       for h, s in zip(horizons, o_success))
+    parts.append(
+        f'<polyline points="{line_pts}" fill="none" stroke="{PALETTE["accent"]}" stroke-width="2.5"/>'
+    )
+    for h, s in zip(horizons, o_success):
+        parts.append(
+            f'<circle cx="{x_of(h):.1f}" cy="{panel_y_of(s, y_min_a, y_max_a, panel_a_top):.1f}" '
+            f'r="4" fill="{PALETTE["accent"]}" stroke="white" stroke-width="1.5"/>'
+        )
+
+    # Learned line + dots (dashed warn).
+    line_pts_l = " ".join(f"{x_of(h):.1f},{panel_y_of(s, y_min_a, y_max_a, panel_a_top):.1f}"
+                         for h, s in zip(horizons, l_success))
+    parts.append(
+        f'<polyline points="{line_pts_l}" fill="none" stroke="{PALETTE["warn"]}" '
+        f'stroke-width="2" stroke-dasharray="5,3" stroke-opacity="0.85"/>'
+    )
+    for h, s in zip(horizons, l_success):
+        parts.append(
+            f'<circle cx="{x_of(h):.1f}" cy="{panel_y_of(s, y_min_a, y_max_a, panel_a_top):.1f}" '
+            f'r="3" fill="{PALETTE["warn"]}" stroke="white" stroke-width="1"/>'
+        )
+
+    parts.append(
+        f'<rect x="{pad_l}" y="{panel_a_top}" width="{plot_w}" height="{panel_h}" '
+        f'fill="none" stroke="{PALETTE["muted"]}" stroke-width="1"/>'
+    )
+
+    # Note on the panel: curves overlap.
+    parts.append(
+        f'<text x="{width - pad_r - 6}" y="{panel_a_top + 16}" font-size="11" '
+        f'fill="{PALETTE["muted"]}" text-anchor="end">Both dynamics reach 100% success at h>=15. '
+        f'The curves overlap.</text>'
+    )
+
+    # ----- Panel B: latency per call -----
+    panel_b_top = panel_a_top + panel_h + panel_gap
+    y_max_b = max(l_lat) * 1.15
+    y_min_b = 0.0
+
+    grid_b_vals = [y_min_b + frac * (y_max_b - y_min_b) for frac in (0.0, 0.25, 0.5, 0.75, 1.0)]
+    for v in grid_b_vals:
+        y = panel_y_of(v, y_min_b, y_max_b, panel_b_top)
+        parts.append(
+            f'<line x1="{pad_l}" y1="{y:.1f}" x2="{width - pad_r}" y2="{y:.1f}" '
+            f'stroke="{PALETTE["stroke"]}" stroke-dasharray="2,3" stroke-width="0.8"/>'
+        )
+        parts.append(
+            f'<text x="{pad_l - 8}" y="{y + 4:.1f}" font-size="11" fill="{PALETTE["muted"]}" '
+            f'text-anchor="end">{v:.0f}</text>'
+        )
+
+    parts.append(
+        f'<text x="{pad_l - 50}" y="{panel_b_top + panel_h // 2}" font-size="12" '
+        f'fill="{PALETTE["warn"]}" transform="rotate(-90 {pad_l - 50},{panel_b_top + panel_h // 2})" '
+        f'text-anchor="middle">latency / call (ms)</text>'
+    )
+    parts.append(
+        f'<text x="{pad_l + 6}" y="{panel_b_top + 16}" font-size="11" '
+        f'font-weight="500" fill="{PALETTE["muted"]}">Latency per plan() call</text>'
+    )
+
+    # X axis ticks at the bottom of panel B.
+    for h in horizons:
+        x = x_of(h)
+        parts.append(
+            f'<line x1="{x:.1f}" y1="{panel_b_top + panel_h}" x2="{x:.1f}" '
+            f'y2="{panel_b_top + panel_h + 5}" stroke="{PALETTE["muted"]}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{x:.1f}" y="{panel_b_top + panel_h + 20}" font-size="11" '
+            f'fill="{PALETTE["muted"]}" text-anchor="middle">{h}</text>'
+        )
+    parts.append(
+        f'<text x="{width // 2}" y="{panel_b_top + panel_h + 38}" font-size="12" '
+        f'fill="{PALETTE["muted"]}" text-anchor="middle">plan_horizon</text>'
+    )
+
+    # Oracle latency line (solid accent).
+    line_o = " ".join(f"{x_of(h):.1f},{panel_y_of(l, y_min_b, y_max_b, panel_b_top):.1f}"
+                     for h, l in zip(horizons, o_lat))
+    parts.append(
+        f'<polyline points="{line_o}" fill="none" stroke="{PALETTE["accent"]}" stroke-width="2.5"/>'
+    )
+    for h, l in zip(horizons, o_lat):
+        parts.append(
+            f'<circle cx="{x_of(h):.1f}" cy="{panel_y_of(l, y_min_b, y_max_b, panel_b_top):.1f}" '
+            f'r="3.5" fill="{PALETTE["accent"]}" stroke="white" stroke-width="1.5"/>'
+        )
+
+    # Learned latency line (warn, thicker, dashed).
+    line_l = " ".join(f"{x_of(h):.1f},{panel_y_of(l, y_min_b, y_max_b, panel_b_top):.1f}"
+                     for h, l in zip(horizons, l_lat))
+    parts.append(
+        f'<polyline points="{line_l}" fill="none" stroke="{PALETTE["warn"]}" '
+        f'stroke-width="2.5" stroke-dasharray="5,3"/>'
+    )
+    for h, l in zip(horizons, l_lat):
+        parts.append(
+            f'<circle cx="{x_of(h):.1f}" cy="{panel_y_of(l, y_min_b, y_max_b, panel_b_top):.1f}" '
+            f'r="3.5" fill="{PALETTE["warn"]}" stroke="white" stroke-width="1.5"/>'
+        )
+
+    # Annotation: range of per-horizon ratios. Honest about the spread; an
+    # earlier draft used only the rightmost-horizon ratio and was off by a
+    # third at the smaller horizons.
+    ratios = [
+        l / o for o, l in zip(o_lat, l_lat) if o > 0
+    ]
+    if ratios:
+        rmin, rmax = min(ratios), max(ratios)
+        annotation = f"Learned MLP costs {rmin:.0f}-{rmax:.0f}x more per call."
+    else:
+        annotation = "Learned MLP latency unavailable."
+    parts.append(
+        f'<text x="{width - pad_r - 6}" y="{panel_b_top + 16}" font-size="11" '
+        f'font-weight="600" fill="{PALETTE["warn"]}" text-anchor="end">{annotation}</text>'
+    )
+
+    parts.append(
+        f'<rect x="{pad_l}" y="{panel_b_top}" width="{plot_w}" height="{panel_h}" '
+        f'fill="none" stroke="{PALETTE["muted"]}" stroke-width="1"/>'
+    )
+
+    # Legend at the bottom.
+    legend_y = height - 16
+    legend_x0 = pad_l + 10
+    parts.append(
+        f'<line x1="{legend_x0}" y1="{legend_y}" x2="{legend_x0 + 28}" y2="{legend_y}" '
+        f'stroke="{PALETTE["accent"]}" stroke-width="2.5"/>'
+    )
+    parts.append(
+        f'<text x="{legend_x0 + 34}" y="{legend_y + 4}" font-size="11" '
+        f'fill="{PALETTE["ink"]}">Oracle dynamics (stdlib)</text>'
+    )
+    parts.append(
+        f'<line x1="{legend_x0 + 220}" y1="{legend_y}" x2="{legend_x0 + 248}" y2="{legend_y}" '
+        f'stroke="{PALETTE["warn"]}" stroke-width="2.5" stroke-dasharray="5,3"/>'
+    )
+    parts.append(
+        f'<text x="{legend_x0 + 254}" y="{legend_y + 4}" font-size="11" '
+        f'fill="{PALETTE["ink"]}">Learned MLP dynamics (PyTorch)</text>'
+    )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def render_policy_comparison() -> str:
     """Three side-by-side mini-mazes, one per policy that ran on the maze toy.
 
@@ -594,6 +820,18 @@ def main() -> None:
 
     (ASSETS / "policy_comparison.svg").write_text(render_policy_comparison() + "\n")
     print(f"wrote {ASSETS / 'policy_comparison.svg'}")
+
+    learned_path = REPO_ROOT / "examples" / "maze_toy" / "learned_horizon_sweep_report.json"
+    if learned_path.exists():
+        (ASSETS / "horizon_sweep_compare.svg").write_text(
+            render_horizon_sweep_compare(report_path, learned_path) + "\n"
+        )
+        print(f"wrote {ASSETS / 'horizon_sweep_compare.svg'}")
+    else:
+        print(
+            f"skipped horizon_sweep_compare.svg (missing {learned_path}; run "
+            "`python -m examples.maze_toy.run_learned_sweep` first)"
+        )
 
     (ASSETS / "favicon.svg").write_text(render_favicon() + "\n")
     print(f"wrote {ASSETS / 'favicon.svg'}")

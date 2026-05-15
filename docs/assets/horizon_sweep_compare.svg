@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 540" width="760" height="540" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" class="figure figure-sweep-compare">
+<rect width="760" height="540" fill="#ffffff"/>
+<text x="380" y="22" font-size="15" font-weight="600" fill="#1f2933" text-anchor="middle">Same contract, two dynamics</text>
+<text x="380" y="40" font-size="12" fill="#52606d" text-anchor="middle">Oracle stdlib vs PyTorch-learned MLP, maze toy, 30 episodes per point.</text>
+<line x1="70" y1="260.0" x2="710" y2="260.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="264.0" font-size="11" fill="#52606d" text-anchor="end">0.00</text>
+<line x1="70" y1="211.9" x2="710" y2="211.9" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="215.9" font-size="11" fill="#52606d" text-anchor="end">0.25</text>
+<line x1="70" y1="163.8" x2="710" y2="163.8" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="167.8" font-size="11" fill="#52606d" text-anchor="end">0.50</text>
+<line x1="70" y1="115.7" x2="710" y2="115.7" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="119.7" font-size="11" fill="#52606d" text-anchor="end">0.75</text>
+<line x1="70" y1="67.6" x2="710" y2="67.6" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="71.6" font-size="11" fill="#52606d" text-anchor="end">1.00</text>
+<text x="20" y="159" font-size="12" fill="#0f5fbf" transform="rotate(-90 20,159)" text-anchor="middle">success rate</text>
+<text x="76" y="74" font-size="11" font-weight="500" fill="#52606d">Success</text>
+<polyline points="70.0,260.0 198.0,86.9 326.0,67.6 454.0,67.6 710.0,67.6" fill="none" stroke="#0f5fbf" stroke-width="2.5"/>
+<circle cx="70.0" cy="260.0" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="198.0" cy="86.9" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="326.0" cy="67.6" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="454.0" cy="67.6" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="710.0" cy="67.6" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<polyline points="70.0,260.0 198.0,86.9 326.0,67.6 454.0,67.6 710.0,67.6" fill="none" stroke="#b34a00" stroke-width="2" stroke-dasharray="5,3" stroke-opacity="0.85"/>
+<circle cx="70.0" cy="260.0" r="3" fill="#b34a00" stroke="white" stroke-width="1"/>
+<circle cx="198.0" cy="86.9" r="3" fill="#b34a00" stroke="white" stroke-width="1"/>
+<circle cx="326.0" cy="67.6" r="3" fill="#b34a00" stroke="white" stroke-width="1"/>
+<circle cx="454.0" cy="67.6" r="3" fill="#b34a00" stroke="white" stroke-width="1"/>
+<circle cx="710.0" cy="67.6" r="3" fill="#b34a00" stroke="white" stroke-width="1"/>
+<rect x="70" y="58" width="640" height="202" fill="none" stroke="#52606d" stroke-width="1"/>
+<text x="704" y="74" font-size="11" fill="#52606d" text-anchor="end">Both dynamics reach 100% success at h>=15. The curves overlap.</text>
+<line x1="70" y1="498.0" x2="710" y2="498.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="502.0" font-size="11" fill="#52606d" text-anchor="end">0</text>
+<line x1="70" y1="447.5" x2="710" y2="447.5" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="451.5" font-size="11" fill="#52606d" text-anchor="end">101</text>
+<line x1="70" y1="397.0" x2="710" y2="397.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="401.0" font-size="11" fill="#52606d" text-anchor="end">202</text>
+<line x1="70" y1="346.5" x2="710" y2="346.5" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="350.5" font-size="11" fill="#52606d" text-anchor="end">303</text>
+<line x1="70" y1="296.0" x2="710" y2="296.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="300.0" font-size="11" fill="#52606d" text-anchor="end">404</text>
+<text x="20" y="397" font-size="12" fill="#b34a00" transform="rotate(-90 20,397)" text-anchor="middle">latency / call (ms)</text>
+<text x="76" y="312" font-size="11" font-weight="500" fill="#52606d">Latency per plan() call</text>
+<line x1="70.0" y1="498" x2="70.0" y2="503" stroke="#52606d" stroke-width="1"/>
+<text x="70.0" y="518" font-size="11" fill="#52606d" text-anchor="middle">5</text>
+<line x1="198.0" y1="498" x2="198.0" y2="503" stroke="#52606d" stroke-width="1"/>
+<text x="198.0" y="518" font-size="11" fill="#52606d" text-anchor="middle">10</text>
+<line x1="326.0" y1="498" x2="326.0" y2="503" stroke="#52606d" stroke-width="1"/>
+<text x="326.0" y="518" font-size="11" fill="#52606d" text-anchor="middle">15</text>
+<line x1="454.0" y1="498" x2="454.0" y2="503" stroke="#52606d" stroke-width="1"/>
+<text x="454.0" y="518" font-size="11" fill="#52606d" text-anchor="middle">20</text>
+<line x1="710.0" y1="498" x2="710.0" y2="503" stroke="#52606d" stroke-width="1"/>
+<text x="710.0" y="518" font-size="11" fill="#52606d" text-anchor="middle">30</text>
+<text x="380" y="536" font-size="12" fill="#52606d" text-anchor="middle">plan_horizon</text>
+<polyline points="70.0,497.5 198.0,497.2 326.0,496.8 454.0,496.4 710.0,495.7" fill="none" stroke="#0f5fbf" stroke-width="2.5"/>
+<circle cx="70.0" cy="497.5" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="198.0" cy="497.2" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="326.0" cy="496.8" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="454.0" cy="496.4" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="710.0" cy="495.7" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<polyline points="70.0,469.0 198.0,440.0 326.0,409.4 454.0,380.0 710.0,322.3" fill="none" stroke="#b34a00" stroke-width="2.5" stroke-dasharray="5,3"/>
+<circle cx="70.0" cy="469.0" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="198.0" cy="440.0" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="326.0" cy="409.4" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="454.0" cy="380.0" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="710.0" cy="322.3" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<text x="704" y="312" font-size="11" font-weight="600" fill="#b34a00" text-anchor="end">Learned MLP costs 62-77x more per call.</text>
+<rect x="70" y="296" width="640" height="202" fill="none" stroke="#52606d" stroke-width="1"/>
+<line x1="80" y1="524" x2="108" y2="524" stroke="#0f5fbf" stroke-width="2.5"/>
+<text x="114" y="528" font-size="11" fill="#1f2933">Oracle dynamics (stdlib)</text>
+<line x1="300" y1="524" x2="328" y2="524" stroke="#b34a00" stroke-width="2.5" stroke-dasharray="5,3"/>
+<text x="334" y="528" font-size="11" fill="#1f2933">Learned MLP dynamics (PyTorch)</text>
+</svg>

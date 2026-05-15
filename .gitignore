@@ -41,3 +41,5 @@ Thumbs.db
 !examples/two_room_toy/sample_report.json
 !examples/maze_toy/sample_report.json
 !examples/maze_toy/horizon_sweep_report.json
+!examples/maze_toy/learned_baseline_report.json
+!examples/maze_toy/learned_horizon_sweep_report.json

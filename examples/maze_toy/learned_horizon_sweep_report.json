@@ -1,9 +1,15 @@
 {
   "environment": "maze_toy",
-  "policy_name": "tabular-world-model",
+  "policy_name": "tabular-world-model (learned-mlp)",
+  "dynamics_kind": "learned-mlp",
   "episodes_per_point": 30,
   "episode_horizon": 80,
   "seed": 0,
+  "training": {
+    "epochs": 800,
+    "transitions": 64,
+    "model": "MazeDynamicsMLP(hidden=32)"
+  },
   "points": [
     {
       "plan_horizon": 5,
@@ -12,7 +18,7 @@
         "episodes": 30,
         "success_rate": 0.0,
         "average_steps_to_success": null,
-        "average_planning_latency_ms": 0.9366641006787331,
+        "average_planning_latency_ms": 58.0777620622172,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 368.3333333333333,
         "perturbation_name": null,
@@ -23,8 +29,8 @@
         0.113517091390478
       ],
       "latency_ci_ms": [
-        0.9211013959548503,
-        0.9522268054026158
+        57.61668787144743,
+        58.53883625298696
       ]
     },
     {
@@ -34,7 +40,7 @@
         "episodes": 30,
         "success_rate": 0.9,
         "average_steps_to_success": 31.25925925925926,
-        "average_planning_latency_ms": 1.585604247368421,
+        "average_planning_latency_ms": 116.15894819473684,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 350.55350553505536,
         "perturbation_name": null,
@@ -45,8 +51,8 @@
         0.9654007400402839
       ],
       "latency_ci_ms": [
-        1.554940130642545,
-        1.6162683640942972
+        113.83241150293485,
+        118.48548488653883
       ]
     },
     {
@@ -56,7 +62,7 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 30.5,
-        "average_planning_latency_ms": 2.342917,
+        "average_planning_latency_ms": 177.34423727058825,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 278.6885245901639,
         "perturbation_name": null,
@@ -67,8 +73,8 @@
         1.0
       ],
       "latency_ci_ms": [
-        2.3385856012396475,
-        2.3472483987603523
+        176.59710181614608,
+        178.09137272503042
       ]
     },
     {
@@ -78,7 +84,7 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 33.8,
-        "average_planning_latency_ms": 3.177080461538462,
+        "average_planning_latency_ms": 236.07964783076923,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 256.4102564102564,
         "perturbation_name": null,
@@ -89,8 +95,8 @@
         1.0
       ],
       "latency_ci_ms": [
-        3.0592497155509317,
-        3.294911207525992
+        235.04188582647802,
+        237.11740983506044
       ]
     },
     {
@@ -100,7 +106,7 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 41.8,
-        "average_planning_latency_ms": 4.560883068965517,
+        "average_planning_latency_ms": 351.5391941206897,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 277.511961722488,
         "perturbation_name": null,
@@ -111,8 +117,8 @@
         1.0
       ],
       "latency_ci_ms": [
-        4.5444283652432755,
-        4.577337772687759
+        350.07938105110827,
+        352.9990071902711
       ]
     }
   ]
