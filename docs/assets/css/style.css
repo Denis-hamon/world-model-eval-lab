@@ -671,6 +671,24 @@ img[src*="badge.svg"] {
 .sweep-tooltip .row .v.warn   { color: var(--warn-light); }
 
 /* =============================================================
+ * Metric links: tooltip-anchor pattern in the taxonomy summary table
+ * ============================================================= */
+
+a.metric-link {
+  color: var(--ink);
+  border-bottom: 1px dotted var(--muted-soft);
+  cursor: help;
+  font-weight: 500;
+  transition: color 0.15s, border-color 0.15s;
+}
+a.metric-link:hover,
+a.metric-link:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  border-bottom-style: solid;
+}
+
+/* =============================================================
  * Page navigation (prev / next buttons)
  * ============================================================= */
 

@@ -12,76 +12,18 @@ This is the first pass of a decision-grade metric set for action-conditioned wor
 
 ## Summary table
 
+Hover any metric name for a one-line reading; click to jump to the full definition and formula at the [bottom of the page](#definitions-and-formulas).
+
 | Metric | Definition | Why it matters | Example measurement |
 | --- | --- | --- | --- |
-| Action Success Rate | Fraction of episodes in which the agent reaches the goal within the horizon. | The headline number. If this is near zero, nothing else matters. | Over 200 episodes of Two-Room with horizon 50, success rate = 0.87. |
-| Planning Latency | Wall-clock time to produce one planned action sequence. **Reported per `plan()` call, not per episode.** | Tells you whether the model can close a control loop in real time. | mean = 2.4 ms per `plan()` call on the maze toy (CPU). |
-| Compute per Decision | Estimated FLOPs or model forward passes per planned action. | Translates research compute into product cost (energy, dollars, GPU hours). | 1.2 model rollouts per decision, average horizon 8. |
-| Planning Horizon | Effective look-ahead depth at which performance stops improving. | Tells you how far the model can usefully imagine before it becomes noise. | Success rate plateaus at horizon = 12; longer horizons add cost without value. |
-| Perturbation Recovery | Success rate conditional on a perturbation event during the episode. | Measures robustness in the only way a product environment delivers it - by surprise. | Baseline success = 0.87; under perturbation = 0.61; recovery rate = 0.70. |
-| Sample Efficiency | Performance as a function of training samples or environment interactions. | Distinguishes models that need a research-lab dataset from models that can ship. | Reaches 80 percent of asymptotic success with 5k transitions. |
-| Surprise Detection | Ability of the model to flag observations its predictor finds unlikely. | A precondition for safe behaviour - "I do not know what is going on" is a feature. | AUROC = 0.78 on held-out anomalous frames vs in-distribution frames. |
-| Latent Interpretability | Degree to which the latent state exposes task-relevant structure. | Helps debugging, safety review, and integration with classical control. | Linear probe on latent predicts agent position with R^2 = 0.93. |
-
-## Definitions in math notation
-
-Each metric is defined precisely below. Let $N$ be the number of episodes in a run. For episode $i$: $S_i$ is the number of executed steps, $K_i$ is the number of `plan()` calls, $\ell_{i,j}$ is the wall-clock latency in milliseconds of the $j$-th plan call.
-
-**Action success rate.** The headline number.
-
-$$
-\mathrm{success\_rate} \;=\; \frac{1}{N}\sum_{i=1}^{N} \mathbf{1}\!\left[\,\mathrm{success}_i\,\right]
-$$
-
-**Average steps to success.** Conditional on successful episodes.
-
-$$
-\mathrm{avg\_steps} \;=\; \frac{\sum_{i \,:\, \mathrm{success}_i} S_i}{\bigl|\{\, i \,:\, \mathrm{success}_i \,\}\bigr|}
-$$
-
-**Per-call planning latency.** Flattened across every `plan()` call in every episode, so a policy that replans more often pays for it instead of hiding behind a per-episode mean.
-
-$$
-\bar{\ell} \;=\; \frac{\sum_{i=1}^{N} \sum_{j=1}^{K_i} \ell_{i,j}}{\sum_{i=1}^{N} K_i}
-$$
-
-**Compute per decision.** Derived from the policy-declared cost $c_{\mathrm{plan}}$ of a single `plan()` call, divided by the actual number of executed actions.
-
-$$
-\bar{c} \;=\; \frac{c_{\mathrm{plan}} \cdot \sum_i K_i}{\sum_i S_i}
-$$
-
-For `TabularWorldModelPlanner` the declaration is $\;c_{\mathrm{plan}} = N_{\mathrm{cand}} \cdot H_{\mathrm{plan}}\;$ in rollout-units, where $N_{\mathrm{cand}}$ is the number of candidate action sequences sampled per call and $H_{\mathrm{plan}}$ is the planner lookahead.
-
-**Perturbation recovery rate.** Restricted to episodes where `env.perturb()` actually fired, not just episodes the runner intended to perturb (this is the bug Codex flagged on v0.3 and the v0.3.1 release fixed).
-
-$$
-r \;=\; \frac{\bigl|\{\, i \,:\, \mathrm{perturbed}_i \wedge \mathrm{success}_i \,\}\bigr|}{\bigl|\{\, i \,:\, \mathrm{perturbed}_i \,\}\bigr|}
-$$
-
-**Wilson 95% interval** for the success rate. Holds up near $\hat{p} = 0$ and $\hat{p} = 1$, where the normal approximation collapses and where horizon sweeps spend most of their data.
-
-$$
-\hat{p}_{95} \;=\; \frac{\hat{p} + \dfrac{z^{2}}{2n} \;\pm\; z\sqrt{\dfrac{\hat{p}(1-\hat{p})}{n} + \dfrac{z^{2}}{4n^{2}}}}{1 + \dfrac{z^{2}}{n}}
-$$
-
-with $\hat{p} = \mathrm{success\_rate}$, $n = N$, and $z = 1.96$ for a two-sided 95% interval.
-
-**Normal 95% interval** for the mean per-call latency.
-
-$$
-\bar{\ell}_{95} \;=\; \bar{\ell} \;\pm\; 1.96 \cdot \frac{\sigma_{\ell}}{\sqrt{n_{\ell}}}
-$$
-
-where $\sigma_{\ell}$ is the population standard deviation of the flattened per-call latency samples and $n_{\ell} = \sum_i K_i$.
-
-**Effective planning horizon.** The smallest lookahead beyond which success rate stops improving by more than a tolerance $\epsilon$:
-
-$$
-H^{\ast} \;=\; \min \Bigl\{ H \,:\; \mathrm{success\_rate}(H') - \mathrm{success\_rate}(H) \leq \epsilon \;\; \forall\, H' > H \Bigr\}
-$$
-
-For the maze toy with $\epsilon = 0.01$ the empirical answer is $H^{\ast} = 15$, exactly one step past the maze's optimal-path length.
+| [Action Success Rate](#m-success-rate "Fraction of episodes that reached the goal."){:.metric-link} | Fraction of episodes in which the agent reaches the goal within the horizon. | The headline number. If this is near zero, nothing else matters. | Over 200 episodes of Two-Room with horizon 50, success rate = 0.87. |
+| [Planning Latency](#m-planning-latency "Mean wall-clock time per plan() call, across the whole run."){:.metric-link} | Wall-clock time to produce one planned action sequence. **Reported per `plan()` call, not per episode.** | Tells you whether the model can close a control loop in real time. | mean = 2.4 ms per `plan()` call on the maze toy (CPU). |
+| [Compute per Decision](#m-compute-per-decision "Model work per executed action, in policy-declared units."){:.metric-link} | Estimated FLOPs or model forward passes per planned action. | Translates research compute into product cost (energy, dollars, GPU hours). | 1.2 model rollouts per decision, average horizon 8. |
+| [Planning Horizon](#m-planning-horizon "Effective lookahead depth at which success stops improving."){:.metric-link} | Effective look-ahead depth at which performance stops improving. | Tells you how far the model can usefully imagine before it becomes noise. | Success rate plateaus at horizon = 12; longer horizons add cost without value. |
+| [Perturbation Recovery](#m-perturbation-recovery "Of episodes that actually got perturbed, the fraction that still succeeded."){:.metric-link} | Success rate conditional on a perturbation event during the episode. | Measures robustness in the only way a product environment delivers it - by surprise. | Baseline success = 0.87; under perturbation = 0.61; recovery rate = 0.70. |
+| [Sample Efficiency](#m-sample-efficiency "Performance as a function of training samples or interactions."){:.metric-link} | Performance as a function of training samples or environment interactions. | Distinguishes models that need a research-lab dataset from models that can ship. | Reaches 80 percent of asymptotic success with 5k transitions. |
+| [Surprise Detection](#m-surprise-detection "How well the model flags out-of-distribution inputs."){:.metric-link} | Ability of the model to flag observations its predictor finds unlikely. | A precondition for safe behaviour - "I do not know what is going on" is a feature. | AUROC = 0.78 on held-out anomalous frames vs in-distribution frames. |
+| [Latent Interpretability](#m-latent-interpretability "Whether the latent state exposes task-relevant structure."){:.metric-link} | Degree to which the latent state exposes task-relevant structure. | Helps debugging, safety review, and integration with classical control. | Linear probe on latent predicts agent position with R^2 = 0.93. |
 
 ## Planning-horizon curve (worked example)
 
@@ -145,3 +87,123 @@ The three metric dimensions - planning horizon, latency per call, and compute pe
 ## Versioning
 
 This taxonomy is intentionally a starting point. Additions are welcome, but every new metric should answer an applied question, come with an example measurement, and have a corresponding test on synthetic data.
+
+---
+
+## Definitions and formulas
+
+Each metric below is written as a ratio of plain-English quantities first, then in math notation. Skip this section on a first read - the [summary table](#summary-table) and the [worked example](#planning-horizon-curve-worked-example) carry the same information without symbols.
+
+### Action success rate {#m-success-rate}
+
+Reads as: "How often did the agent reach the goal?"
+
+$$
+\text{success\_rate} \;=\; \frac{\text{episodes that succeeded}}{\text{episodes total}}
+$$
+
+Bounded in $[0, 1]$. Headline number. If this is near zero, no other metric matters.
+
+### Average steps to success {#m-avg-steps}
+
+Reads as: "Among the episodes that succeeded, how many steps did the agent take on average?"
+
+$$
+\text{avg\_steps} \;=\; \frac{\text{total steps in successful episodes}}{\text{number of successful episodes}}
+$$
+
+Reported as `n/a` when zero episodes succeeded. Lower is better, with the maze's optimal path (14) as the theoretical floor.
+
+### Planning latency, per call {#m-planning-latency}
+
+Reads as: "How long does a single `plan()` invocation take on average?"
+
+$$
+\bar{\ell} \;=\; \frac{\text{total milliseconds spent in plan()}}{\text{total number of plan() calls}}
+$$
+
+Both sums are taken across **all episodes in the run**, then divided. A policy that replans 10 times per episode and a policy that replans once contribute equally per call, so neither hides behind a per-episode mean. This is the v0.3.1 fix: the previous reporting used per-episode totals and biased latency comparisons.
+
+### Compute per decision {#m-compute-per-decision}
+
+Reads as: "How much model work, in policy-declared units, does it take to produce one executed action?"
+
+$$
+\bar{c} \;=\; \frac{c_{\text{plan}} \;\times\; \text{total number of plan() calls}}{\text{total number of executed steps}}
+$$
+
+$c_{\text{plan}}$ is the policy's declared cost per `plan()` call (FLOPs, model forward passes, rollouts - whatever unit makes sense). For `TabularWorldModelPlanner`:
+
+$$
+c_{\text{plan}} \;=\; \text{num\_candidates} \;\times\; \text{plan\_horizon}
+$$
+
+so the maze run at horizon 15 with 200 candidates yields $c_{\text{plan}} = 3000$ rollout-units per call. Divided by the actual steps executed, that comes out to $\bar{c} \approx 280$ rollout-units per decision.
+
+### Planning horizon (effective) {#m-planning-horizon}
+
+Reads as: "What is the smallest lookahead beyond which success rate stops improving?"
+
+In words: pick a tolerance $\epsilon$ (typically $0.01$ or smaller). $H^{\ast}$ is the smallest lookahead such that any deeper lookahead would buy less than $\epsilon$ extra success rate.
+
+$$
+H^{\ast} \;=\; \min \Bigl\{ H \;:\; \text{success\_rate}(H') - \text{success\_rate}(H) \leq \epsilon \;\; \text{for all } H' > H \Bigr\}
+$$
+
+For the maze toy with $\epsilon = 0.01$: $H^{\ast} = 15$, exactly one step past the maze's optimal-path length of 14. Below $H^{\ast}$ you lose success; above it you spend more latency and compute for nothing.
+
+### Perturbation recovery rate {#m-perturbation-recovery}
+
+Reads as: "Of the episodes where `env.perturb()` actually fired, what fraction still reached the goal?"
+
+$$
+r \;=\; \frac{\text{actually-perturbed episodes that still succeeded}}{\text{actually-perturbed episodes}}
+$$
+
+"Actually-perturbed" is stricter than "scheduled for perturbation": episodes that succeed before the perturbation step are not counted. This keeps the denominator honest at the cost of a smaller effective sample when policies are very fast. (This was the v0.3 bug fixed in v0.3.1.)
+
+### Wilson 95% confidence interval (for success rate) {#m-wilson}
+
+Reads as: "Given $\hat{p}$ observed successes out of $n$ episodes, the lower and upper bounds of success rate I can defend at 95% confidence."
+
+The interval is **asymmetric** around $\hat{p}$, which is exactly what you want near 0% and 100% where the textbook normal approximation predicts impossible values (success rates below 0 or above 1).
+
+$$
+\hat{p}_{\text{lo}}, \hat{p}_{\text{hi}} \;=\; \frac{\hat{p} + \dfrac{z^{2}}{2n} \;\pm\; z \sqrt{\dfrac{\hat{p}(1-\hat{p})}{n} + \dfrac{z^{2}}{4n^{2}}}}{1 + \dfrac{z^{2}}{n}}
+$$
+
+with $z = 1.96$ for a two-sided 95% interval. Reading guide:
+
+- The numerator $\hat{p} + \tfrac{z^{2}}{2n}$ is the **centre** of the interval - shifted away from $\hat{p}$ near the extremes.
+- The $\pm z\sqrt{\cdot}$ piece is the **half-width**.
+- The denominator $1 + \tfrac{z^{2}}{n}$ shrinks toward $1$ as $n$ grows, so for large $n$ the Wilson interval collapses to the normal one.
+
+For $\hat{p} = 1.0$ and $n = 30$ this gives $[0.89, 1.00]$. To tighten the lower bound to $0.95$ at the same observed rate, you need $n \gtrsim 73$.
+
+### Normal 95% confidence interval (for mean latency) {#m-normal-ci}
+
+Reads as: "The range around the observed mean latency where 95% of intervals constructed this way would contain the true mean."
+
+$$
+\bar{\ell} \;\pm\; 1.96 \;\cdot\; \frac{\sigma_{\ell}}{\sqrt{n_{\ell}}}
+$$
+
+with $\sigma_{\ell}$ the standard deviation of the per-call latency samples (flattened across episodes) and $n_{\ell}$ the total number of plan() calls. The normal approximation is fine here because latencies are bounded away from 0 and we typically have many samples.
+
+### Sample efficiency {#m-sample-efficiency}
+
+Not formalised in this taxonomy yet (no off-the-shelf metric works across all training regimes). Track it as a learning curve: success rate as a function of training samples or environment interactions. Report the sample count at which the model reaches a fixed fraction (typically 0.8) of its asymptotic success.
+
+### Surprise detection {#m-surprise-detection}
+
+Reads as: "Can the model tell when an observation is out of its training distribution?" Operationalised as AUROC on a held-out set of anomalous-vs-in-distribution inputs:
+
+$$
+\text{AUROC} \;=\; \Pr \bigl[ \text{score}(\text{anomalous}) \;>\; \text{score}(\text{in-distribution}) \bigr]
+$$
+
+where `score` is a model-defined surprise signal (negative log-likelihood of the prediction, distance from the latent prior, etc.). 0.5 is random, 1.0 is perfect ranking.
+
+### Latent interpretability {#m-latent-interpretability}
+
+No single formula. Typically reported as the $R^{2}$ of a linear probe predicting a task-relevant variable (agent position, object pose) from the latent state. Higher is more structured; very high values may indicate the latent is just the input.

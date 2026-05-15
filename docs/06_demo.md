@@ -80,36 +80,36 @@ If you were integrating this model into a real product on the basis of this tabl
 
 ## The math behind the decision
 
-Each of the four bullets above is a one-line formula evaluated against the scorecard. Spelled out:
+Each bullet above is a one-line formula evaluated against the scorecard. Written first as a ratio of plain-English quantities, then in symbols. The full definitions and CI machinery live at the bottom of the [metric taxonomy page](02_metric_taxonomy.html#definitions-and-formulas).
 
-**Latency budget.** Pick a control rate $f$ in Hz. The cycle period is $T_{\mathrm{cycle}} = 1000 / f$ ms. Subtract the planner's per-call latency to get the budget left for everything else (sensing, actuation, business logic):
-
-$$
-T_{\mathrm{budget}} \;=\; T_{\mathrm{cycle}} \;-\; \bar{\ell}
-$$
-
-For a 100 Hz loop at horizon 15 on the maze: $T_{\mathrm{budget}} = 10 - 2.35 \approx 7.65 \text{ ms}$. At 1 kHz the budget collapses to $1 - 2.35 < 0$ ms; this configuration cannot run inside a millisecond loop.
-
-**Per-decision cost.** Once $\bar{c}$ is known (see [02_metric_taxonomy.html#definitions-in-math-notation](02_metric_taxonomy.html)), the cost per executed action is just unit-conversion:
+**Latency budget.** Pick a control rate $f$ in Hz. The cycle period is $1000 / f$ ms. Subtract the planner's per-call latency to get the time left in each cycle for everything that is not planning.
 
 $$
-\mathrm{cost}_{\mathrm{decision}} \;=\; \bar{c} \;\cdot\; \mathrm{cost}_{\mathrm{rollout\text{-}unit}}
+\text{budget per cycle} \;=\; \text{cycle period} \;-\; \text{planning latency per call}
 $$
 
-where $\mathrm{cost}_{\mathrm{rollout\text{-}unit}}$ is whatever unit you account in - FLOPs per model forward pass, dollars per inference, watts. For horizon 15 on the maze, $\bar{c} \approx 280$, so a 100 Hz control loop running for one second burns $\approx 28{,}000 \cdot \mathrm{cost}_{\mathrm{rollout\text{-}unit}}$.
+In symbols: $T_{\text{budget}} = T_{\text{cycle}} - \bar{\ell}$. For a 100 Hz loop at horizon 15 on the maze: $T_{\text{budget}} = 10 - 2.35 \approx 7.65$ ms. At 1 kHz the budget collapses to $1 - 2.35 < 0$ ms; the planner alone cannot finish inside a millisecond cycle.
 
-**Reliability you are actually shipping.** A 95% Wilson interval $[\hat{p}_{\mathrm{lo}}, \hat{p}_{\mathrm{hi}}]$ over $n$ episodes means that under repeated sampling, 95% of constructed intervals contain the true success rate. You should be willing to ship the *lower bound*, not the point estimate:
-
-$$
-\mathrm{shipping\_reliability}(n) \;=\; \hat{p}_{\mathrm{lo}}(n)
-$$
-
-For 100% in 30 episodes the lower bound is $\approx 0.89$. To raise it to $\hat{p}_{\mathrm{lo}} \geq 0.95$ at the same observed success rate, you need $n \gtrsim 73$ (Wilson interval solved for $\hat{p}_{\mathrm{lo}} = 0.95$ with $\hat{p} = 1$).
-
-**Effective planning horizon.** Formally, the smallest $H$ for which any further increase fails to buy more than a tolerance $\epsilon$ of success rate:
+**Per-decision cost.** Once compute-per-decision is known from the scorecard, the cost per executed action is just unit conversion.
 
 $$
-H^{\ast} \;=\; \min \Bigl\{ H \,:\; \mathrm{success\_rate}(H') - \mathrm{success\_rate}(H) \leq \epsilon \;\; \forall\, H' > H \Bigr\}
+\text{cost per decision} \;=\; \text{compute per decision} \;\times\; \text{cost per rollout-unit}
+$$
+
+In symbols: $\text{cost}_{\text{decision}} = \bar{c} \cdot \text{cost}_{\text{unit}}$, where the unit cost is whatever you account in (FLOPs per forward pass, dollars per inference, watts). For horizon 15 on the maze, $\bar{c} \approx 280$, so a 100 Hz loop running for one second burns about $28{,}000 \cdot \text{cost}_{\text{unit}}$.
+
+**Reliability you can defend.** Ship the Wilson lower bound, not the point estimate. With $\hat{p}$ observed successes out of $n$ episodes, the 95% lower bound is the worst-case success rate consistent with the data.
+
+$$
+\text{reliability you can ship} \;=\; \text{Wilson lower bound}\bigl(\hat{p}, \; n\bigr)
+$$
+
+The Wilson formula itself is at the [bottom of the taxonomy page](02_metric_taxonomy.html#m-wilson). Worked numbers: $\hat{p} = 1.0$ over $n = 30$ gives $\hat{p}_{\text{lo}} \approx 0.89$. To push the lower bound to $0.95$ at the same observed rate, you need roughly $n \geq 73$ episodes.
+
+**Effective planning horizon.** The smallest lookahead beyond which a deeper search does not buy meaningfully more success. Pick a tolerance $\epsilon$ (typically $0.01$).
+
+$$
+H^{\ast} \;=\; \text{smallest } H \text{ such that no deeper lookahead improves success by more than } \epsilon
 $$
 
 For the maze toy with $\epsilon = 0.01$: $H^{\ast} = 15$. Below it you lose success; above it you spend more latency and more compute for nothing.
