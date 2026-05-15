@@ -4,7 +4,7 @@ Project-specific instructions for AI coding agents (Codex, Claude Code, etc.) wo
 
 ## Mission
 
-This repository is a **research-to-product** exploration of evaluation for action-conditioned world models. The product wedge is the **evaluation layer**, not the model itself. Every change should sharpen that wedge.
+This repository is an **independent methodology study** of evaluation for action-conditioned world models. The focus is the **evaluation layer**, not the model itself. Every change should sharpen that focus.
 
 ## Hard rules
 
@@ -20,7 +20,7 @@ This repository is a **research-to-product** exploration of evaluation for actio
 - Prefer clear, boring Python over clever Python.
 - Prefer extending existing interfaces in `src/wmel/adapters/base.py` over adding parallel ones.
 - Every new metric must have: a definition, why it matters, an example measurement, and a test on synthetic data.
-- Every new benchmark card must answer a **product question**, not just a technical one.
+- Every new benchmark card must answer a **applied question**, not just a technical one.
 - Docs are public-facing. Treat them like a landing page, not a notebook.
 - Runnable examples beat narrative claims. If a doc page mentions a capability, there should be code that demonstrates it.
 

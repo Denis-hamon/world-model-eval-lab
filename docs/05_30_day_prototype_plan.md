@@ -1,6 +1,6 @@
 # 05 - 30-Day Prototype Plan
 
-A focused four-week plan that takes the repository from "credible scaffolding" to "shareable product narrative".
+A focused four-week plan that takes the repository from "credible scaffolding" to "shareable applied narrative".
 
 The plan assumes one contributor, part-time. Every week ends with a runnable artifact, not just a doc.
 
@@ -61,17 +61,17 @@ What remains for v0.5: a pluggable perturbation library (displacement, blocked-c
 
 ---
 
-## Week 4 - Public demo and product narrative
+## Week 4 - Public demo and applied narrative
 
 **Goal**: make the artifact persuasive to a non-researcher.
 
-- Write a short blog-style page (`docs/06_demo.md`) walking through one scorecard and what it implies for a product decision.
+- Write a short blog-style page (`docs/06_demo.md`) walking through one scorecard and what it implies for an applied decision.
 - Record a 90-second screen capture of the toy benchmark running and the report being read. (Optional, do not block on it.)
 - Tighten the README into a 60-second pitch.
 - Add a `CONTRIBUTING.md` describing how to add a benchmark card, a metric, and an adapter.
 - Tag `v0.1.0` and write release notes that explicitly state the non-affiliation disclaimer.
 
-**Exit criterion**: a product person can read the README, run the demo, and articulate the thesis without help.
+**Exit criterion**: a non-researcher can read the README, run the demo, and articulate the thesis without help.
 
 **Status**: `docs/06_demo.md` is shipped (a row-by-row product walkthrough of the maze horizon sweep). `CONTRIBUTING.md` is shipped. Tagged releases are at v0.3.1 and v0.4.0 with explicit non-affiliation disclaimers. CI runs the suite plus a smoke test of the three example scripts on Python 3.11/3.12/3.13. Screen capture remains optional and is not done.
 
@@ -85,4 +85,4 @@ What remains for v0.5: a pluggable perturbation library (displacement, blocked-c
 - Implementing Push-T, Reacher, or OGBench Cube fully - they remain benchmark cards until v0.2.
 - Hosting a public scoreboard.
 
-These are deliberate omissions. The whole point of the wedge is that the **evaluation layer** is what is missing, not yet another model.
+These are deliberate omissions. The whole point of this study is that the **evaluation layer** is what is missing, not yet another model.

@@ -4,7 +4,7 @@
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> A product-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
+> A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
 
 ## Thesis
 
@@ -12,7 +12,7 @@ World models should not only be evaluated on prediction quality. They should be 
 
 The next bottleneck for world models is not only model quality. It is proof of usefulness.
 
-**Where to start**: if you have ten minutes, read [docs/06_demo.md](docs/06_demo.md) - a walkthrough of one scorecard and what a product person should read out of it. If you have more, the rest of [docs/](docs/) covers the thesis, the metric taxonomy, the benchmark cards, and a 30-day prototype plan.
+**Where to start**: if you have ten minutes, read [docs/06_demo.md](docs/06_demo.md) - a walkthrough of one scorecard and what a non-researcher should read out of it. If you have more, the rest of [docs/](docs/) covers the thesis, the metric taxonomy, the benchmark cards, and a 30-day study plan.
 
 ## Why this matters
 
@@ -30,8 +30,8 @@ This repository proposes a thin, opinionated evaluation layer that closes that g
 ## What this repo is
 
 - A lightweight, CPU-only benchmark scaffolding for action-conditioned world models.
-- A clear taxonomy of **product-grade** metrics (success rate, planning latency, compute per decision, perturbation recovery, etc.).
-- Reusable benchmark cards that map academic tasks to industrial product questions.
+- A clear taxonomy of **decision-grade** metrics (success rate, planning latency, compute per decision, perturbation recovery, etc.).
+- Reusable benchmark cards that map academic tasks to industrial applied questions.
 - An adapter interface so any world model (research or proprietary) can be plugged in and scored.
 - A runnable toy benchmark that demonstrates the full evaluation loop end-to-end.
 
@@ -98,7 +98,7 @@ world-model-eval-lab/
 ├── AGENTS.md
 ├── docs/
 │   ├── 00_thesis.md
-│   ├── 01_product_wedge.md
+│   ├── 01_evaluation_gap.md
 │   ├── 02_metric_taxonomy.md
 │   ├── 03_benchmark_cards.md
 │   ├── 04_industrial_use_cases.md
@@ -144,7 +144,7 @@ world-model-eval-lab/
 
 ## Disclaimer
 
-This is an independent research-to-product exploration. It is **not** an official artifact of AMI, Meta, the LeWorldModel project, or any of their authors. Any references to JEPA-style or LeWorldModel concepts are conceptual, not affiliational.
+This is an independent study of evaluation methodology for action-conditioned world models. It is **not** an official artifact of AMI, Meta, the LeWorldModel project, or any of their authors, and **not** an artifact of any current or past employer of the author. Any references to JEPA-style or LeWorldModel concepts are conceptual, not affiliational.
 
 ## Contributing
 

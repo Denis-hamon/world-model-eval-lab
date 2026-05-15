@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest. This repository is an independent research-to-product exploration of evaluation infrastructure for action-conditioned world models. Contributions that sharpen the **product wedge** (better metrics, better benchmarks, better reporting) are very welcome. Contributions that turn it into a training framework or a model zoo are out of scope.
+Thanks for your interest. This repository is an independent study of evaluation methodology for action-conditioned world models. Contributions that sharpen the **evaluation layer** (better metrics, better benchmarks, better reporting) are very welcome. Contributions that turn it into a training framework or a model zoo are out of scope.
 
 If you have not read it yet, `AGENTS.md` lists the hard rules: no affiliation claims, no reimplementation of LeWorldModel, no heavyweight ML dependencies in the runtime, no GPU requirement.
 
@@ -38,7 +38,7 @@ If the test suite is green and the maze sweep prints a scorecard, you are set up
 
 ## Adding a benchmark card
 
-1. Open `docs/03_benchmark_cards.md`. Use the existing card structure: **task type**, **product interpretation**, **relevant industries**, **world model value hypothesis**, **candidate metrics**, **product question**.
+1. Open `docs/03_benchmark_cards.md`. Use the existing card structure: **task type**, **applied interpretation**, **relevant industries**, **world model value hypothesis**, **candidate metrics**, **applied question**.
 2. If you also implement the environment, drop it in `examples/<env_name>/environment.py`. The environment must subclass `wmel.adapters.base.BenchmarkEnvironment` and expose `action_space`.
 3. Add a `run_baseline.py` that compares at least a random and one other policy, and writes a `sample_report.json`.
 4. Whitelist the new sample report in `.gitignore` if you want it tracked.

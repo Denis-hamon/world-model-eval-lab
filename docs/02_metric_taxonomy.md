@@ -1,6 +1,6 @@
 # 02 - Metric Taxonomy
 
-This is the first pass of a product-grade metric set for action-conditioned world models. Each metric is chosen because it answers a question a product team would actually ask before integrating a model.
+This is the first pass of a decision-grade metric set for action-conditioned world models. Each metric is chosen because it answers a question an applied team would actually ask before integrating a model.
 
 ## Summary table
 
@@ -74,4 +74,4 @@ The three metric dimensions - planning horizon, latency per call, and compute pe
 
 ## Versioning
 
-This taxonomy is intentionally a starting point. Additions are welcome, but every new metric should answer a product question, come with an example measurement, and have a corresponding test on synthetic data.
+This taxonomy is intentionally a starting point. Additions are welcome, but every new metric should answer an applied question, come with an example measurement, and have a corresponding test on synthetic data.

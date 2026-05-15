@@ -13,7 +13,7 @@ The thing that matters is whether the model lets an agent:
 - generalize across tasks it was not explicitly trained for,
 - and do all of the above fast enough and cheap enough that a product can ship.
 
-## Action-conditioned planning needs product-grade evaluation
+## Action-conditioned planning needs decision-grade evaluation
 
 Once a world model is plugged into a planner, evaluation stops being a single number. It becomes a profile:
 
@@ -23,14 +23,14 @@ Once a world model is plugged into a planner, evaluation stops being a single nu
 - **Robustness** - what happens when the environment is perturbed mid-rollout?
 - **Generality** - how does the same model perform on a related but unseen task?
 
-Each of these is a product constraint as much as a research metric. A model that wins on next-frame prediction loss but takes 800 ms per decision is not a robotics product. A model that wins on success rate in a fixed seed but collapses under a 5 percent perturbation is not a control product. A model that requires fine-tuning per task is not yet a generalist agent.
+Each of these is an applied constraint as much as a research metric. A model that wins on next-frame prediction loss but takes 800 ms per decision is not deployable in robotics. A model that wins on success rate in a fixed seed but collapses under a 5 percent perturbation is not deployable in control. A model that requires fine-tuning per task is not yet a generalist agent.
 
-These are not exotic concerns. They are the first questions any product team would ask before integrating a world model into a real system - and they are largely missing from how the research community currently reports results.
+These are not exotic concerns. They are the first questions any applied team would ask before integrating a world model into a real system - and they are largely missing from how the research community currently reports results.
 
 ## Core thesis
 
 > The next bottleneck for world models is not only model quality. It is proof of usefulness.
 
-Better predictors will keep being published. The community needs a shared, lightweight, opinionated way to ask **"useful for what, and at what cost?"** - and to answer that question with numbers a product person can read.
+Better predictors will keep being published. The community needs a shared, lightweight, opinionated way to ask **"useful for what, and at what cost?"** - and to answer that question with numbers a non-researcher can read.
 
 This repository is one attempt at that shared layer.

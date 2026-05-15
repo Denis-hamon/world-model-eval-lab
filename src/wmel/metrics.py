@@ -1,4 +1,4 @@
-"""Product-grade metrics for action-conditioned world model evaluation."""
+"""Decision-grade metrics for action-conditioned world model evaluation."""
 
 from __future__ import annotations
 

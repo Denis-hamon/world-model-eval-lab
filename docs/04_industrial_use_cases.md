@@ -1,6 +1,6 @@
 # 04 - Industrial Use Cases
 
-This page connects the metric taxonomy and the benchmark cards to concrete industrial contexts where action-conditioned world models could plausibly add value. The aim is to give a product person a place to point when they ask "why should I care?".
+This page connects the metric taxonomy and the benchmark cards to concrete industrial contexts where action-conditioned world models could plausibly add value. The aim is to give a non-researcher a place to point when they ask "why should I care?".
 
 For each domain we list:
 
