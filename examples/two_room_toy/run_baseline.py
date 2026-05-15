@@ -23,7 +23,7 @@ from wmel.adapters.greedy_policy import GreedyGridPolicy
 from wmel.adapters.random_policy import RandomPolicy
 from wmel.benchmark_runner import BenchmarkRunner
 from wmel.metrics import compute_scorecard
-from wmel.report import print_scorecard, to_json_report
+from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
 from examples.two_room_toy.environment import VALID_ACTIONS, TwoRoomEnv, two_room_waypoint_for
 
@@ -70,6 +70,7 @@ def main() -> None:
     print_scorecard(greedy_card)
 
     report = {
+        **report_envelope_metadata(),
         "environment": "two_room_toy",
         "episodes": EPISODES,
         "horizon": HORIZON,

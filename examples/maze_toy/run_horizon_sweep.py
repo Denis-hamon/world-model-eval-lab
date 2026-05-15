@@ -25,6 +25,7 @@ for _entry in (_REPO_ROOT, _REPO_ROOT / "src"):
 
 from wmel.adapters.tabular_world_model import TabularWorldModelPlanner
 from wmel.experiments import horizon_sweep, print_horizon_sweep
+from wmel.report import report_envelope_metadata
 
 from examples.maze_toy.environment import VALID_ACTIONS, MazeEnv
 
@@ -60,6 +61,7 @@ def main() -> None:
     print_horizon_sweep(sweep)
 
     report = {
+        **report_envelope_metadata(),
         "environment": "maze_toy",
         "policy_name": sweep.policy_name,
         "episodes_per_point": EPISODES_PER_POINT,

@@ -33,6 +33,7 @@ from wmel.adapters.learned_dynamics_torch import (
 )
 from wmel.adapters.tabular_world_model import TabularWorldModelPlanner
 from wmel.experiments import horizon_sweep, print_horizon_sweep
+from wmel.report import report_envelope_metadata
 
 from examples.maze_toy.environment import VALID_ACTIONS, MazeEnv
 
@@ -78,6 +79,7 @@ def main() -> None:
     # same `policy.name`. Without this suffix anyone diffing the two
     # JSONs would think they came from the same policy.
     report = {
+        **report_envelope_metadata(),
         "environment": "maze_toy",
         "policy_name": f"{sweep.policy_name} (learned-mlp)",
         "dynamics_kind": "learned-mlp",

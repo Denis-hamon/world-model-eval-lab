@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Sequence
 
 from wmel.metrics import EpisodeResult, Scorecard
+
+
+# Schema version of the JSON report envelope. Bump on breaking changes; keep
+# the envelope additive (consumers should ignore unknown keys).
+REPORT_SCHEMA_VERSION = "1.0"
 
 
 def _fmt(value: float | None, suffix: str = "") -> str:
@@ -32,15 +38,62 @@ def print_scorecard(scorecard: Scorecard) -> None:
     print()
 
 
+def report_envelope_metadata() -> dict:
+    """Return the standard top-level versioning fields for any report dict.
+
+    Use it to stamp `schema_version`, `wmel_version`, and `generated_at`
+    on the outer wrapper of scripts that bundle multiple per-run envelopes
+    (e.g., `examples/maze_toy/run_baseline.py` returns one dict containing
+    three `runs`, and the outer dict should be versioned just like each
+    inner one).
+
+    Typical usage:
+
+        report = {
+            **report_envelope_metadata(),
+            "environment": "maze_toy",
+            "runs": {...},
+        }
+    """
+    from wmel import __version__ as _wmel_version
+
+    return {
+        "schema_version": REPORT_SCHEMA_VERSION,
+        "wmel_version": _wmel_version,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+
+
 def to_json_report(
     results: Sequence[EpisodeResult],
     scorecard: Scorecard,
+    *,
+    extra_metadata: dict | None = None,
 ) -> dict:
-    """Return a JSON-serializable dict combining raw results and the scorecard."""
-    return {
+    """Return a JSON-serializable dict combining raw results and the scorecard.
+
+    The envelope is versioned (`schema_version`) and stamped with the wmel
+    version that produced it plus a UTC ISO-8601 timestamp. Downstream
+    consumers (a future public scoreboard, for instance) can rely on the
+    `schema_version` to handle format evolution; bumps will be additive
+    whenever possible.
+
+    Pass `extra_metadata` to attach run-level fields (env name, seed, episode
+    count, perturbation strategy, anything else worth round-tripping) under
+    a top-level `metadata` block. The block is omitted when None.
+    """
+    from wmel import __version__ as _wmel_version
+
+    envelope: dict = {
+        "schema_version": REPORT_SCHEMA_VERSION,
+        "wmel_version": _wmel_version,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "scorecard": asdict(scorecard),
         "results": [asdict(r) for r in results],
     }
+    if extra_metadata:
+        envelope["metadata"] = dict(extra_metadata)
+    return envelope
 
 
 def _md_value(value: float | None, decimals: int = 3) -> str:

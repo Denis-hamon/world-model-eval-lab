@@ -67,6 +67,15 @@ python -m examples.maze_toy.run_horizon_sweep
 pytest
 ```
 
+Or via the `wmel` console script (installed alongside the package):
+
+```bash
+wmel run --env maze_toy --policy tabular-world-model --episodes 30 --output run.json
+wmel sweep --env maze_toy --plan-horizons 5,10,15,20,30 --output sweep.json
+```
+
+Both write versioned JSON reports (`schema_version: "1.0"`) carrying the wmel version, an ISO-8601 timestamp, and a metadata block describing the run's env, policy, perturbation, and seed.
+
 The two-room run compares a random policy and a greedy policy on a 2D two-room environment.
 
 The maze run pits random and naive greedy against a `TabularWorldModelPlanner` - a concrete subclass of `LeWMAdapterStub` that fills in `encode`, `rollout`, `score`, and `plan` end-to-end. Naive greedy fails (gets stuck on walls), random fails (too slow), and the world-model planner reaches the goal at the cost of higher planning latency.
@@ -101,7 +110,16 @@ See [docs/02_metric_taxonomy.md](docs/02_metric_taxonomy.md) for definitions and
 world-model-eval-lab/
 ├── README.md
 ├── AGENTS.md
+├── CONTRIBUTING.md
+├── CITATION.cff
+├── LICENSE
+├── pyproject.toml
+├── .gitignore
 ├── docs/
+│   ├── index.md                  # Pages landing
+│   ├── _config.yml
+│   ├── _layouts/default.html
+│   ├── assets/                   # SVG illustrations + CSS + JS
 │   ├── 00_thesis.md
 │   ├── 01_evaluation_gap.md
 │   ├── 02_metric_taxonomy.md
@@ -110,16 +128,19 @@ world-model-eval-lab/
 │   ├── 05_30_day_prototype_plan.md
 │   └── 06_demo.md
 ├── src/wmel/
+│   ├── cli.py                    # `wmel run`, `wmel sweep`
 │   ├── metrics.py
 │   ├── benchmark_runner.py
 │   ├── experiments.py
+│   ├── perturbations.py          # Perturbation, EnvPerturbation, ...
 │   ├── report.py
 │   └── adapters/
 │       ├── base.py
 │       ├── random_policy.py
 │       ├── greedy_policy.py
 │       ├── lewm_adapter_stub.py
-│       └── tabular_world_model.py
+│       ├── tabular_world_model.py
+│       └── learned_dynamics_torch.py   # optional, needs [learned] extra
 ├── examples/
 │   ├── two_room_toy/
 │   │   ├── environment.py
@@ -128,13 +149,20 @@ world-model-eval-lab/
 │   └── maze_toy/
 │       ├── environment.py
 │       ├── run_baseline.py
+│       ├── run_horizon_sweep.py
+│       ├── run_learned_baseline.py     # optional, [learned] extra
+│       ├── run_learned_sweep.py        # optional, [learned] extra
 │       └── README.md
-├── tests/
-├── pyproject.toml
-├── LICENSE
-├── .gitignore
-├── CONTRIBUTING.md
-└── .github/workflows/tests.yml
+├── scripts/
+│   └── render_visuals.py         # stdlib SVG generator for the Pages site
+├── tests/                        # 80+ tests; learned ones import-or-skip
+└── .github/
+    ├── workflows/tests.yml
+    ├── CODEOWNERS
+    ├── SECURITY.md
+    ├── dependabot.yml
+    ├── PULL_REQUEST_TEMPLATE.md
+    └── ISSUE_TEMPLATE/
 ```
 
 ## Roadmap
@@ -144,9 +172,10 @@ world-model-eval-lab/
 - **v0.3.1**: `horizon_sweep` experiment with Wilson and normal confidence intervals; per-call planning latency; honest perturbation accounting; regression tests for both metric invariants.
 - **v0.4**: Markdown reporting (`to_markdown_scorecard`, `to_markdown_report`, `to_markdown_horizon_sweep`); compute-per-decision wired via `PlannerPolicy.compute_per_plan_call`.
 - **v0.5**: pluggable perturbation library (`Perturbation`, `EnvPerturbation`, `DropNextActions`, `CompositePerturbation`); runner accepts custom perturbations via a `perturbation` kwarg; `Scorecard.perturbation_name` records which strategy was used; runner inner loop switched to `deque` for O(1) action-queue pops.
-- **v0.6** (current): proof-of-contract for learned dynamics. `wmel.adapters.learned_dynamics_torch` ships a PyTorch MLP that fits the maze's transition table and plugs into `TabularWorldModelPlanner` as a drop-in `dynamics` callable. Identical success rate to the oracle, 76x higher per-call latency - exactly the trade-off the framework is built to expose. PyTorch is an optional dependency (`pip install -e ".[learned]"`); core runtime stays stdlib-only.
-- **v0.7**: scorecard CLI, `horizon_sweep` accepting a `Perturbation` argument, perturbation-axis sweeps.
-- **v0.8**: adapter for a real research world model (via stub interface), public scoreboard format.
+- **v0.6**: proof-of-contract for learned dynamics. `wmel.adapters.learned_dynamics_torch` ships a PyTorch MLP that fits the maze's transition table and plugs into `TabularWorldModelPlanner` as a drop-in `dynamics` callable. Identical success rate to the oracle, 76x higher per-call latency - exactly the trade-off the framework is built to expose. PyTorch is an optional dependency (`pip install -e ".[learned]"`); core runtime stays stdlib-only.
+- **v0.7** (current): `wmel` CLI (`wmel run`, `wmel sweep`) installed as a console script; `horizon_sweep` accepts a `Perturbation` argument; JSON reports versioned via a `schema_version` envelope with `wmel_version`, `generated_at`, and an extensible `metadata` block; second CI job `test-stdlib-only` locks in the no-torch runtime promise.
+- **v0.8**: perturbation-axis sweeps (the same sweep machinery driven across `Perturbation` strategies instead of horizons), Markdown export for sweep reports.
+- **v0.9**: adapter for a real research world model (via stub interface), public scoreboard format reading the v1 schema.
 
 ## Disclaimer
 

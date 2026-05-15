@@ -17,6 +17,7 @@ from typing import Callable, Sequence
 from wmel.adapters.base import BenchmarkEnvironment, PlannerPolicy
 from wmel.benchmark_runner import BenchmarkRunner
 from wmel.metrics import EpisodeResult, Scorecard, compute_scorecard
+from wmel.perturbations import Perturbation
 
 
 EnvFactory = Callable[[], BenchmarkEnvironment]
@@ -83,9 +84,23 @@ def horizon_sweep(
     episodes_per_point: int = 50,
     episode_horizon: int = 80,
     perturb_prob: float = 0.0,
+    perturbation: Perturbation | None = None,
     seed: int = 0,
 ) -> HorizonSweep:
-    """Run `policy_factory(h)` for each `h` in `plan_horizons` and aggregate."""
+    """Run `policy_factory(h)` for each `h` in `plan_horizons` and aggregate.
+
+    `perturbation` is forwarded to `BenchmarkRunner` as-is; when None the
+    runner falls back to its default `EnvPerturbation()` (no behaviour
+    change vs pre-v0.7 callers).
+
+    Caveat: the same `perturbation` instance is reused across the sweep's
+    horizon points. The three shipped perturbations (`EnvPerturbation`,
+    `DropNextActions`, `CompositePerturbation`) are stateless, so this is
+    safe today. A subclass that carries internal state (an RNG seeded at
+    construction, a counter) would walk that state forward across horizon
+    points and break per-point reproducibility. Either keep your custom
+    `Perturbation` stateless, or build a wrapper that resets between calls.
+    """
     if not plan_horizons:
         raise ValueError("plan_horizons must not be empty")
 
@@ -102,6 +117,7 @@ def horizon_sweep(
             episodes=episodes_per_point,
             horizon=episode_horizon,
             perturb_prob=perturb_prob,
+            perturbation=perturbation,
             seed=seed,
         ).run()
         points.append(

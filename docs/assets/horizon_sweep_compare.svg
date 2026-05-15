@@ -51,10 +51,10 @@
 <line x1="710.0" y1="498" x2="710.0" y2="503" stroke="#52606d" stroke-width="1"/>
 <text x="710.0" y="518" font-size="11" fill="#52606d" text-anchor="middle">30</text>
 <text x="380" y="536" font-size="12" fill="#52606d" text-anchor="middle">plan_horizon</text>
-<polyline points="70.0,497.5 198.0,497.2 326.0,496.8 454.0,496.4 710.0,495.7" fill="none" stroke="#0f5fbf" stroke-width="2.5"/>
-<circle cx="70.0" cy="497.5" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<polyline points="70.0,497.6 198.0,497.2 326.0,496.7 454.0,496.4 710.0,495.7" fill="none" stroke="#0f5fbf" stroke-width="2.5"/>
+<circle cx="70.0" cy="497.6" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
 <circle cx="198.0" cy="497.2" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
-<circle cx="326.0" cy="496.8" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="326.0" cy="496.7" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
 <circle cx="454.0" cy="496.4" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
 <circle cx="710.0" cy="495.7" r="3.5" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
 <polyline points="70.0,469.0 198.0,440.0 326.0,409.4 454.0,380.0 710.0,322.3" fill="none" stroke="#b34a00" stroke-width="2.5" stroke-dasharray="5,3"/>
@@ -63,7 +63,7 @@
 <circle cx="326.0" cy="409.4" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
 <circle cx="454.0" cy="380.0" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
 <circle cx="710.0" cy="322.3" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
-<text x="704" y="312" font-size="11" font-weight="600" fill="#b34a00" text-anchor="end">Learned MLP costs 62-77x more per call.</text>
+<text x="704" y="312" font-size="11" font-weight="600" fill="#b34a00" text-anchor="end">Learned MLP costs 65-77x more per call.</text>
 <rect x="70" y="296" width="640" height="202" fill="none" stroke="#52606d" stroke-width="1"/>
 <line x1="80" y1="524" x2="108" y2="524" stroke="#0f5fbf" stroke-width="2.5"/>
 <text x="114" y="528" font-size="11" fill="#1f2933">Oracle dynamics (stdlib)</text>

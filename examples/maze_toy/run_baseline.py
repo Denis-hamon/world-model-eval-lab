@@ -29,7 +29,7 @@ from wmel.adapters.random_policy import RandomPolicy
 from wmel.adapters.tabular_world_model import TabularWorldModelPlanner
 from wmel.benchmark_runner import BenchmarkRunner
 from wmel.metrics import compute_scorecard
-from wmel.report import print_scorecard, to_json_report
+from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
 from examples.maze_toy.environment import VALID_ACTIONS, MazeEnv
 
@@ -99,6 +99,7 @@ def main() -> None:
     print_scorecard(wm_card)
 
     report = {
+        **report_envelope_metadata(),
         "environment": "maze_toy",
         "episodes": EPISODES,
         "horizon": HORIZON,
