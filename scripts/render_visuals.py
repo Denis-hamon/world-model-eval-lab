@@ -4,14 +4,20 @@ Stdlib-only on purpose: this is hand-rolled SVG, not matplotlib. The repo
 keeps zero ML/plotting dependencies at runtime, and even the visual assets
 are reproducible from the same constraint.
 
+The illustrations include classes, IDs, and data attributes that the live
+Pages site uses for:
+- scroll-triggered reveal animations (CSS via `docs/assets/css/style.css`),
+- hover tooltips on the sweep chart (JS via `docs/assets/js/interactive.js`),
+- an SVG-native `<animateMotion>` agent walking the maze path (no JS needed).
+
 Run from the repo root:
 
     python -m scripts.render_visuals
 
 Outputs:
-- docs/assets/architecture.svg       evaluation contract flow
-- docs/assets/horizon_sweep.svg      success rate + latency vs plan horizon
-- docs/assets/maze.svg               default 7x7 maze layout
+- docs/assets/architecture.svg       evaluation contract flow (animatable)
+- docs/assets/horizon_sweep.svg      success rate + latency vs plan horizon (interactive)
+- docs/assets/maze.svg               7x7 maze with an animated agent
 - docs/assets/favicon.svg            small square favicon for the Pages site
 """
 
@@ -39,16 +45,20 @@ PALETTE = {
 }
 
 
-def _svg_open(width: int, height: int) -> str:
+def _svg_open(width: int, height: int, extra: str = "") -> str:
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'width="{width}" height="{height}" font-family="ui-sans-serif, system-ui, '
-        f'-apple-system, Segoe UI, sans-serif">'
+        f'-apple-system, Segoe UI, sans-serif"{extra}>'
     )
 
 
 def render_architecture() -> str:
-    """Encoder -> Latent -> Predictor -> Future Latent -> Planner -> Action."""
+    """Encoder -> Latent -> Predictor -> Future Latent -> Planner -> Action.
+
+    Boxes are tagged with class="arch-box" and a `data-step` attribute so the
+    layout can fade them in sequentially. Arrows get class="arch-arrow".
+    """
     width, height = 980, 180
     nodes = [
         ("Observation", 60),
@@ -60,13 +70,14 @@ def render_architecture() -> str:
     ]
     box_w, box_h = 130, 60
 
-    parts = [_svg_open(width, height)]
+    parts = [_svg_open(width, height, ' class="figure figure-architecture"')]
     parts.append(f'<rect width="{width}" height="{height}" fill="{PALETTE["bg"]}"/>')
 
     cy = 90
-    for label, cx in nodes:
+    for i, (label, cx) in enumerate(nodes):
         x = cx - box_w // 2
         y = cy - box_h // 2
+        parts.append(f'<g class="arch-box" data-step="{i}">')
         parts.append(
             f'<rect x="{x}" y="{y}" width="{box_w}" height="{box_h}" rx="8" '
             f'fill="white" stroke="{PALETTE["accent"]}" stroke-width="1.5"/>'
@@ -79,8 +90,8 @@ def render_architecture() -> str:
                 f'text-anchor="middle">{line}</text>'
             )
             line_y += 14
+        parts.append('</g>')
 
-    # Connecting arrows.
     parts.append(
         f'<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" '
         f'markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
@@ -90,13 +101,14 @@ def render_architecture() -> str:
         x1 = nodes[i][1] + box_w // 2
         x2 = nodes[i + 1][1] - box_w // 2
         parts.append(
-            f'<line x1="{x1}" y1="{cy}" x2="{x2 - 2}" y2="{cy}" '
+            f'<line class="arch-arrow" data-step="{i}" '
+            f'x1="{x1}" y1="{cy}" x2="{x2 - 2}" y2="{cy}" '
             f'stroke="{PALETTE["muted"]}" stroke-width="1.8" marker-end="url(#arrow)"/>'
         )
 
-    # Action arrow on the right.
     parts.append(
-        f'<line x1="{nodes[-1][1] + box_w // 2}" y1="{cy}" x2="{width - 20}" y2="{cy}" '
+        f'<line class="arch-arrow" data-step="{len(nodes) - 1}" '
+        f'x1="{nodes[-1][1] + box_w // 2}" y1="{cy}" x2="{width - 20}" y2="{cy}" '
         f'stroke="{PALETTE["muted"]}" stroke-width="1.8" marker-end="url(#arrow)"/>'
     )
     parts.append(
@@ -104,7 +116,6 @@ def render_architecture() -> str:
         f'fill="{PALETTE["accent"]}" text-anchor="end">action</text>'
     )
 
-    # Caption.
     parts.append(
         f'<text x="{width // 2}" y="{height - 14}" font-size="12" fill="{PALETTE["muted"]}" '
         f'text-anchor="middle">The evaluation contract every adapter must implement.</text>'
@@ -115,7 +126,12 @@ def render_architecture() -> str:
 
 
 def render_horizon_sweep(report_path: Path) -> str:
-    """Dual-axis chart: success rate (left) and per-call latency (right) vs plan_horizon."""
+    """Interactive dual-axis chart: success rate (left) and per-call latency (right) vs plan_horizon.
+
+    Each horizon gets a `<g class="data-slice" data-...>` group containing the
+    two data circles plus a wide invisible `<rect class="hover-target">` so
+    the layout's JS can render a custom tooltip on hover.
+    """
     with report_path.open() as f:
         report = json.load(f)
 
@@ -127,6 +143,10 @@ def render_horizon_sweep(report_path: Path) -> str:
     latencies = [p["scorecard"]["average_planning_latency_ms"] for p in points]
     latency_lo = [p["latency_ci_ms"][0] for p in points]
     latency_hi = [p["latency_ci_ms"][1] for p in points]
+    computes = [
+        p["scorecard"].get("average_compute_per_decision") for p in points
+    ]
+    steps = [p["scorecard"].get("average_steps_to_success") for p in points]
 
     width, height = 720, 380
     pad_l, pad_r, pad_t, pad_b = 70, 70, 40, 60
@@ -146,17 +166,15 @@ def render_horizon_sweep(report_path: Path) -> str:
     def y2_of(latency: float) -> float:
         return pad_t + (1.0 - (latency - y2_min) / (y2_max - y2_min)) * plot_h
 
-    parts = [_svg_open(width, height)]
+    parts = [_svg_open(width, height, ' class="figure figure-sweep"')]
     parts.append(f'<rect width="{width}" height="{height}" fill="{PALETTE["bg"]}"/>')
 
-    # Title.
     parts.append(
         f'<text x="{width // 2}" y="22" font-size="15" font-weight="600" '
         f'fill="{PALETTE["ink"]}" text-anchor="middle">Planning-horizon sweep (maze toy, '
         f'tabular world model)</text>'
     )
 
-    # Grid lines / left axis ticks (0, 0.25, 0.5, 0.75, 1.0).
     for s in (0.0, 0.25, 0.5, 0.75, 1.0):
         y = y1_of(s)
         parts.append(
@@ -168,7 +186,6 @@ def render_horizon_sweep(report_path: Path) -> str:
             f'text-anchor="end">{s:.2f}</text>'
         )
 
-    # Right axis ticks (latency).
     for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
         latency = y2_min + frac * (y2_max - y2_min)
         y = y2_of(latency)
@@ -177,7 +194,6 @@ def render_horizon_sweep(report_path: Path) -> str:
             f'fill="{PALETTE["warn"]}" text-anchor="start">{latency:.2f}</text>'
         )
 
-    # X axis ticks.
     for h in horizons:
         x = x_of(h)
         parts.append(
@@ -189,7 +205,6 @@ def render_horizon_sweep(report_path: Path) -> str:
             f'fill="{PALETTE["muted"]}" text-anchor="middle">{h}</text>'
         )
 
-    # Axis labels.
     parts.append(
         f'<text x="{pad_l - 50}" y="{pad_t + plot_h // 2}" font-size="12" '
         f'fill="{PALETTE["accent"]}" transform="rotate(-90 {pad_l - 50},{pad_t + plot_h // 2})" '
@@ -210,45 +225,69 @@ def render_horizon_sweep(report_path: Path) -> str:
     band_pts_hi = [f"{x_of(h):.1f},{y1_of(s):.1f}" for h, s in reversed(list(zip(horizons, success_hi)))]
     band_pts = " ".join(band_pts_lo + band_pts_hi)
     parts.append(
-        f'<polygon points="{band_pts}" fill="{PALETTE["accent_light"]}" fill-opacity="0.25" stroke="none"/>'
+        f'<polygon class="success-band" points="{band_pts}" fill="{PALETTE["accent_light"]}" '
+        f'fill-opacity="0.25" stroke="none"/>'
     )
 
-    # Success rate line.
+    # Success rate line (drawable).
     success_line = " ".join(f"{x_of(h):.1f},{y1_of(s):.1f}" for h, s in zip(horizons, successes))
     parts.append(
-        f'<polyline points="{success_line}" fill="none" stroke="{PALETTE["accent"]}" stroke-width="2.5"/>'
+        f'<polyline class="series-line success-line" points="{success_line}" fill="none" '
+        f'stroke="{PALETTE["accent"]}" stroke-width="2.5"/>'
     )
-    for h, s in zip(horizons, successes):
-        parts.append(
-            f'<circle cx="{x_of(h):.1f}" cy="{y1_of(s):.1f}" r="4" fill="{PALETTE["accent"]}" stroke="white" stroke-width="1.5"/>'
-        )
 
     # Latency CI band.
     lat_band_lo = [f"{x_of(h):.1f},{y2_of(l):.1f}" for h, l in zip(horizons, latency_lo)]
     lat_band_hi = [f"{x_of(h):.1f},{y2_of(l):.1f}" for h, l in reversed(list(zip(horizons, latency_hi)))]
     lat_band = " ".join(lat_band_lo + lat_band_hi)
     parts.append(
-        f'<polygon points="{lat_band}" fill="{PALETTE["warn_light"]}" fill-opacity="0.25" stroke="none"/>'
+        f'<polygon class="latency-band" points="{lat_band}" fill="{PALETTE["warn_light"]}" '
+        f'fill-opacity="0.25" stroke="none"/>'
     )
 
-    # Latency line.
+    # Latency line (drawable).
     latency_line = " ".join(f"{x_of(h):.1f},{y2_of(l):.1f}" for h, l in zip(horizons, latencies))
     parts.append(
-        f'<polyline points="{latency_line}" fill="none" stroke="{PALETTE["warn"]}" '
-        f'stroke-width="2.5" stroke-dasharray="4,3"/>'
+        f'<polyline class="series-line latency-line" points="{latency_line}" fill="none" '
+        f'stroke="{PALETTE["warn"]}" stroke-width="2.5" stroke-dasharray="4,3"/>'
     )
-    for h, l in zip(horizons, latencies):
-        parts.append(
-            f'<circle cx="{x_of(h):.1f}" cy="{y2_of(l):.1f}" r="3.5" fill="{PALETTE["warn"]}" stroke="white" stroke-width="1.5"/>'
-        )
 
-    # Plot border.
+    # Per-horizon data slices: invisible hover target + the two data dots, all
+    # grouped so the layout's JS can find them by `data-h`.
+    half_x_step = plot_w / max(1, len(horizons) - 1) / 2
+    for h, s, lat, comp, st in zip(horizons, successes, latencies, computes, steps):
+        x = x_of(h)
+        sy = y1_of(s)
+        ly = y2_of(lat)
+        comp_str = "n/a" if comp is None else f"{comp:.1f}"
+        st_str = "n/a" if st is None else f"{st:.1f}"
+        parts.append(
+            f'<g class="data-slice" data-h="{h}" data-success="{s:.3f}" '
+            f'data-latency="{lat:.3f}" data-compute="{comp_str}" data-steps="{st_str}">'
+        )
+        parts.append(
+            f'<rect class="hover-target" x="{x - half_x_step:.1f}" y="{pad_t}" '
+            f'width="{2 * half_x_step:.1f}" height="{plot_h}" fill="transparent"/>'
+        )
+        parts.append(
+            f'<circle class="point success-point" cx="{x:.1f}" cy="{sy:.1f}" r="4" '
+            f'fill="{PALETTE["accent"]}" stroke="white" stroke-width="1.5"/>'
+        )
+        parts.append(
+            f'<circle class="point latency-point" cx="{x:.1f}" cy="{ly:.1f}" r="3.5" '
+            f'fill="{PALETTE["warn"]}" stroke="white" stroke-width="1.5"/>'
+        )
+        parts.append(
+            f'<title>plan_horizon = {h} | success = {s:.3f} | latency = {lat:.3f} ms/call | '
+            f'compute/decision = {comp_str}</title>'
+        )
+        parts.append('</g>')
+
     parts.append(
         f'<rect x="{pad_l}" y="{pad_t}" width="{plot_w}" height="{plot_h}" '
         f'fill="none" stroke="{PALETTE["muted"]}" stroke-width="1"/>'
     )
 
-    # Legend.
     leg_y = pad_t + 12
     parts.append(
         f'<line x1="{pad_l + 16}" y1="{leg_y}" x2="{pad_l + 48}" y2="{leg_y}" '
@@ -270,9 +309,7 @@ def render_horizon_sweep(report_path: Path) -> str:
 
 
 def render_maze() -> str:
-    """Default 7x7 maze layout with start, goal, walls, and the optimal path."""
-    # Layout is read top-down (highest y first), matching DEFAULT_LAYOUT in
-    # examples/maze_toy/environment.py.
+    """7x7 maze with start, goal, walls, and an animated agent walking the optimal path."""
     layout = [
         "#######",
         "#S#...#",
@@ -287,22 +324,18 @@ def render_maze() -> str:
     cell = 48
     margin = 20
     width = width_cells * cell + 2 * margin
-    height = height_cells * cell + 2 * margin + 36  # extra room for caption
+    height = height_cells * cell + 2 * margin + 36
 
-    parts = [_svg_open(width, height)]
+    parts = [_svg_open(width, height, ' class="figure figure-maze"')]
     parts.append(f'<rect width="{width}" height="{height}" fill="{PALETTE["bg"]}"/>')
 
     def cell_xy(col: int, row: int) -> tuple[int, int]:
         return margin + col * cell, margin + row * cell
 
-    # Draw cells.
     for row, line in enumerate(layout):
         for col, ch in enumerate(line):
             x, y = cell_xy(col, row)
-            if ch == "#":
-                fill = PALETTE["wall"]
-            else:
-                fill = PALETTE["free"]
+            fill = PALETTE["wall"] if ch == "#" else PALETTE["free"]
             parts.append(
                 f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" '
                 f'fill="{fill}" stroke="{PALETTE["stroke"]}" stroke-width="1"/>'
@@ -326,24 +359,10 @@ def render_maze() -> str:
                     f'text-anchor="middle">G</text>'
                 )
 
-    # Optimal path from (1,5) -> ... -> (5,1), tracing the corridor.
-    # Each tuple is (col, row_from_top), matching layout indexing.
     path_cells = [
-        (1, 1),  # S row from top
-        (1, 2),
-        (1, 3),
-        (1, 4),
-        (2, 4),
-        (3, 4),
-        (3, 3),
-        (3, 2),
-        (3, 1),
-        (4, 1),
-        (5, 1),
-        (5, 2),
-        (5, 3),
-        (5, 4),
-        (5, 5),  # G
+        (1, 1), (1, 2), (1, 3), (1, 4), (2, 4), (3, 4),
+        (3, 3), (3, 2), (3, 1), (4, 1), (5, 1),
+        (5, 2), (5, 3), (5, 4), (5, 5),
     ]
     centers = [
         (margin + c * cell + cell // 2, margin + r * cell + cell // 2)
@@ -351,12 +370,28 @@ def render_maze() -> str:
     ]
     path_d = "M " + " L ".join(f"{x},{y}" for x, y in centers)
     parts.append(
-        f'<path d="{path_d}" fill="none" stroke="{PALETTE["accent"]}" stroke-width="3" '
-        f'stroke-opacity="0.5" stroke-linecap="round" stroke-linejoin="round" '
-        f'stroke-dasharray="6,4"/>'
+        f'<path id="agent-path" d="{path_d}" fill="none" stroke="{PALETTE["accent"]}" '
+        f'stroke-width="3" stroke-opacity="0.45" stroke-linecap="round" '
+        f'stroke-linejoin="round" stroke-dasharray="6,4"/>'
     )
 
-    # Caption.
+    # The animated agent: an orange dot that loops along the optimal path.
+    # animateMotion is supported across modern browsers; no JS required.
+    parts.append(
+        f'<g class="maze-agent">'
+        f'<circle r="9" fill="{PALETTE["goal"]}" stroke="white" stroke-width="2">'
+        f'<animateMotion dur="5s" repeatCount="indefinite" rotate="auto">'
+        f'<mpath href="#agent-path" />'
+        f'</animateMotion>'
+        f'</circle>'
+        f'<circle r="3" fill="white">'
+        f'<animateMotion dur="5s" repeatCount="indefinite" rotate="auto">'
+        f'<mpath href="#agent-path" />'
+        f'</animateMotion>'
+        f'</circle>'
+        f'</g>'
+    )
+
     caption_y = height - 12
     parts.append(
         f'<text x="{width // 2}" y="{caption_y}" font-size="12" fill="{PALETTE["muted"]}" '
