@@ -98,3 +98,35 @@ def test_scorecard_reports_compute_per_decision_when_policy_provides_it() -> Non
 def test_scorecard_reports_none_compute_when_not_provided() -> None:
     sc = compute_scorecard(_two_synthetic_episodes(), policy_name="unit-policy")
     assert sc.average_compute_per_decision is None
+
+
+def test_scorecard_records_perturbation_name() -> None:
+    """Two scorecards with the same policy but different perturbations must
+    be distinguishable in their JSON and rendered output."""
+    sc_env = compute_scorecard(
+        _two_synthetic_episodes(),
+        policy_name="alpha",
+        perturbation_name="env-default",
+    )
+    sc_drop = compute_scorecard(
+        _two_synthetic_episodes(),
+        policy_name="alpha",
+        perturbation_name="drop-next-2",
+    )
+    assert sc_env.perturbation_name == "env-default"
+    assert sc_drop.perturbation_name == "drop-next-2"
+
+    md_env = to_markdown_scorecard(sc_env)
+    md_drop = to_markdown_scorecard(sc_drop)
+    assert "`env-default`" in md_env
+    assert "`drop-next-2`" in md_drop
+    assert md_env != md_drop
+
+
+def test_scorecard_omits_perturbation_when_not_set() -> None:
+    sc = compute_scorecard(_two_synthetic_episodes(), policy_name="alpha")
+    assert sc.perturbation_name is None
+    md = to_markdown_scorecard(sc)
+    # No "(perturbation: ...)" suffix on the heading.
+    first_line = md.splitlines()[0]
+    assert first_line == "### Scorecard: `alpha`"

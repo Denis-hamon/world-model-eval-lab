@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import random
 import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Callable
 
 from wmel.adapters.base import BenchmarkEnvironment, PlannerPolicy
 from wmel.metrics import EpisodeResult
+from wmel.perturbations import EnvPerturbation, Perturbation
 
 
 EnvFactory = Callable[[], BenchmarkEnvironment]
@@ -41,6 +43,11 @@ class BenchmarkRunner:
         and the episode is reported as `perturbed=False`. This keeps the
         `perturbation_recovery_rate` denominator honest at the cost of a
         smaller effective sample when policies are very fast.
+    perturbation
+        Optional `Perturbation` strategy. When `None`, defaults to
+        `EnvPerturbation()` (delegates to `env.perturb()` for backward
+        compatibility). Pass a custom subclass to inject action-level or
+        composite perturbations from `wmel.perturbations`.
     seed
         Seed for the runner's RNG (controls perturbation triggering, not the
         environment or the policy - those manage their own determinism).
@@ -51,10 +58,12 @@ class BenchmarkRunner:
     episodes: int = 50
     horizon: int = 50
     perturb_prob: float = 0.0
+    perturbation: Perturbation | None = None
     seed: int | None = None
 
     def run(self) -> list[EpisodeResult]:
         rng = random.Random(self.seed)
+        perturbation = self.perturbation if self.perturbation is not None else EnvPerturbation()
         results: list[EpisodeResult] = []
 
         for _ in range(self.episodes):
@@ -85,10 +94,16 @@ class BenchmarkRunner:
                 if not planned:
                     break
 
-                for action in planned:
-                    if steps_taken == perturb_at_step:
-                        env.perturb()
+                remaining: deque = deque(planned)
+                while remaining:
+                    if steps_taken == perturb_at_step and not perturb_applied:
+                        perturbation.apply_to_env(env)
+                        remaining = deque(perturbation.transform_actions(list(remaining)))
                         perturb_applied = True
+                        if not remaining:
+                            break
+
+                    action = remaining.popleft()
                     env.step(action)
                     steps_taken += 1
                     if env.is_success():

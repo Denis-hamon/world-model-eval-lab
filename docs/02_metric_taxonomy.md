@@ -68,7 +68,7 @@ The three metric dimensions - planning horizon, latency per call, and compute pe
 ## Notes
 
 - **Latency, compute, and horizon** form a single trade-off surface. A useful scorecard reports them together, not in isolation.
-- **Perturbation Recovery** requires a perturbation library. The toy environment in this repo implements a minimal version; production benchmarks should ship a richer one.
+- **Perturbation Recovery** requires a perturbation library. `wmel.perturbations` ships three composable types: `EnvPerturbation` (delegates to `env.perturb()`), `DropNextActions(k)` (action-level - simulates actuator drops by removing the next `k` queued actions), and `CompositePerturbation(*parts)` (chains the first two for combined failure modes). `BenchmarkRunner` takes a `perturbation` kwarg and records the chosen strategy on the `Scorecard`, so a policy benchmarked under different perturbations produces distinguishable scorecards.
 - **Surprise Detection** and **Latent Interpretability** are model-level diagnostics. They are part of the scorecard because they are precisely what a research-grade predictor is *supposed* to be good at - if it is not, that is itself a finding.
 - All metrics should be reported with seeds, sample sizes, and confidence intervals when feasible.
 

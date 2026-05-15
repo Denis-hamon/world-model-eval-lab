@@ -57,6 +57,8 @@ The plan assumes one contributor, part-time. Every week ends with a runnable art
 
 What remains for v0.5: a pluggable perturbation library (displacement, blocked-cell, delayed-action) and a small CLI front-end.
 
+**Status (v0.5)**: perturbation library shipped. `wmel.perturbations` defines a `Perturbation` ABC with two override hooks (`apply_to_env`, `transform_actions`) and three concrete subclasses: `EnvPerturbation` (delegates to `env.perturb()`, the runner's default), `DropNextActions(k)` (action-level drop), and `CompositePerturbation(*parts)` (composable). The runner's inner loop was refactored to a `deque`-based action queue so action-level perturbations are O(1). `Scorecard.perturbation_name` records the strategy. The CLI front-end remains for a later release.
+
 ---
 
 ## Week 4 - Public demo and product narrative

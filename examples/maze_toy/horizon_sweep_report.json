@@ -12,9 +12,10 @@
         "episodes": 30,
         "success_rate": 0.0,
         "average_steps_to_success": null,
-        "average_planning_latency_ms": 0.8754841708144796,
+        "average_planning_latency_ms": 0.8735415497737556,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 368.3333333333333,
+        "perturbation_name": null,
         "extras": {}
       },
       "success_ci": [
@@ -22,8 +23,8 @@
         0.113517091390478
       ],
       "latency_ci_ms": [
-        0.8656157140015472,
-        0.885352627627412
+        0.8648379010495115,
+        0.8822451984979998
       ]
     },
     {
@@ -33,9 +34,10 @@
         "episodes": 30,
         "success_rate": 0.9,
         "average_steps_to_success": 31.25925925925926,
-        "average_planning_latency_ms": 1.578063463157895,
+        "average_planning_latency_ms": 1.6064606315789476,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 350.55350553505536,
+        "perturbation_name": null,
         "extras": {}
       },
       "success_ci": [
@@ -43,8 +45,8 @@
         0.9654007400402839
       ],
       "latency_ci_ms": [
-        1.548911682745327,
-        1.6072152435704627
+        1.5580207798832808,
+        1.6549004832746144
       ]
     },
     {
@@ -54,9 +56,10 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 30.5,
-        "average_planning_latency_ms": 2.3475777647058824,
+        "average_planning_latency_ms": 2.374028764705882,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 278.6885245901639,
+        "perturbation_name": null,
         "extras": {}
       },
       "success_ci": [
@@ -64,8 +67,8 @@
         1.0
       ],
       "latency_ci_ms": [
-        2.338787374567111,
-        2.356368154844654
+        2.335976890628592,
+        2.4120806387831726
       ]
     },
     {
@@ -75,9 +78,10 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 33.8,
-        "average_planning_latency_ms": 3.095516046153846,
+        "average_planning_latency_ms": 3.0854618307692308,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 256.4102564102564,
+        "perturbation_name": null,
         "extras": {}
       },
       "success_ci": [
@@ -85,8 +89,8 @@
         1.0
       ],
       "latency_ci_ms": [
-        3.0690478449654974,
-        3.1219842473421946
+        3.074876917089093,
+        3.0960467444493687
       ]
     },
     {
@@ -96,9 +100,10 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 41.8,
-        "average_planning_latency_ms": 4.6135934655172415,
+        "average_planning_latency_ms": 4.593115413793103,
         "perturbation_recovery_rate": null,
         "average_compute_per_decision": 277.511961722488,
+        "perturbation_name": null,
         "extras": {}
       },
       "success_ci": [
@@ -106,8 +111,8 @@
         1.0
       ],
       "latency_ci_ms": [
-        4.550094529794972,
-        4.677092401239511
+        4.554134403896312,
+        4.632096423689894
       ]
     }
   ]

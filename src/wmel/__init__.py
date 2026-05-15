@@ -14,6 +14,12 @@ from wmel.experiments import (
     to_markdown_horizon_sweep,
     wilson_interval,
 )
+from wmel.perturbations import (
+    CompositePerturbation,
+    DropNextActions,
+    EnvPerturbation,
+    Perturbation,
+)
 from wmel.report import (
     print_scorecard,
     to_json_report,
@@ -30,14 +36,18 @@ from wmel.metrics import (
     perturbation_recovery_rate,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "BenchmarkEnvironment",
     "BenchmarkRunner",
+    "CompositePerturbation",
+    "DropNextActions",
+    "EnvPerturbation",
     "EpisodeResult",
     "HorizonSweep",
     "HorizonSweepPoint",
+    "Perturbation",
     "PlannerPolicy",
     "Scorecard",
     "action_success_rate",

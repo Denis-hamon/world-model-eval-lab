@@ -16,7 +16,10 @@ def _fmt(value: float | None, suffix: str = "") -> str:
 
 def print_scorecard(scorecard: Scorecard) -> None:
     """Print a human-readable scorecard to stdout."""
-    print(f"Scorecard: {scorecard.policy_name}")
+    header = f"Scorecard: {scorecard.policy_name}"
+    if scorecard.perturbation_name:
+        header += f"  (perturbation: {scorecard.perturbation_name})"
+    print(header)
     print("-" * 48)
     print(f"  episodes                       : {scorecard.episodes}")
     print(f"  action success rate            : {_fmt(scorecard.success_rate)}")
@@ -48,8 +51,11 @@ def _md_value(value: float | None, decimals: int = 3) -> str:
 
 def to_markdown_scorecard(scorecard: Scorecard) -> str:
     """Render a `Scorecard` as a Markdown table, paste-ready for a PR or doc."""
+    heading = f"### Scorecard: `{scorecard.policy_name}`"
+    if scorecard.perturbation_name:
+        heading += f" (perturbation: `{scorecard.perturbation_name}`)"
     lines = [
-        f"### Scorecard: `{scorecard.policy_name}`",
+        heading,
         "",
         "| Metric | Value |",
         "| --- | --- |",

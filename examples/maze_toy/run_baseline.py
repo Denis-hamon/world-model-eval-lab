@@ -81,12 +81,17 @@ def main() -> None:
         seed=SEED,
     ).run()
 
-    random_card = compute_scorecard(random_results, policy_name="random")
-    greedy_card = compute_scorecard(greedy_results, policy_name="greedy-no-waypoint")
+    random_card = compute_scorecard(
+        random_results, policy_name="random", perturbation_name="env-default"
+    )
+    greedy_card = compute_scorecard(
+        greedy_results, policy_name="greedy-no-waypoint", perturbation_name="env-default"
+    )
     wm_card = compute_scorecard(
         wm_results,
         policy_name="tabular-world-model",
         compute_per_plan_call=wm_planner.compute_per_plan_call,
+        perturbation_name="env-default",
     )
 
     print_scorecard(random_card)

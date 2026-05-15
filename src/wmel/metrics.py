@@ -60,6 +60,7 @@ class Scorecard:
     average_planning_latency_ms: float
     perturbation_recovery_rate: float | None
     average_compute_per_decision: float | None = None
+    perturbation_name: str | None = None
     extras: dict[str, float] = field(default_factory=dict)
 
 
@@ -131,12 +132,18 @@ def compute_scorecard(
     policy_name: str,
     extras: Iterable[tuple[str, float]] | None = None,
     compute_per_plan_call: float | None = None,
+    perturbation_name: str | None = None,
 ) -> Scorecard:
     """Aggregate a list of `EpisodeResult` into a `Scorecard`.
 
     Pass `compute_per_plan_call` (typically `policy.compute_per_plan_call`)
     to populate the `average_compute_per_decision` field. When None, the
     scorecard reports `None` for that field.
+
+    Pass `perturbation_name` (typically `runner.perturbation.name`) to record
+    which perturbation strategy was used. Two scorecards with the same policy
+    but different perturbations should be distinguishable in their JSON and
+    rendered output.
     """
     return Scorecard(
         policy_name=policy_name,
@@ -146,5 +153,6 @@ def compute_scorecard(
         average_planning_latency_ms=average_planning_latency_ms(results),
         perturbation_recovery_rate=perturbation_recovery_rate(results),
         average_compute_per_decision=_average_compute_per_decision(results, compute_per_plan_call),
+        perturbation_name=perturbation_name,
         extras=dict(extras) if extras else {},
     )

@@ -59,8 +59,12 @@ def main() -> None:
         seed=SEED,
     ).run()
 
-    random_card = compute_scorecard(random_results, policy_name="random")
-    greedy_card = compute_scorecard(greedy_results, policy_name="greedy")
+    random_card = compute_scorecard(
+        random_results, policy_name="random", perturbation_name="env-default"
+    )
+    greedy_card = compute_scorecard(
+        greedy_results, policy_name="greedy", perturbation_name="env-default"
+    )
 
     print_scorecard(random_card)
     print_scorecard(greedy_card)

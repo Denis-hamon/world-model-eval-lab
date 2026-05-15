@@ -44,6 +44,22 @@ If the test suite is green and the maze sweep prints a scorecard, you are set up
 4. Whitelist the new sample report in `.gitignore` if you want it tracked.
 5. Add tests in `tests/test_<env_name>.py`. At minimum: reset works, success is reachable, the non-trivial baseline beats random under a fixed seed.
 
+## Adding a perturbation
+
+`wmel.perturbations.Perturbation` has two override hooks:
+
+- `apply_to_env(env) -> None` — mutate environment state at the trigger moment. Default: no-op.
+- `transform_actions(remaining_actions) -> list[Action]` — return a possibly-transformed copy of the action queue. Default: pass-through copy.
+
+A new perturbation subclasses `Perturbation`, sets `name`, and overrides whichever hook is relevant. State-level perturbations override `apply_to_env`; action-level perturbations (actuator drops, delays, replacements) override `transform_actions`; combined failure modes can either be a custom class or a `CompositePerturbation` of existing parts.
+
+Checklist:
+
+1. Subclass `wmel.perturbations.Perturbation`. Set `name` and override at least one hook.
+2. If your perturbation has parameters (e.g., `DropNextActions(k=...)`), validate them in `__init__` and raise `ValueError` on nonsense.
+3. Add unit tests in `tests/test_perturbations.py` covering: the hook(s) you override, the unchanged hook, parameter validation, and (if action-level) the "drop more than what's there" edge case.
+4. If your perturbation needs env-specific support (e.g., blocked-cell needs an env method), document the contract clearly. Do not silently no-op when the env lacks the method - raise or fall back explicitly.
+
 ## Adding an adapter (planner policy)
 
 1. Subclass `wmel.adapters.base.PlannerPolicy`. Implement `plan(observation, goal, horizon)` and `name`.
