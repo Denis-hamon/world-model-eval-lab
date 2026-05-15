@@ -18,6 +18,7 @@ Outputs:
 - docs/assets/architecture.svg       evaluation contract flow (animatable)
 - docs/assets/horizon_sweep.svg      success rate + latency vs plan horizon (interactive)
 - docs/assets/maze.svg               7x7 maze with an animated agent
+- docs/assets/policy_comparison.svg  three-up: random, greedy, world model
 - docs/assets/favicon.svg            small square favicon for the Pages site
 """
 
@@ -402,6 +403,163 @@ def render_maze() -> str:
     return "\n".join(parts)
 
 
+def render_policy_comparison() -> str:
+    """Three side-by-side mini-mazes, one per policy that ran on the maze toy.
+
+    Each panel embeds the same 7x7 layout with a different agent animation:
+    - random:  jitters near the start, never reaching the goal.
+    - greedy (no waypoint):  bumps the wall, gets stuck.
+    - tabular world model:  walks the optimal path to the goal.
+
+    The numbers shown under each panel come from `examples/maze_toy/sample_report.json`
+    and must be kept in sync when the report is regenerated.
+    """
+    layout = [
+        "#######",
+        "#S#...#",
+        "#.#.#.#",
+        "#.#.#.#",
+        "#...#.#",
+        "#.###G#",
+        "#######",
+    ]
+    cell = 22
+    margin = 10
+    panel_w = len(layout[0]) * cell + 2 * margin
+    panel_inner_h = len(layout) * cell + 2 * margin
+    label_h = 28
+    verdict_h = 60
+    panel_h = label_h + panel_inner_h + verdict_h
+
+    gap = 26
+    width = panel_w * 3 + gap * 2 + 2 * margin
+    height = panel_h + 2 * margin
+
+    panels = [
+        {
+            "key": "random",
+            "label": "Random policy",
+            "verdict": "Never reaches the goal.",
+            "metrics": "success 0% / 0.03 ms / call",
+            "color": "#b34a00",
+            "agent_color": "#b34a00",
+            "path_cells": [(1, 1), (1, 2), (2, 2), (1, 2), (1, 1), (2, 1)],
+            "path_dur": "2.6s",
+            "stuck": False,
+        },
+        {
+            "key": "greedy",
+            "label": "Greedy (no waypoint)",
+            "verdict": "Bumps the wall, gets stuck.",
+            "metrics": "success 0% / 0.001 ms / call",
+            "color": "#52606d",
+            "agent_color": "#52606d",
+            "path_cells": [(1, 1), (1, 1)],
+            "path_dur": "1.2s",
+            "stuck": True,
+        },
+        {
+            "key": "wm",
+            "label": "Tabular world model",
+            "verdict": "Reaches the goal in ~34 steps.",
+            "metrics": "success 100% / 3.12 ms / call / ~256 rollout-units per decision",
+            "color": "#0f5fbf",
+            "agent_color": "#0f5fbf",
+            "path_cells": [
+                (1, 1), (1, 2), (1, 3), (1, 4), (2, 4), (3, 4),
+                (3, 3), (3, 2), (3, 1), (4, 1), (5, 1),
+                (5, 2), (5, 3), (5, 4), (5, 5),
+            ],
+            "path_dur": "4.5s",
+            "stuck": False,
+        },
+    ]
+
+    parts = [_svg_open(width, height, ' class="figure figure-comparison"')]
+    parts.append(f'<rect width="{width}" height="{height}" fill="{PALETTE["bg"]}"/>')
+
+    for idx, p in enumerate(panels):
+        x0 = margin + idx * (panel_w + gap)
+        y0 = margin
+
+        parts.append(
+            f'<text x="{x0 + panel_w // 2}" y="{y0 + 18}" font-size="13" font-weight="600" '
+            f'fill="{p["color"]}" text-anchor="middle">{p["label"]}</text>'
+        )
+
+        maze_y0 = y0 + label_h
+        for row, line in enumerate(layout):
+            for col, ch in enumerate(line):
+                cx = x0 + margin + col * cell
+                cy = maze_y0 + margin + row * cell
+                fill = PALETTE["wall"] if ch == "#" else PALETTE["free"]
+                parts.append(
+                    f'<rect x="{cx}" y="{cy}" width="{cell}" height="{cell}" '
+                    f'fill="{fill}" stroke="{PALETTE["stroke"]}" stroke-width="0.6"/>'
+                )
+                if ch == "S":
+                    parts.append(
+                        f'<circle cx="{cx + cell // 2}" cy="{cy + cell // 2}" r="{cell // 3}" '
+                        f'fill="{PALETTE["start"]}"/>'
+                    )
+                elif ch == "G":
+                    parts.append(
+                        f'<circle cx="{cx + cell // 2}" cy="{cy + cell // 2}" r="{cell // 3}" '
+                        f'fill="{PALETTE["goal"]}"/>'
+                    )
+
+        path_d_centres = [
+            (x0 + margin + c * cell + cell // 2, maze_y0 + margin + r * cell + cell // 2)
+            for c, r in p["path_cells"]
+        ]
+
+        agent_id = f"agent-path-{p['key']}"
+        if p["stuck"]:
+            # No visible track for greedy. The agent dot shakes horizontally in place
+            # via an <animate> on cx instead of animateMotion.
+            cx0, cy0 = path_d_centres[0]
+            parts.append(
+                f'<g class="agent-dot agent-stuck">'
+                f'<circle cx="{cx0}" cy="{cy0}" r="{cell // 3}" fill="{p["agent_color"]}" '
+                f'stroke="white" stroke-width="2">'
+                f'<animate attributeName="cx" '
+                f'values="{cx0};{cx0 + 4};{cx0};{cx0 + 4};{cx0}" '
+                f'dur="{p["path_dur"]}" repeatCount="indefinite"/>'
+                f'</circle>'
+                f'</g>'
+            )
+        else:
+            path_d = "M " + " L ".join(f"{cx},{cy}" for cx, cy in path_d_centres)
+            parts.append(
+                f'<path id="{agent_id}" d="{path_d}" fill="none" stroke="{p["color"]}" '
+                f'stroke-width="2" stroke-opacity="0.35" stroke-linecap="round" '
+                f'stroke-linejoin="round" stroke-dasharray="3,3"/>'
+            )
+            parts.append(
+                f'<g class="agent-dot">'
+                f'<circle r="{cell // 3}" fill="{p["agent_color"]}" stroke="white" stroke-width="2">'
+                f'<animateMotion dur="{p["path_dur"]}" repeatCount="indefinite">'
+                f'<mpath href="#{agent_id}" />'
+                f'</animateMotion>'
+                f'</circle>'
+                f'</g>'
+            )
+
+        verdict_y = maze_y0 + panel_inner_h + 16
+        parts.append(
+            f'<text x="{x0 + panel_w // 2}" y="{verdict_y}" font-size="12" font-weight="500" '
+            f'fill="{PALETTE["ink"]}" text-anchor="middle">{p["verdict"]}</text>'
+        )
+        parts.append(
+            f'<text x="{x0 + panel_w // 2}" y="{verdict_y + 18}" font-size="11" '
+            f'fill="{PALETTE["muted"]}" text-anchor="middle" font-family="ui-monospace, '
+            f'SFMono-Regular, Menlo, monospace">{p["metrics"]}</text>'
+        )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def render_favicon() -> str:
     """A 32x32 square favicon: blue rounded square with 'wm' lettering."""
     parts = [
@@ -433,6 +591,9 @@ def main() -> None:
 
     (ASSETS / "maze.svg").write_text(render_maze() + "\n")
     print(f"wrote {ASSETS / 'maze.svg'}")
+
+    (ASSETS / "policy_comparison.svg").write_text(render_policy_comparison() + "\n")
+    print(f"wrote {ASSETS / 'policy_comparison.svg'}")
 
     (ASSETS / "favicon.svg").write_text(render_favicon() + "\n")
     print(f"wrote {ASSETS / 'favicon.svg'}")

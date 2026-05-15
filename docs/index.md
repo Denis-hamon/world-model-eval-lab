@@ -38,6 +38,94 @@ next:
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
+## Three policies on the maze, side by side
+{:.reveal}
+
+Same environment, same 30 episodes, same seed - three different planners. Numbers below are pulled verbatim from `examples/maze_toy/sample_report.json`, regenerated every time `python -m examples.maze_toy.run_baseline` is run.
+{:.reveal}
+
+<section class="policy-comparison reveal">
+  <article class="policy-card policy-fail">
+    <header>
+      <h3>Random</h3>
+      <p class="policy-tagline">Samples actions uniformly at random.</p>
+    </header>
+    <div class="big-number">0%</div>
+    <p class="big-label">success rate over 30 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>0.03 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>n/a</dd></div>
+      <div><dt>verdict</dt><dd>never reaches the goal.</dd></div>
+    </dl>
+  </article>
+
+  <article class="policy-card policy-fail">
+    <header>
+      <h3>Greedy (no waypoint)</h3>
+      <p class="policy-tagline">Always step toward the goal in Manhattan distance.</p>
+    </header>
+    <div class="big-number">0%</div>
+    <p class="big-label">success rate over 30 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>0.001 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>n/a</dd></div>
+      <div><dt>verdict</dt><dd>bumps the wall, plan diverges from env, stuck.</dd></div>
+    </dl>
+  </article>
+
+  <article class="policy-card policy-success">
+    <header>
+      <h3>Tabular world model</h3>
+      <p class="policy-tagline">Random-shooting MPC over a learned-style dynamics function.</p>
+    </header>
+    <div class="big-number">100%</div>
+    <p class="big-label">success rate over 30 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>3.12 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>~256 rollout-units</dd></div>
+      <div><dt>verdict</dt><dd>reaches the goal in ~34 steps (optimal is 14).</dd></div>
+    </dl>
+  </article>
+</section>
+
+<figure class="figure-wide reveal">
+  <img src="assets/policy_comparison.svg" alt="Three side-by-side mini-mazes. The random agent jitters near the start, the greedy agent shakes against the wall, the world-model agent walks the optimal path to the goal." />
+  <figcaption>The three agents, each animated in its own panel. Open in a new tab for a closer look.</figcaption>
+</figure>
+
+The captured terminal output of the run that produced those numbers:
+{:.reveal}
+
+```text
+$ python -m examples.maze_toy.run_baseline
+Scorecard: random  (perturbation: env-default)
+  episodes                       : 30
+  action success rate            : 0.000
+  average steps to success       : n/a
+  planning latency per call (ms) : 0.026
+  perturbation recovery rate     : 0.000
+  average compute per decision   : n/a
+
+Scorecard: greedy-no-waypoint  (perturbation: env-default)
+  episodes                       : 30
+  action success rate            : 0.000
+  average steps to success       : n/a
+  planning latency per call (ms) : 0.002
+  perturbation recovery rate     : 0.000
+  average compute per decision   : n/a
+
+Scorecard: tabular-world-model  (perturbation: env-default)
+  episodes                       : 30
+  action success rate            : 1.000
+  average steps to success       : 33.800
+  planning latency per call (ms) : 3.120
+  perturbation recovery rate     : 1.000
+  average compute per decision   : 256.410
+
+Wrote sample report to examples/maze_toy/sample_report.json
+```
+{:.reveal}
+
 ## The evaluation contract any world model can plug into
 
 ![architecture](assets/architecture.svg){:.figure-architecture-img}
