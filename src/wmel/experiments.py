@@ -142,21 +142,31 @@ def _summarize(
 
 
 def to_markdown_horizon_sweep(sweep: HorizonSweep) -> str:
-    """Render a `HorizonSweep` as a Markdown table, paste-ready for a doc."""
+    """Render a `HorizonSweep` as a Markdown table, paste-ready for a doc.
+
+    Includes a `compute_per_decision` column so the latency / horizon / compute
+    trade-off surface that the metric taxonomy promises is reported together.
+    """
     lines = [
         f"### Horizon sweep: `{sweep.policy_name}`",
         "",
-        "| plan_horizon | success_rate | success_95ci | avg_steps | latency_ms_per_call | latency_95ci |",
-        "| ---: | ---: | :--- | ---: | ---: | :--- |",
+        "| plan_horizon | success_rate | success_95ci | avg_steps | latency_ms_per_call | latency_95ci | compute_per_decision |",
+        "| ---: | ---: | :--- | ---: | ---: | :--- | ---: |",
     ]
     for point in sweep.points:
         sc = point.scorecard
         steps = "n/a" if sc.average_steps_to_success is None else f"{sc.average_steps_to_success:.1f}"
+        compute = (
+            "n/a"
+            if sc.average_compute_per_decision is None
+            else f"{sc.average_compute_per_decision:.3f}"
+        )
         lines.append(
             f"| {point.plan_horizon} | {sc.success_rate:.3f} | "
             f"[{point.success_ci_low:.2f}, {point.success_ci_high:.2f}] | "
             f"{steps} | {sc.average_planning_latency_ms:.3f} | "
-            f"[{point.latency_ci_low:.2f}, {point.latency_ci_high:.2f}] |"
+            f"[{point.latency_ci_low:.2f}, {point.latency_ci_high:.2f}] | "
+            f"{compute} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -167,19 +177,26 @@ def print_horizon_sweep(sweep: HorizonSweep) -> None:
     header = (
         f"  {'plan_h':>6} | "
         f"{'success':>9} | {'95% CI':>15} | "
-        f"{'steps':>7} | {'latency_ms':>10} | {'95% CI (ms)':>17}"
+        f"{'steps':>7} | {'latency_ms':>10} | {'95% CI (ms)':>17} | "
+        f"{'compute/dec':>11}"
     )
     print(header)
     print("  " + "-" * (len(header) - 2))
     for point in sweep.points:
         sc = point.scorecard
         steps = "n/a" if sc.average_steps_to_success is None else f"{sc.average_steps_to_success:.1f}"
+        compute = (
+            "n/a"
+            if sc.average_compute_per_decision is None
+            else f"{sc.average_compute_per_decision:.1f}"
+        )
         print(
             f"  {point.plan_horizon:>6} | "
             f"{sc.success_rate:>9.3f} | "
             f"[{point.success_ci_low:.2f}, {point.success_ci_high:.2f}]   | "
             f"{steps:>7} | "
             f"{sc.average_planning_latency_ms:>10.3f} | "
-            f"[{point.latency_ci_low:.2f}, {point.latency_ci_high:.2f}]"
+            f"[{point.latency_ci_low:.2f}, {point.latency_ci_high:.2f}] | "
+            f"{compute:>11}"
         )
     print()

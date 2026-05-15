@@ -47,19 +47,21 @@ python -m examples.maze_toy.run_horizon_sweep
 
 ### Paste-ready Markdown
 
-`wmel.experiments.to_markdown_horizon_sweep(sweep)` returns the same data as a Markdown table that drops directly into a PR description or a doc:
+`wmel.experiments.to_markdown_horizon_sweep(sweep)` returns the same data as a Markdown table - including the compute-per-decision column - that drops directly into a PR description or a doc:
 
 ```markdown
 ### Horizon sweep: `tabular-world-model`
 
-| plan_horizon | success_rate | success_95ci | avg_steps | latency_ms_per_call | latency_95ci |
-| ---: | ---: | :--- | ---: | ---: | :--- |
-| 5 | 0.000 | [0.00, 0.11] | n/a | 0.882 | [0.87, 0.89] |
-| 10 | 0.900 | [0.74, 0.97] | 31.3 | 1.588 | [1.56, 1.62] |
-| 15 | 1.000 | [0.89, 1.00] | 30.5 | 2.393 | [2.34, 2.44] |
-| 20 | 1.000 | [0.89, 1.00] | 33.8 | 3.085 | [3.08, 3.09] |
-| 30 | 1.000 | [0.89, 1.00] | 41.8 | 4.579 | [4.55, 4.60] |
+| plan_horizon | success_rate | success_95ci | avg_steps | latency_ms_per_call | latency_95ci | compute_per_decision |
+| ---: | ---: | :--- | ---: | ---: | :--- | ---: |
+| 5 | 0.000 | [0.00, 0.11] | n/a | 0.875 | [0.87, 0.89] | 368.250 |
+| 10 | 0.900 | [0.74, 0.97] | 31.3 | 1.578 | [1.55, 1.61] | 350.575 |
+| 15 | 1.000 | [0.89, 1.00] | 30.5 | 2.348 | [2.34, 2.36] | 278.689 |
+| 20 | 1.000 | [0.89, 1.00] | 33.8 | 3.096 | [3.07, 3.12] | 256.410 |
+| 30 | 1.000 | [0.89, 1.00] | 41.8 | 4.614 | [4.55, 4.68] | 277.512 |
 ```
+
+The three metric dimensions - planning horizon, latency per call, and compute per decision - now appear together on one row, which is the trade-off surface this taxonomy advocates.
 
 `wmel.report.to_markdown_scorecard(scorecard)` does the same for a single scorecard.
 

@@ -108,10 +108,10 @@ def _average_compute_per_decision(
 ) -> float | None:
     """Derive average compute per executed action.
 
-    If the policy reports `compute_per_plan_call`, multiply by the total
-    number of plan() calls across all episodes and divide by the total number
-    of executed actions. Falls back to averaging any per-episode values
-    populated directly on `EpisodeResult.compute_per_decision`.
+    Precedence: when `compute_per_plan_call` is not None (including 0.0), the
+    derivation `(compute_per_plan_call * total_plan_calls) / total_steps` wins
+    and any per-episode `EpisodeResult.compute_per_decision` values are
+    ignored. Pass `None` explicitly to fall back to per-episode telemetry.
     """
     if compute_per_plan_call is not None:
         total_plan_calls = sum(r.plan_calls for r in results)
