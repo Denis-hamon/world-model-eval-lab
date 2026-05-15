@@ -1,5 +1,9 @@
 # World Model Evaluation Lab
 
+[![tests](https://github.com/Denis-hamon/world-model-eval-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/Denis-hamon/world-model-eval-lab/actions/workflows/tests.yml)
+[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 > A product-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
 
 ## Thesis
@@ -120,7 +124,9 @@ world-model-eval-lab/
 ├── tests/
 ├── pyproject.toml
 ├── LICENSE
-└── .gitignore
+├── .gitignore
+├── CONTRIBUTING.md
+└── .github/workflows/tests.yml
 ```
 
 ## Roadmap
@@ -135,6 +141,10 @@ world-model-eval-lab/
 ## Disclaimer
 
 This is an independent research-to-product exploration. It is **not** an official artifact of AMI, Meta, the LeWorldModel project, or any of their authors. Any references to JEPA-style or LeWorldModel concepts are conceptual, not affiliational.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, code style, and the workflow for adding a metric, benchmark card, or adapter.
 
 ## License
 
