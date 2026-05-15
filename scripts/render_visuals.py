@@ -654,7 +654,7 @@ def render_policy_comparison() -> str:
     panel_w = len(layout[0]) * cell + 2 * margin
     panel_inner_h = len(layout) * cell + 2 * margin
     label_h = 28
-    verdict_h = 60
+    verdict_h = 78
     panel_h = label_h + panel_inner_h + verdict_h
 
     gap = 26
@@ -665,8 +665,9 @@ def render_policy_comparison() -> str:
         {
             "key": "random",
             "label": "Random policy",
-            "verdict": "Never reaches the goal.",
-            "metrics": "success 0% / 0.03 ms / call",
+            "verdict": "Wanders near the start.",
+            "subverdict": "Goal stays out of reach.",
+            "metrics": "success 0%   |   0.03 ms / call",
             "color": "#b34a00",
             "agent_color": "#b34a00",
             "path_cells": [(1, 1), (1, 2), (2, 2), (1, 2), (1, 1), (2, 1)],
@@ -676,8 +677,9 @@ def render_policy_comparison() -> str:
         {
             "key": "greedy",
             "label": "Greedy (no waypoint)",
-            "verdict": "Bumps the wall, gets stuck.",
-            "metrics": "success 0% / 0.001 ms / call",
+            "verdict": "Walks into the wall.",
+            "subverdict": "Plan diverges from env, stuck.",
+            "metrics": "success 0%   |   0.001 ms / call",
             "color": "#52606d",
             "agent_color": "#52606d",
             "path_cells": [(1, 1), (1, 1)],
@@ -687,8 +689,9 @@ def render_policy_comparison() -> str:
         {
             "key": "wm",
             "label": "Tabular world model",
-            "verdict": "Reaches the goal in ~34 steps.",
-            "metrics": "success 100% / 3.12 ms / call / ~256 rollout-units per decision",
+            "verdict": "Finds the corridor.",
+            "subverdict": "Reaches the goal in ~34 steps.",
+            "metrics": "success 100%   |   3.12 ms / call",
             "color": "#0f5fbf",
             "agent_color": "#0f5fbf",
             "path_cells": [
@@ -772,12 +775,19 @@ def render_policy_comparison() -> str:
             )
 
         verdict_y = maze_y0 + panel_inner_h + 16
+        # Three text lines: bold verdict (active voice), muted subverdict
+        # (consequence), monospace metrics. The parallel structure across the
+        # three panels makes the comparison readable left-to-right.
         parts.append(
-            f'<text x="{x0 + panel_w // 2}" y="{verdict_y}" font-size="12" font-weight="500" '
+            f'<text x="{x0 + panel_w // 2}" y="{verdict_y}" font-size="12" font-weight="600" '
             f'fill="{PALETTE["ink"]}" text-anchor="middle">{p["verdict"]}</text>'
         )
         parts.append(
-            f'<text x="{x0 + panel_w // 2}" y="{verdict_y + 18}" font-size="11" '
+            f'<text x="{x0 + panel_w // 2}" y="{verdict_y + 16}" font-size="11" font-weight="400" '
+            f'fill="{PALETTE["muted"]}" text-anchor="middle">{p["subverdict"]}</text>'
+        )
+        parts.append(
+            f'<text x="{x0 + panel_w // 2}" y="{verdict_y + 38}" font-size="11" '
             f'fill="{PALETTE["muted"]}" text-anchor="middle" font-family="ui-monospace, '
             f'SFMono-Regular, Menlo, monospace">{p["metrics"]}</text>'
         )

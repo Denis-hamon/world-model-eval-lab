@@ -27,8 +27,8 @@ next:
 </section>
 
 <ul class="stat-strip">
-  <li><span class="stat-value">5</span><span class="stat-label">tagged releases</span></li>
-  <li><span class="stat-value">59</span><span class="stat-label">passing tests</span></li>
+  <li><span class="stat-value">4</span><span class="stat-label">tagged releases</span></li>
+  <li><span class="stat-value">64</span><span class="stat-label">passing tests</span></li>
   <li><span class="stat-value">CPU-only</span><span class="stat-label">no GPU required</span></li>
   <li><span class="stat-value">25 s</span><span class="stat-label">to reproduce the headline sweep</span></li>
   <li><span class="stat-value">0</span><span class="stat-label">ML dependencies at runtime</span></li>
@@ -55,7 +55,7 @@ Same environment, same 30 episodes, same seed - three different planners. Number
     <dl class="card-stats">
       <div><dt>latency / call</dt><dd>0.03 ms</dd></div>
       <div><dt>compute / decision</dt><dd>n/a</dd></div>
-      <div><dt>verdict</dt><dd>never reaches the goal.</dd></div>
+      <div><dt>verdict</dt><dd>Wanders near the start. Goal stays out of reach.</dd></div>
     </dl>
   </article>
 
@@ -69,7 +69,7 @@ Same environment, same 30 episodes, same seed - three different planners. Number
     <dl class="card-stats">
       <div><dt>latency / call</dt><dd>0.001 ms</dd></div>
       <div><dt>compute / decision</dt><dd>n/a</dd></div>
-      <div><dt>verdict</dt><dd>bumps the wall, plan diverges from env, stuck.</dd></div>
+      <div><dt>verdict</dt><dd>Walks into the wall. Plan diverges from env, stuck.</dd></div>
     </dl>
   </article>
 
@@ -83,14 +83,14 @@ Same environment, same 30 episodes, same seed - three different planners. Number
     <dl class="card-stats">
       <div><dt>latency / call</dt><dd>3.12 ms</dd></div>
       <div><dt>compute / decision</dt><dd>~256 rollout-units</dd></div>
-      <div><dt>verdict</dt><dd>reaches the goal in ~34 steps (optimal is 14).</dd></div>
+      <div><dt>verdict</dt><dd>Finds the corridor. Goal in ~34 steps (optimal is 14).</dd></div>
     </dl>
   </article>
 </section>
 
 <figure class="figure-wide reveal">
-  <img src="assets/policy_comparison.svg" alt="Three side-by-side mini-mazes. The random agent jitters near the start, the greedy agent shakes against the wall, the world-model agent walks the optimal path to the goal." />
-  <figcaption>The three agents, each animated in its own panel. Open in a new tab for a closer look.</figcaption>
+  <img src="assets/policy_comparison.svg" alt="Three side-by-side mini-mazes. The random agent wanders near the start; the greedy agent walks into the wall and stays stuck; the world-model agent finds the corridor and walks the optimal path to the goal." />
+  <figcaption>Three agents, three outcomes, one shared evaluation contract. Each panel animates the agent of its policy in the same maze.</figcaption>
 </figure>
 
 The captured terminal output of the run that produced those numbers:
