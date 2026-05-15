@@ -12,18 +12,149 @@ This is the first pass of a decision-grade metric set for action-conditioned wor
 
 ## Summary table
 
-Hover any metric name for a one-line reading; click to jump to the full definition and formula at the [bottom of the page](#definitions-and-formulas).
+Hover (or focus) any metric name to see its formula in a popover. The popover is the canonical definition; this page does not duplicate the formulas anywhere else.
 
-| Metric | Definition | Why it matters | Example measurement |
-| --- | --- | --- | --- |
-| [Action Success Rate](#m-success-rate "Fraction of episodes that reached the goal."){:.metric-link} | Fraction of episodes in which the agent reaches the goal within the horizon. | The headline number. If this is near zero, nothing else matters. | Over 200 episodes of Two-Room with horizon 50, success rate = 0.87. |
-| [Planning Latency](#m-planning-latency "Mean wall-clock time per plan() call, across the whole run."){:.metric-link} | Wall-clock time to produce one planned action sequence. **Reported per `plan()` call, not per episode.** | Tells you whether the model can close a control loop in real time. | mean = 2.4 ms per `plan()` call on the maze toy (CPU). |
-| [Compute per Decision](#m-compute-per-decision "Model work per executed action, in policy-declared units."){:.metric-link} | Estimated FLOPs or model forward passes per planned action. | Translates research compute into product cost (energy, dollars, GPU hours). | 1.2 model rollouts per decision, average horizon 8. |
-| [Planning Horizon](#m-planning-horizon "Effective lookahead depth at which success stops improving."){:.metric-link} | Effective look-ahead depth at which performance stops improving. | Tells you how far the model can usefully imagine before it becomes noise. | Success rate plateaus at horizon = 12; longer horizons add cost without value. |
-| [Perturbation Recovery](#m-perturbation-recovery "Of episodes that actually got perturbed, the fraction that still succeeded."){:.metric-link} | Success rate conditional on a perturbation event during the episode. | Measures robustness in the only way a product environment delivers it - by surprise. | Baseline success = 0.87; under perturbation = 0.61; recovery rate = 0.70. |
-| [Sample Efficiency](#m-sample-efficiency "Performance as a function of training samples or interactions."){:.metric-link} | Performance as a function of training samples or environment interactions. | Distinguishes models that need a research-lab dataset from models that can ship. | Reaches 80 percent of asymptotic success with 5k transitions. |
-| [Surprise Detection](#m-surprise-detection "How well the model flags out-of-distribution inputs."){:.metric-link} | Ability of the model to flag observations its predictor finds unlikely. | A precondition for safe behaviour - "I do not know what is going on" is a feature. | AUROC = 0.78 on held-out anomalous frames vs in-distribution frames. |
-| [Latent Interpretability](#m-latent-interpretability "Whether the latent state exposes task-relevant structure."){:.metric-link} | Degree to which the latent state exposes task-relevant structure. | Helps debugging, safety review, and integration with classical control. | Linear probe on latent predicts agent position with R^2 = 0.93. |
+<table class="metric-table">
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Definition</th>
+      <th>Why it matters</th>
+      <th>Example measurement</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Action Success Rate</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: how often did the agent reach the goal?</p>
+          $$\text{success\_rate} \;=\; \frac{\text{episodes that succeeded}}{\text{episodes total}}$$
+          <p class="popover-note">Bounded in $[0, 1]$. If this is near zero, no other metric matters.</p>
+        </div>
+      </td>
+      <td>Fraction of episodes in which the agent reaches the goal within the horizon.</td>
+      <td>The headline number. If this is near zero, nothing else matters.</td>
+      <td>Over 200 episodes of Two-Room with horizon 50, success rate = 0.87.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Planning Latency</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: how long does a single <code>plan()</code> call take, on average?</p>
+          $$\bar{\ell} \;=\; \frac{\text{total ms spent in plan()}}{\text{total number of plan() calls}}$$
+          <p class="popover-note">Per call, not per episode. A policy that replans more often cannot hide behind a per-episode mean.</p>
+        </div>
+      </td>
+      <td>Wall-clock time to produce one planned action sequence. <strong>Reported per <code>plan()</code> call, not per episode.</strong></td>
+      <td>Tells you whether the model can close a control loop in real time.</td>
+      <td>mean = 2.4 ms per <code>plan()</code> call on the maze toy (CPU).</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Compute per Decision</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: how much model work, in policy-declared units, does one executed action take?</p>
+          $$\bar{c} \;=\; \frac{c_{\text{plan}} \;\times\; \text{total plan() calls}}{\text{total executed steps}}$$
+          <p class="popover-note">For <code>TabularWorldModelPlanner</code>: $c_{\text{plan}} = N_{\text{cand}} \cdot H_{\text{plan}}$ rollout-units.</p>
+        </div>
+      </td>
+      <td>Estimated FLOPs or model forward passes per planned action.</td>
+      <td>Translates research compute into product cost (energy, dollars, GPU hours).</td>
+      <td>1.2 model rollouts per decision, average horizon 8.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Planning Horizon</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: smallest lookahead beyond which a deeper search does not buy meaningfully more success.</p>
+          $$H^{\ast} \;=\; \min\Bigl\{\,H \,:\; \text{success}(H') - \text{success}(H) \leq \epsilon \;\;\forall\, H' > H\,\Bigr\}$$
+          <p class="popover-note">For the maze toy with $\epsilon = 0.01$: $H^{\ast} = 15$, one step past the maze's optimal-path length.</p>
+        </div>
+      </td>
+      <td>Effective look-ahead depth at which performance stops improving.</td>
+      <td>Tells you how far the model can usefully imagine before it becomes noise.</td>
+      <td>Success rate plateaus at horizon = 12; longer horizons add cost without value.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Perturbation Recovery</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: of episodes where <code>env.perturb()</code> actually fired, the fraction that still reached the goal.</p>
+          $$r \;=\; \frac{\text{actually-perturbed episodes that succeeded}}{\text{actually-perturbed episodes}}$$
+          <p class="popover-note">"Actually-perturbed" excludes episodes that succeed before the perturbation step (v0.3.1 fix).</p>
+        </div>
+      </td>
+      <td>Success rate conditional on a perturbation event during the episode.</td>
+      <td>Measures robustness in the only way a real environment delivers it - by surprise.</td>
+      <td>Baseline success = 0.87; under perturbation = 0.61; recovery rate = 0.70.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Sample Efficiency</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: performance as a function of training samples or environment interactions.</p>
+          <p class="popover-note">No single closed-form formula. Reported as the sample count at which the model reaches a fixed fraction (typically 0.8) of its asymptotic success rate. Track the success-rate-vs-samples curve.</p>
+        </div>
+      </td>
+      <td>Performance as a function of training samples or environment interactions.</td>
+      <td>Distinguishes models that need a research-lab dataset from models that can ship.</td>
+      <td>Reaches 80 percent of asymptotic success with 5k transitions.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Surprise Detection</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: how well does the model flag out-of-distribution inputs?</p>
+          $$\text{AUROC} \;=\; \Pr\!\bigl[\,\text{score}(\text{anomalous}) \,>\, \text{score}(\text{in-distribution})\,\bigr]$$
+          <p class="popover-note">$0.5$ is random ranking, $1.0$ is perfect. <code>score</code> is a model-defined surprise signal (negative log-likelihood, distance from latent prior, etc.).</p>
+        </div>
+      </td>
+      <td>Ability of the model to flag observations its predictor finds unlikely.</td>
+      <td>A precondition for safe behaviour - "I do not know what is going on" is a feature.</td>
+      <td>AUROC = 0.78 on held-out anomalous frames vs in-distribution frames.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Latent Interpretability</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: does the latent state expose task-relevant structure?</p>
+          $$R^{2} \;=\; 1 \;-\; \frac{\sum_{i}(y_i - \hat{y}_i)^2}{\sum_{i}(y_i - \bar{y})^2}$$
+          <p class="popover-note">Typically reported as the $R^{2}$ of a linear probe predicting a task-relevant variable (agent position, object pose) from the latent. Very high values may indicate the latent is just the input.</p>
+        </div>
+      </td>
+      <td>Degree to which the latent state exposes task-relevant structure.</td>
+      <td>Helps debugging, safety review, and integration with classical control.</td>
+      <td>Linear probe on latent predicts agent position with $R^2 = 0.93$.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Wilson 95% interval</a>
+        <div class="formula-popover formula-popover-wide" role="tooltip">
+          <p class="popover-reads">Reads as: lower and upper bounds for the success rate, defendable at 95% confidence. Asymmetric near 0% and 100% (which is where horizon sweeps spend most of their data).</p>
+          $$\hat{p}_{\text{lo}}, \hat{p}_{\text{hi}} \;=\; \frac{\hat{p} + \dfrac{z^{2}}{2n} \;\pm\; z\sqrt{\dfrac{\hat{p}(1-\hat{p})}{n} + \dfrac{z^{2}}{4n^{2}}}}{1 + \dfrac{z^{2}}{n}}$$
+          <p class="popover-note">$z = 1.96$ for two-sided 95%. At $\hat{p} = 1$, $n = 30$: $[0.89, 1.00]$. To push the lower bound to $0.95$ at the same $\hat{p}$: $n \geq 73$.</p>
+        </div>
+      </td>
+      <td>Lower and upper bounds for the observed success rate, asymmetric near the extremes.</td>
+      <td>Tells you what reliability you can defend to a procurement or regulatory team, not just the point estimate.</td>
+      <td>$\hat{p} = 1.00$ over $n = 30$ gives $[0.89, 1.00]$ at 95% confidence.</td>
+    </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Normal CI on mean latency</a>
+        <div class="formula-popover" role="tooltip">
+          <p class="popover-reads">Reads as: the range around the observed mean latency where 95% of constructed intervals would contain the true mean.</p>
+          $$\bar{\ell} \;\pm\; 1.96 \cdot \frac{\sigma_{\ell}}{\sqrt{n_{\ell}}}$$
+          <p class="popover-note">$\sigma_{\ell}$ is the standard deviation of the per-call latencies; $n_{\ell}$ is the total number of <code>plan()</code> calls across all episodes.</p>
+        </div>
+      </td>
+      <td>Symmetric interval on the mean per-call latency.</td>
+      <td>Normal works here because latencies are bounded away from 0 and we typically have many samples.</td>
+      <td>$\bar{\ell} = 2.35 \pm 0.05$ ms per call on the maze toy at horizon 15.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Planning-horizon curve (worked example)
 
@@ -87,123 +218,3 @@ The three metric dimensions - planning horizon, latency per call, and compute pe
 ## Versioning
 
 This taxonomy is intentionally a starting point. Additions are welcome, but every new metric should answer an applied question, come with an example measurement, and have a corresponding test on synthetic data.
-
----
-
-## Definitions and formulas
-
-Each metric below is written as a ratio of plain-English quantities first, then in math notation. Skip this section on a first read - the [summary table](#summary-table) and the [worked example](#planning-horizon-curve-worked-example) carry the same information without symbols.
-
-### Action success rate {#m-success-rate}
-
-Reads as: "How often did the agent reach the goal?"
-
-$$
-\text{success\_rate} \;=\; \frac{\text{episodes that succeeded}}{\text{episodes total}}
-$$
-
-Bounded in $[0, 1]$. Headline number. If this is near zero, no other metric matters.
-
-### Average steps to success {#m-avg-steps}
-
-Reads as: "Among the episodes that succeeded, how many steps did the agent take on average?"
-
-$$
-\text{avg\_steps} \;=\; \frac{\text{total steps in successful episodes}}{\text{number of successful episodes}}
-$$
-
-Reported as `n/a` when zero episodes succeeded. Lower is better, with the maze's optimal path (14) as the theoretical floor.
-
-### Planning latency, per call {#m-planning-latency}
-
-Reads as: "How long does a single `plan()` invocation take on average?"
-
-$$
-\bar{\ell} \;=\; \frac{\text{total milliseconds spent in plan()}}{\text{total number of plan() calls}}
-$$
-
-Both sums are taken across **all episodes in the run**, then divided. A policy that replans 10 times per episode and a policy that replans once contribute equally per call, so neither hides behind a per-episode mean. This is the v0.3.1 fix: the previous reporting used per-episode totals and biased latency comparisons.
-
-### Compute per decision {#m-compute-per-decision}
-
-Reads as: "How much model work, in policy-declared units, does it take to produce one executed action?"
-
-$$
-\bar{c} \;=\; \frac{c_{\text{plan}} \;\times\; \text{total number of plan() calls}}{\text{total number of executed steps}}
-$$
-
-$c_{\text{plan}}$ is the policy's declared cost per `plan()` call (FLOPs, model forward passes, rollouts - whatever unit makes sense). For `TabularWorldModelPlanner`:
-
-$$
-c_{\text{plan}} \;=\; \text{num\_candidates} \;\times\; \text{plan\_horizon}
-$$
-
-so the maze run at horizon 15 with 200 candidates yields $c_{\text{plan}} = 3000$ rollout-units per call. Divided by the actual steps executed, that comes out to $\bar{c} \approx 280$ rollout-units per decision.
-
-### Planning horizon (effective) {#m-planning-horizon}
-
-Reads as: "What is the smallest lookahead beyond which success rate stops improving?"
-
-In words: pick a tolerance $\epsilon$ (typically $0.01$ or smaller). $H^{\ast}$ is the smallest lookahead such that any deeper lookahead would buy less than $\epsilon$ extra success rate.
-
-$$
-H^{\ast} \;=\; \min \Bigl\{ H \;:\; \text{success\_rate}(H') - \text{success\_rate}(H) \leq \epsilon \;\; \text{for all } H' > H \Bigr\}
-$$
-
-For the maze toy with $\epsilon = 0.01$: $H^{\ast} = 15$, exactly one step past the maze's optimal-path length of 14. Below $H^{\ast}$ you lose success; above it you spend more latency and compute for nothing.
-
-### Perturbation recovery rate {#m-perturbation-recovery}
-
-Reads as: "Of the episodes where `env.perturb()` actually fired, what fraction still reached the goal?"
-
-$$
-r \;=\; \frac{\text{actually-perturbed episodes that still succeeded}}{\text{actually-perturbed episodes}}
-$$
-
-"Actually-perturbed" is stricter than "scheduled for perturbation": episodes that succeed before the perturbation step are not counted. This keeps the denominator honest at the cost of a smaller effective sample when policies are very fast. (This was the v0.3 bug fixed in v0.3.1.)
-
-### Wilson 95% confidence interval (for success rate) {#m-wilson}
-
-Reads as: "Given $\hat{p}$ observed successes out of $n$ episodes, the lower and upper bounds of success rate I can defend at 95% confidence."
-
-The interval is **asymmetric** around $\hat{p}$, which is exactly what you want near 0% and 100% where the textbook normal approximation predicts impossible values (success rates below 0 or above 1).
-
-$$
-\hat{p}_{\text{lo}}, \hat{p}_{\text{hi}} \;=\; \frac{\hat{p} + \dfrac{z^{2}}{2n} \;\pm\; z \sqrt{\dfrac{\hat{p}(1-\hat{p})}{n} + \dfrac{z^{2}}{4n^{2}}}}{1 + \dfrac{z^{2}}{n}}
-$$
-
-with $z = 1.96$ for a two-sided 95% interval. Reading guide:
-
-- The numerator $\hat{p} + \tfrac{z^{2}}{2n}$ is the **centre** of the interval - shifted away from $\hat{p}$ near the extremes.
-- The $\pm z\sqrt{\cdot}$ piece is the **half-width**.
-- The denominator $1 + \tfrac{z^{2}}{n}$ shrinks toward $1$ as $n$ grows, so for large $n$ the Wilson interval collapses to the normal one.
-
-For $\hat{p} = 1.0$ and $n = 30$ this gives $[0.89, 1.00]$. To tighten the lower bound to $0.95$ at the same observed rate, you need $n \gtrsim 73$.
-
-### Normal 95% confidence interval (for mean latency) {#m-normal-ci}
-
-Reads as: "The range around the observed mean latency where 95% of intervals constructed this way would contain the true mean."
-
-$$
-\bar{\ell} \;\pm\; 1.96 \;\cdot\; \frac{\sigma_{\ell}}{\sqrt{n_{\ell}}}
-$$
-
-with $\sigma_{\ell}$ the standard deviation of the per-call latency samples (flattened across episodes) and $n_{\ell}$ the total number of plan() calls. The normal approximation is fine here because latencies are bounded away from 0 and we typically have many samples.
-
-### Sample efficiency {#m-sample-efficiency}
-
-Not formalised in this taxonomy yet (no off-the-shelf metric works across all training regimes). Track it as a learning curve: success rate as a function of training samples or environment interactions. Report the sample count at which the model reaches a fixed fraction (typically 0.8) of its asymptotic success.
-
-### Surprise detection {#m-surprise-detection}
-
-Reads as: "Can the model tell when an observation is out of its training distribution?" Operationalised as AUROC on a held-out set of anomalous-vs-in-distribution inputs:
-
-$$
-\text{AUROC} \;=\; \Pr \bigl[ \text{score}(\text{anomalous}) \;>\; \text{score}(\text{in-distribution}) \bigr]
-$$
-
-where `score` is a model-defined surprise signal (negative log-likelihood of the prediction, distance from the latent prior, etc.). 0.5 is random, 1.0 is perfect ranking.
-
-### Latent interpretability {#m-latent-interpretability}
-
-No single formula. Typically reported as the $R^{2}$ of a linear probe predicting a task-relevant variable (agent position, object pose) from the latent state. Higher is more structured; very high values may indicate the latent is just the input.

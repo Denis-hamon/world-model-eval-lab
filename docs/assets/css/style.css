@@ -811,18 +811,125 @@ img[src*="badge.svg"] {
  * Metric links: tooltip-anchor pattern in the taxonomy summary table
  * ============================================================= */
 
+.metric-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.94rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  overflow: visible; /* allow popovers to escape the table bounds */
+}
+
+.metric-table thead { background: var(--surface); }
+.metric-table th, .metric-table td {
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.metric-table th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+.metric-table tbody tr:last-child td { border-bottom: none; }
+
+td.metric-cell {
+  position: relative;
+  overflow: visible;
+}
+
 a.metric-link {
   color: var(--ink);
   border-bottom: 1px dotted var(--muted-soft);
   cursor: help;
   font-weight: 500;
   transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 a.metric-link:hover,
 a.metric-link:focus-visible {
   color: var(--accent);
   border-bottom-color: var(--accent);
   border-bottom-style: solid;
+}
+
+/* Formula popover: visible only on hover/focus of its metric link. */
+.formula-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 460px;
+  max-width: calc(100vw - 2rem);
+  z-index: 60;
+  background: white;
+  color: var(--ink);
+  padding: 1rem 1.1rem 0.9rem;
+  border: 1px solid var(--border-soft);
+  border-top: 3px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 22px 44px -12px rgba(15, 95, 191, 0.25);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+  transform: translateY(-4px);
+}
+
+.formula-popover.formula-popover-wide {
+  width: 520px;
+}
+
+.metric-cell:hover .formula-popover,
+.metric-cell:focus-within .formula-popover,
+.formula-popover:hover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.formula-popover .popover-reads {
+  margin: 0 0 0.4rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.formula-popover .popover-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.83rem;
+  color: var(--muted);
+}
+
+.formula-popover code {
+  font-size: 0.85em;
+  background: var(--surface);
+  padding: 0.05em 0.3em;
+}
+
+/* MathJax SVG inside the popover stays at its declared dimensions. */
+.formula-popover mjx-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* When the popover would overflow off the right edge of a cell that is itself
+ * near the right edge of the page, allow CSS containment to flip the anchor. */
+.metric-table tr td.metric-cell:last-child .formula-popover {
+  left: auto;
+  right: 0;
+}
+
+@media (max-width: 720px) {
+  .formula-popover,
+  .formula-popover.formula-popover-wide {
+    width: calc(100vw - 2rem);
+    left: 0;
+    right: auto;
+  }
+  td.metric-cell { white-space: normal; }
 }
 
 /* =============================================================
