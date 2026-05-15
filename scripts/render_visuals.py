@@ -12,6 +12,7 @@ Outputs:
 - docs/assets/architecture.svg       evaluation contract flow
 - docs/assets/horizon_sweep.svg      success rate + latency vs plan horizon
 - docs/assets/maze.svg               default 7x7 maze layout
+- docs/assets/favicon.svg            small square favicon for the Pages site
 """
 
 from __future__ import annotations
@@ -366,6 +367,21 @@ def render_maze() -> str:
     return "\n".join(parts)
 
 
+def render_favicon() -> str:
+    """A 32x32 square favicon: blue rounded square with 'wm' lettering."""
+    parts = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" '
+        'width="32" height="32">'
+    ]
+    parts.append(f'<rect width="32" height="32" rx="6" fill="{PALETTE["accent"]}"/>')
+    parts.append(
+        f'<text x="16" y="22" font-family="ui-sans-serif, system-ui, sans-serif" '
+        f'font-size="15" font-weight="700" fill="white" text-anchor="middle">wm</text>'
+    )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def main() -> None:
     ASSETS.mkdir(parents=True, exist_ok=True)
 
@@ -382,6 +398,9 @@ def main() -> None:
 
     (ASSETS / "maze.svg").write_text(render_maze() + "\n")
     print(f"wrote {ASSETS / 'maze.svg'}")
+
+    (ASSETS / "favicon.svg").write_text(render_favicon() + "\n")
+    print(f"wrote {ASSETS / 'favicon.svg'}")
 
 
 if __name__ == "__main__":

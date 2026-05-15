@@ -3,6 +3,7 @@
 [![tests](https://github.com/Denis-hamon/world-model-eval-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/Denis-hamon/world-model-eval-lab/actions/workflows/tests.yml)
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![live site](https://img.shields.io/badge/live%20site-%E2%86%92-0f5fbf)](https://denis-hamon.github.io/world-model-eval-lab/)
 
 > A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
 
