@@ -1,4 +1,10 @@
 ---
+prev:
+  title: "00 - Thesis"
+  url: 00_thesis.html
+next:
+  title: "02 - Metric taxonomy"
+  url: 02_metric_taxonomy.html
 ---
 # 01 - The Evaluation Gap
 

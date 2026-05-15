@@ -1,4 +1,10 @@
 ---
+prev:
+  title: "02 - Metric taxonomy"
+  url: 02_metric_taxonomy.html
+next:
+  title: "04 - Industrial use cases"
+  url: 04_industrial_use_cases.html
 ---
 # 03 - Benchmark Cards
 

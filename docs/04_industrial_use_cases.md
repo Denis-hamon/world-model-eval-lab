@@ -1,4 +1,10 @@
 ---
+prev:
+  title: "03 - Benchmark cards"
+  url: 03_benchmark_cards.html
+next:
+  title: "05 - 30-day study plan"
+  url: 05_30_day_prototype_plan.html
 ---
 # 04 - Industrial Use Cases
 

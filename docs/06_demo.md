@@ -1,4 +1,10 @@
 ---
+prev:
+  title: "05 - 30-day study plan"
+  url: 05_30_day_prototype_plan.html
+next:
+  title: "Back to home"
+  url: /
 ---
 # 06 - Reading a Scorecard: an applied decision walkthrough
 

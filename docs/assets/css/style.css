@@ -671,6 +671,100 @@ img[src*="badge.svg"] {
 .sweep-tooltip .row .v.warn   { color: var(--warn-light); }
 
 /* =============================================================
+ * Page navigation (prev / next buttons)
+ * ============================================================= */
+
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 3.5rem 0 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.page-nav .nav-link {
+  flex: 1 1 0;
+  max-width: 50%;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  border-bottom: 0;
+  display: block;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s, color 0.15s;
+}
+
+.page-nav .nav-spacer {
+  flex: 1 1 0;
+  max-width: 50%;
+}
+
+.page-nav .nav-prev {
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--ink);
+}
+.page-nav .nav-prev:hover {
+  border-color: var(--accent);
+  background: var(--bg);
+  transform: translateX(-2px);
+}
+
+.page-nav .nav-next {
+  text-align: right;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: white;
+}
+.page-nav .nav-next:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: white;
+  transform: translateX(2px);
+}
+
+.page-nav .nav-direction {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+}
+
+.page-nav .nav-title {
+  display: block;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+@media (max-width: 640px) {
+  .page-nav {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .page-nav .nav-link,
+  .page-nav .nav-spacer {
+    max-width: none;
+  }
+  .page-nav .nav-spacer {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-nav .nav-prev:hover,
+  .page-nav .nav-next:hover {
+    transform: none;
+  }
+}
+
+/* =============================================================
  * Architecture: gentle fade-in once the SVG enters the viewport
  * ============================================================= */
 

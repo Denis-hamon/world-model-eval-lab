@@ -1,4 +1,10 @@
 ---
+prev:
+  title: "01 - The evaluation gap"
+  url: 01_evaluation_gap.html
+next:
+  title: "03 - Benchmark cards"
+  url: 03_benchmark_cards.html
 ---
 # 02 - Metric Taxonomy
 

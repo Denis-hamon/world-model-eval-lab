@@ -33,6 +33,27 @@
     <main id="content" class="main-content" role="main">
       {{ content }}
 
+      {% if page.prev or page.next %}
+      <nav class="page-nav" aria-label="Page navigation">
+        {% if page.prev %}
+          <a class="nav-link nav-prev" href="{{ page.prev.url | relative_url }}">
+            <span class="nav-direction">&larr; Previous</span>
+            <span class="nav-title">{{ page.prev.title }}</span>
+          </a>
+        {% else %}
+          <span class="nav-spacer"></span>
+        {% endif %}
+        {% if page.next %}
+          <a class="nav-link nav-next" href="{{ page.next.url | relative_url }}">
+            <span class="nav-direction">Next &rarr;</span>
+            <span class="nav-title">{{ page.next.title }}</span>
+          </a>
+        {% else %}
+          <span class="nav-spacer"></span>
+        {% endif %}
+      </nav>
+      {% endif %}
+
       <script defer src="{{ '/assets/js/interactive.js' | relative_url }}"></script>
 
       <footer class="site-footer">

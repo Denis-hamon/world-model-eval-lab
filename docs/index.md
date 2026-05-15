@@ -1,6 +1,9 @@
 ---
 layout: default
 image: /assets/architecture.svg
+next:
+  title: "00 - Thesis"
+  url: 00_thesis.html
 ---
 
 <section class="hero">

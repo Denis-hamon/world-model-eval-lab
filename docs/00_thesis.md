@@ -1,4 +1,10 @@
 ---
+prev:
+  title: "Home"
+  url: /
+next:
+  title: "01 - The evaluation gap"
+  url: 01_evaluation_gap.html
 ---
 # 00 - Thesis
 
