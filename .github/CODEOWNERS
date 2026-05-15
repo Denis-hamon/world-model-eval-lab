@@ -1,0 +1,3 @@
+# Default owner for everything in the repository.
+# Pull requests will request review from this user automatically.
+*       @Denis-hamon

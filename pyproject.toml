@@ -12,7 +12,22 @@ license = { file = "LICENSE" }
 authors = [
     { name = "World Model Evaluation Lab contributors" },
 ]
-keywords = ["world-model", "evaluation", "benchmark", "planning", "action-conditioned"]
+keywords = [
+    "world-model",
+    "world-models",
+    "evaluation",
+    "ml-evaluation",
+    "benchmark",
+    "benchmarking",
+    "planning",
+    "action-conditioned",
+    "model-based-rl",
+    "decision-grade",
+    "horizon-sweep",
+    "perturbation",
+    "scorecard",
+    "methodology",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",

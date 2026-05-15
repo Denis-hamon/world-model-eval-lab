@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software in your work, please cite it as below."
+type: software
+title: "World Model Evaluation Lab"
+abstract: "A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks. Independent methodology study of evaluation infrastructure for planning latency, perturbation recovery, compute per decision, and effective planning horizon."
+authors:
+  - given-names: Denis
+    family-names: Hamon
+url: "https://github.com/Denis-hamon/world-model-eval-lab"
+repository-code: "https://github.com/Denis-hamon/world-model-eval-lab"
+license: MIT
+version: "0.5.0"
+date-released: 2026-05-15
+keywords:
+  - world-models
+  - benchmark
+  - evaluation
+  - action-conditioned
+  - planning
+  - methodology
+  - model-based-rl
+  - decision-grade
