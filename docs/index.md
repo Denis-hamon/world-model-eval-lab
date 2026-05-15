@@ -3,10 +3,6 @@ layout: default
 image: /assets/architecture.svg
 ---
 
-# World Model Evaluation Lab
-
-A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
-
 [![tests](https://github.com/Denis-hamon/world-model-eval-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/Denis-hamon/world-model-eval-lab/actions/workflows/tests.yml)
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)

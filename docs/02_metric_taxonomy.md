@@ -1,3 +1,5 @@
+---
+---
 # 02 - Metric Taxonomy
 
 This is the first pass of a decision-grade metric set for action-conditioned world models. Each metric is chosen because it answers a question an applied team would actually ask before integrating a model.

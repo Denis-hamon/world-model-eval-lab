@@ -1,0 +1,381 @@
+/*
+ * World Model Evaluation Lab - GitHub Pages design system.
+ *
+ * Typography:  IBM Plex Sans (body, headings) + IBM Plex Mono (code, tables).
+ *              Loaded via Google Fonts in the layout head.
+ * Palette:     same tokens as the hand-rolled SVG illustrations under
+ *              docs/assets/, so charts and chrome stay visually consistent.
+ * Scope:       applied to every page rendered with _layouts/default.html
+ *              (Jekyll default in _config.yml).
+ */
+
+:root {
+  --ink: #1f2933;
+  --ink-soft: #323f4b;
+  --muted: #52606d;
+  --muted-soft: #7b8794;
+  --accent: #0f5fbf;
+  --accent-strong: #0a4ba0;
+  --accent-soft: #e6efff;
+  --warn: #b34a00;
+  --surface: #f7f9fc;
+  --surface-strong: #eef2f7;
+  --border: #d8e0e8;
+  --border-soft: #e4ebf2;
+  --bg: #ffffff;
+
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, "Liberation Mono", monospace;
+
+  --content-max: 56rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-feature-settings: "kern", "liga", "ss01";
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skip link for keyboard users. */
+#skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+#skip-to-content:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  display: inline-block;
+  margin: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+/* Header. */
+.page-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.page-header > * {
+  max-width: var(--content-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-header .project-name {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.page-header .project-name a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: none;
+}
+.page-header .project-name a:hover {
+  color: var(--accent-strong);
+}
+
+.page-header .project-tagline {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin: 0.4rem 0 1rem;
+  max-width: 48rem;
+  line-height: 1.5;
+}
+
+.page-header .btn {
+  display: inline-block;
+  padding: 0.45rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  text-decoration: none;
+  margin-right: 0.5rem;
+  transition: background 0.15s, color 0.15s;
+}
+.page-header .btn:hover {
+  background: var(--accent);
+  color: white;
+  border-bottom: 1px solid transparent;
+}
+
+/* Main content area. */
+.main-content {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+/* Typography. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 2.25rem 0 0.75rem;
+}
+
+h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 0.5rem;
+}
+
+h2 {
+  font-size: 1.45rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-soft);
+  margin-top: 2.5rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+}
+
+h4 {
+  font-size: 1rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+p {
+  margin: 0.85rem 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+a:hover {
+  border-bottom-color: var(--accent);
+}
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+em {
+  font-style: italic;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  margin: 2.5rem 0;
+}
+
+/* Inline code. */
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-strong);
+  color: var(--ink);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+}
+
+/* Code blocks. */
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  line-height: 1.55;
+  margin: 1.25rem 0;
+}
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+}
+
+/* Blockquote: used for the thesis pull-quotes. */
+blockquote {
+  margin: 1.75rem 0;
+  padding: 0.5rem 1.25rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+  border-radius: 0 4px 4px 0;
+}
+blockquote p {
+  margin: 0.25rem 0;
+}
+
+/* Lists. */
+ul, ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+li + li {
+  margin-top: 0.2rem;
+}
+li::marker {
+  color: var(--muted-soft);
+}
+
+/* Tables. */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.94rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+thead {
+  background: var(--surface);
+}
+
+th, td {
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: var(--surface);
+}
+
+/* Images: defaults. */
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+/* Standalone illustrations (local SVG). */
+img[src*="github.io"][src$=".svg"],
+img[src^="assets/"],
+img[src^="/assets/"] {
+  display: block;
+  margin: 1.5rem auto;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: white;
+}
+
+/* Status badges (img.shields.io or GitHub actions badge). */
+img[src*="shields.io"],
+img[src*="badge.svg"] {
+  display: inline-block;
+  margin: 0 0.2rem 0.4rem 0;
+  border: none;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  vertical-align: middle;
+}
+
+/* Footer. */
+.site-footer {
+  margin-top: 3.5rem;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.site-footer a {
+  color: var(--muted);
+  border-bottom: 1px solid transparent;
+}
+.site-footer a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Responsive tightening. */
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+  .page-header {
+    padding: 1.5rem 1rem 1rem;
+  }
+  .main-content {
+    padding: 1.5rem 1rem 3rem;
+  }
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.3rem; }
+  table { font-size: 0.88rem; }
+  th, td { padding: 0.4rem 0.6rem; }
+}
+
+/* Print: minimal black on white. */
+@media print {
+  body { color: #000; background: #fff; }
+  .page-header .btn { display: none; }
+  a { color: #000; text-decoration: underline; }
+  img { border: 1px solid #999; }
+}

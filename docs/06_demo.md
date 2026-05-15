@@ -1,3 +1,5 @@
+---
+---
 # 06 - Reading a Scorecard: an applied decision walkthrough
 
 This page is the shortest path from "I have not read the rest of these docs" to "I can defend the thesis of this repo at a whiteboard". It takes a real scorecard, reads it like a non-researcher would, and ends with a concrete decision someone could make from the numbers.

@@ -1,3 +1,5 @@
+---
+---
 # 00 - Thesis
 
 ## Static AI benchmarks are not enough for world models

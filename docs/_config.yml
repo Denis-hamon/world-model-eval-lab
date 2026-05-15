@@ -7,3 +7,13 @@ include:
   - assets
 exclude:
   - "*.json"
+
+# Apply the custom default layout to every doc page, not just index.md.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+plugins:
+  - jekyll-seo-tag
