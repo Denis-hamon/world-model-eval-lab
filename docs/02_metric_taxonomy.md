@@ -19,6 +19,8 @@ This is the first pass of a decision-grade metric set for action-conditioned wor
 
 The "Planning Horizon" metric is operationalised by `wmel.experiments.horizon_sweep`. Running it on the maze toy environment with `TabularWorldModelPlanner` produces a textbook curve - per-call planning latency grows monotonically with horizon, success rate plateaus, and beyond the plateau steps-to-success starts to degrade because the planner over-commits before replanning:
 
+![horizon sweep](assets/horizon_sweep.svg)
+
 ```
 Horizon sweep: tabular-world-model
   plan_h |   success |          95% CI |   steps | latency_ms |       95% CI (ms)

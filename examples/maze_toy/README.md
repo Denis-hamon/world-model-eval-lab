@@ -7,6 +7,8 @@ A small maze that exercises planning horizon and demonstrates the full
 
 A 7x7 grid maze with walls. The agent starts top-left, the goal is bottom-right, and the direct Manhattan path is blocked. The optimal path is 14 actions long. The maze is fully connected (all 16 non-wall cells are reachable from the start).
 
+![maze](../../docs/assets/maze.svg)
+
 This environment is intentionally hard enough that:
 
 - **Random** rarely succeeds within the horizon (random walks don't usually reach the goal).

@@ -1,0 +1,9 @@
+title: World Model Evaluation Lab
+description: A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
+theme: jekyll-theme-cayman
+show_downloads: false
+google_analytics:
+include:
+  - assets
+exclude:
+  - "*.json"

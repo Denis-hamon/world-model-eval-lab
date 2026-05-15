@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 180" width="980" height="180" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif">
+<rect width="980" height="180" fill="#ffffff"/>
+<rect x="-5" y="60" width="130" height="60" rx="8" fill="white" stroke="#0f5fbf" stroke-width="1.5"/>
+<text x="60" y="94" font-size="13" fill="#1f2933" text-anchor="middle">Observation</text>
+<rect x="135" y="60" width="130" height="60" rx="8" fill="white" stroke="#0f5fbf" stroke-width="1.5"/>
+<text x="200" y="94" font-size="13" fill="#1f2933" text-anchor="middle">Encoder</text>
+<rect x="295" y="60" width="130" height="60" rx="8" fill="white" stroke="#0f5fbf" stroke-width="1.5"/>
+<text x="360" y="94" font-size="13" fill="#1f2933" text-anchor="middle">Latent state</text>
+<rect x="475" y="60" width="130" height="60" rx="8" fill="white" stroke="#0f5fbf" stroke-width="1.5"/>
+<text x="540" y="89" font-size="13" fill="#1f2933" text-anchor="middle">Action-conditioned</text>
+<text x="540" y="103" font-size="13" fill="#1f2933" text-anchor="middle">predictor</text>
+<rect x="655" y="60" width="130" height="60" rx="8" fill="white" stroke="#0f5fbf" stroke-width="1.5"/>
+<text x="720" y="94" font-size="13" fill="#1f2933" text-anchor="middle">Future latent state</text>
+<rect x="795" y="60" width="130" height="60" rx="8" fill="white" stroke="#0f5fbf" stroke-width="1.5"/>
+<text x="860" y="94" font-size="13" fill="#1f2933" text-anchor="middle">Planner</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#52606d"/></marker></defs>
+<line x1="125" y1="90" x2="133" y2="90" stroke="#52606d" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line x1="265" y1="90" x2="293" y2="90" stroke="#52606d" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line x1="425" y1="90" x2="473" y2="90" stroke="#52606d" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line x1="605" y1="90" x2="653" y2="90" stroke="#52606d" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line x1="785" y1="90" x2="793" y2="90" stroke="#52606d" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line x1="925" y1="90" x2="960" y2="90" stroke="#52606d" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="962" y="82" font-size="13" font-weight="600" fill="#0f5fbf" text-anchor="end">action</text>
+<text x="490" y="166" font-size="12" fill="#52606d" text-anchor="middle">The evaluation contract every adapter must implement.</text>
+</svg>

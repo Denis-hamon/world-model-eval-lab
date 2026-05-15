@@ -44,11 +44,9 @@ This repository proposes a thin, opinionated evaluation layer that closes that g
 
 ## Architecture
 
-```
- Observation -> Encoder -> Latent State -> Action-conditioned Predictor -> Future Latent State -> Planner -> Action
-```
+![architecture](docs/assets/architecture.svg)
 
-The repo treats every world model as a black box exposing this contract. The evaluation layer measures what happens **after** the action is taken, in an environment, under product-relevant conditions.
+The repo treats every world model as a black box exposing this contract. The evaluation layer measures what happens **after** the action is taken, in an environment, under decision-relevant conditions.
 
 ## Evaluation levels
 
@@ -75,6 +73,12 @@ The maze run pits random and naive greedy against a `TabularWorldModelPlanner` -
 The horizon sweep takes the same world-model planner and runs it at several lookahead depths, producing the success-rate / latency curve that operationalises the "Planning Horizon" metric. See [docs/02_metric_taxonomy.md](docs/02_metric_taxonomy.md) for the worked example.
 
 JSON reports are saved next to each script.
+
+## Planning-horizon sweep on the maze toy
+
+![horizon sweep](docs/assets/horizon_sweep.svg)
+
+Success rate plateaus at horizon 15. Per-call latency keeps rising past the plateau. Compute per decision is bounded around 250-370 rollout-units. The same scorecard structure applies to every benchmark card in [docs/03_benchmark_cards.md](docs/03_benchmark_cards.md).
 
 ## Initial metrics
 

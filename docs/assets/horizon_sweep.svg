@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif">
+<rect width="720" height="380" fill="#ffffff"/>
+<text x="360" y="22" font-size="15" font-weight="600" fill="#1f2933" text-anchor="middle">Planning-horizon sweep (maze toy, tabular world model)</text>
+<line x1="70" y1="320.0" x2="650" y2="320.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="324.0" font-size="11" fill="#52606d" text-anchor="end">0.00</text>
+<line x1="70" y1="250.0" x2="650" y2="250.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="254.0" font-size="11" fill="#52606d" text-anchor="end">0.25</text>
+<line x1="70" y1="180.0" x2="650" y2="180.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="184.0" font-size="11" fill="#52606d" text-anchor="end">0.50</text>
+<line x1="70" y1="110.0" x2="650" y2="110.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="114.0" font-size="11" fill="#52606d" text-anchor="end">0.75</text>
+<line x1="70" y1="40.0" x2="650" y2="40.0" stroke="#c4cdd5" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62" y="44.0" font-size="11" fill="#52606d" text-anchor="end">1.00</text>
+<text x="658" y="324.0" font-size="11" fill="#b34a00" text-anchor="start">0.00</text>
+<text x="658" y="254.0" font-size="11" fill="#b34a00" text-anchor="start">1.33</text>
+<text x="658" y="184.0" font-size="11" fill="#b34a00" text-anchor="start">2.66</text>
+<text x="658" y="114.0" font-size="11" fill="#b34a00" text-anchor="start">4.00</text>
+<text x="658" y="44.0" font-size="11" fill="#b34a00" text-anchor="start">5.33</text>
+<line x1="70.0" y1="320" x2="70.0" y2="325" stroke="#52606d" stroke-width="1"/>
+<text x="70.0" y="340" font-size="11" fill="#52606d" text-anchor="middle">5</text>
+<line x1="186.0" y1="320" x2="186.0" y2="325" stroke="#52606d" stroke-width="1"/>
+<text x="186.0" y="340" font-size="11" fill="#52606d" text-anchor="middle">10</text>
+<line x1="302.0" y1="320" x2="302.0" y2="325" stroke="#52606d" stroke-width="1"/>
+<text x="302.0" y="340" font-size="11" fill="#52606d" text-anchor="middle">15</text>
+<line x1="418.0" y1="320" x2="418.0" y2="325" stroke="#52606d" stroke-width="1"/>
+<text x="418.0" y="340" font-size="11" fill="#52606d" text-anchor="middle">20</text>
+<line x1="650.0" y1="320" x2="650.0" y2="325" stroke="#52606d" stroke-width="1"/>
+<text x="650.0" y="340" font-size="11" fill="#52606d" text-anchor="middle">30</text>
+<text x="20" y="180" font-size="12" fill="#0f5fbf" transform="rotate(-90 20,180)" text-anchor="middle">success rate</text>
+<text x="700" y="180" font-size="12" fill="#b34a00" transform="rotate(90 700,180)" text-anchor="middle">latency per call (ms)</text>
+<text x="360" y="366" font-size="12" fill="#52606d" text-anchor="middle">plan_horizon</text>
+<polygon points="70.0,320.0 186.0,111.7 302.0,71.8 418.0,71.8 650.0,71.8 650.0,40.0 418.0,40.0 302.0,40.0 186.0,49.7 70.0,288.2" fill="#7fb1f0" fill-opacity="0.25" stroke="none"/>
+<polyline points="70.0,320.0 186.0,68.0 302.0,40.0 418.0,40.0 650.0,40.0" fill="none" stroke="#0f5fbf" stroke-width="2.5"/>
+<circle cx="70.0" cy="320.0" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="186.0" cy="68.0" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="302.0" cy="40.0" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="418.0" cy="40.0" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<circle cx="650.0" cy="40.0" r="4" fill="#0f5fbf" stroke="white" stroke-width="1.5"/>
+<polygon points="70.0,274.5 186.0,238.1 302.0,197.2 418.0,158.4 650.0,80.6 650.0,76.5 418.0,157.3 302.0,193.2 186.0,233.0 70.0,273.6" fill="#f5a26b" fill-opacity="0.25" stroke="none"/>
+<polyline points="70.0,274.1 186.0,235.6 302.0,195.2 418.0,157.8 650.0,78.6" fill="none" stroke="#b34a00" stroke-width="2.5" stroke-dasharray="4,3"/>
+<circle cx="70.0" cy="274.1" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="186.0" cy="235.6" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="302.0" cy="195.2" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="418.0" cy="157.8" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<circle cx="650.0" cy="78.6" r="3.5" fill="#b34a00" stroke="white" stroke-width="1.5"/>
+<rect x="70" y="40" width="580" height="280" fill="none" stroke="#52606d" stroke-width="1"/>
+<line x1="86" y1="52" x2="118" y2="52" stroke="#0f5fbf" stroke-width="2.5"/>
+<text x="124" y="56" font-size="11" fill="#1f2933">success rate (95% CI band)</text>
+<line x1="300" y1="52" x2="332" y2="52" stroke="#b34a00" stroke-width="2.5" stroke-dasharray="4,3"/>
+<text x="338" y="56" font-size="11" fill="#1f2933">planning latency per call (95% CI band)</text>
+</svg>
