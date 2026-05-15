@@ -49,7 +49,13 @@ The plan assumes one contributor, part-time. Every week ends with a runnable art
 
 **Exit criterion**: a single command produces a Markdown report comparing two policies on two environments with confidence intervals.
 
-**Status (partial, v0.3)**: planning-horizon sweep with Wilson and normal confidence intervals is shipped - see `wmel.experiments.horizon_sweep`, `examples/maze_toy/run_horizon_sweep.py`, and the worked example in `docs/02_metric_taxonomy.md`. The maze run reproduces the expected textbook curve: 0% at horizon 5, 100% at horizon 15+, with latency rising again past the plateau. Markdown export, compute-per-decision profiling, and a broader perturbation library remain.
+**Status (v0.4)**:
+
+- Planning-horizon sweep with Wilson and normal confidence intervals - see `wmel.experiments.horizon_sweep`, `examples/maze_toy/run_horizon_sweep.py`, and the worked example in `docs/02_metric_taxonomy.md`.
+- Markdown report exporters: `wmel.report.to_markdown_scorecard`, `to_markdown_report`, and `wmel.experiments.to_markdown_horizon_sweep`. The output is paste-ready in a PR body or doc page.
+- Compute-per-decision wired: `PlannerPolicy.compute_per_plan_call` is a class attribute that subclasses set. `TabularWorldModelPlanner` declares it as `num_candidates * plan_horizon`, and `compute_scorecard` derives an average over the run. The maze baseline reports ~256 rollout-units per decision for the world-model planner versus n/a for random / greedy.
+
+What remains for v0.5: a pluggable perturbation library (displacement, blocked-cell, delayed-action) and a small CLI front-end.
 
 ---
 

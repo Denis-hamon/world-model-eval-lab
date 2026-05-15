@@ -1,4 +1,4 @@
-"""Reporting helpers: print a scorecard, dump a JSON report."""
+"""Reporting helpers: print a scorecard, dump a JSON report, render Markdown."""
 
 from __future__ import annotations
 
@@ -38,3 +38,42 @@ def to_json_report(
         "scorecard": asdict(scorecard),
         "results": [asdict(r) for r in results],
     }
+
+
+def _md_value(value: float | None, decimals: int = 3) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.{decimals}f}"
+
+
+def to_markdown_scorecard(scorecard: Scorecard) -> str:
+    """Render a `Scorecard` as a Markdown table, paste-ready for a PR or doc."""
+    lines = [
+        f"### Scorecard: `{scorecard.policy_name}`",
+        "",
+        "| Metric | Value |",
+        "| --- | --- |",
+        f"| episodes | {scorecard.episodes} |",
+        f"| action success rate | {_md_value(scorecard.success_rate)} |",
+        f"| average steps to success | {_md_value(scorecard.average_steps_to_success, decimals=1)} |",
+        f"| planning latency per call (ms) | {_md_value(scorecard.average_planning_latency_ms)} |",
+        f"| perturbation recovery rate | {_md_value(scorecard.perturbation_recovery_rate)} |",
+        f"| average compute per decision | {_md_value(scorecard.average_compute_per_decision)} |",
+    ]
+    for name, value in scorecard.extras.items():
+        lines.append(f"| {name} | {_md_value(value)} |")
+    return "\n".join(lines) + "\n"
+
+
+def to_markdown_report(scorecards: Sequence[Scorecard], heading: str | None = None) -> str:
+    """Render one or more `Scorecard`s as a single Markdown document.
+
+    Useful for dropping a comparison directly into a pull request body or a
+    docs page.
+    """
+    parts: list[str] = []
+    if heading:
+        parts.append(f"# {heading}\n")
+    for sc in scorecards:
+        parts.append(to_markdown_scorecard(sc))
+    return "\n".join(parts)

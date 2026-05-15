@@ -104,7 +104,22 @@ def perturbation_recovery_rate(results: Sequence[EpisodeResult]) -> float | None
 
 def _average_compute_per_decision(
     results: Sequence[EpisodeResult],
+    compute_per_plan_call: float | None,
 ) -> float | None:
+    """Derive average compute per executed action.
+
+    If the policy reports `compute_per_plan_call`, multiply by the total
+    number of plan() calls across all episodes and divide by the total number
+    of executed actions. Falls back to averaging any per-episode values
+    populated directly on `EpisodeResult.compute_per_decision`.
+    """
+    if compute_per_plan_call is not None:
+        total_plan_calls = sum(r.plan_calls for r in results)
+        total_steps = sum(r.steps for r in results)
+        if total_steps == 0:
+            return None
+        return (compute_per_plan_call * total_plan_calls) / total_steps
+
     measured = [r.compute_per_decision for r in results if r.compute_per_decision is not None]
     if not measured:
         return None
@@ -115,8 +130,14 @@ def compute_scorecard(
     results: Sequence[EpisodeResult],
     policy_name: str,
     extras: Iterable[tuple[str, float]] | None = None,
+    compute_per_plan_call: float | None = None,
 ) -> Scorecard:
-    """Aggregate a list of `EpisodeResult` into a `Scorecard`."""
+    """Aggregate a list of `EpisodeResult` into a `Scorecard`.
+
+    Pass `compute_per_plan_call` (typically `policy.compute_per_plan_call`)
+    to populate the `average_compute_per_decision` field. When None, the
+    scorecard reports `None` for that field.
+    """
     return Scorecard(
         policy_name=policy_name,
         episodes=len(results),
@@ -124,6 +145,6 @@ def compute_scorecard(
         average_steps_to_success=average_steps_to_success(results),
         average_planning_latency_ms=average_planning_latency_ms(results),
         perturbation_recovery_rate=perturbation_recovery_rate(results),
-        average_compute_per_decision=_average_compute_per_decision(results),
+        average_compute_per_decision=_average_compute_per_decision(results, compute_per_plan_call),
         extras=dict(extras) if extras else {},
     )

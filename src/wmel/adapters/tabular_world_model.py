@@ -72,6 +72,9 @@ class TabularWorldModelPlanner(LeWMAdapterStub):
         self._plan_horizon = plan_horizon
         self._score: Score = score if score is not None else _manhattan
         self._rng = random.Random(seed)
+        # Each plan() call simulates num_candidates rollouts of length plan_horizon,
+        # so the cost is roughly num_candidates * plan_horizon dynamics evaluations.
+        self.compute_per_plan_call = float(num_candidates * plan_horizon)
 
     @property
     def name(self) -> str:

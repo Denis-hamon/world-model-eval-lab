@@ -104,7 +104,14 @@ def horizon_sweep(
             perturb_prob=perturb_prob,
             seed=seed,
         ).run()
-        points.append(_summarize(h, results, policy_name=policy.name))
+        points.append(
+            _summarize(
+                h,
+                results,
+                policy_name=policy.name,
+                compute_per_plan_call=policy.compute_per_plan_call,
+            )
+        )
 
     return HorizonSweep(policy_name=policy_name or "unknown", points=points)
 
@@ -113,8 +120,13 @@ def _summarize(
     plan_horizon: int,
     results: Sequence[EpisodeResult],
     policy_name: str,
+    compute_per_plan_call: float | None = None,
 ) -> HorizonSweepPoint:
-    scorecard = compute_scorecard(results, policy_name=policy_name)
+    scorecard = compute_scorecard(
+        results,
+        policy_name=policy_name,
+        compute_per_plan_call=compute_per_plan_call,
+    )
     successes = sum(1 for r in results if r.success)
     s_low, s_high = wilson_interval(successes, len(results))
     per_call_latencies = [lat for r in results for lat in r.planning_latencies_ms]
@@ -127,6 +139,26 @@ def _summarize(
         latency_ci_low=l_low,
         latency_ci_high=l_high,
     )
+
+
+def to_markdown_horizon_sweep(sweep: HorizonSweep) -> str:
+    """Render a `HorizonSweep` as a Markdown table, paste-ready for a doc."""
+    lines = [
+        f"### Horizon sweep: `{sweep.policy_name}`",
+        "",
+        "| plan_horizon | success_rate | success_95ci | avg_steps | latency_ms_per_call | latency_95ci |",
+        "| ---: | ---: | :--- | ---: | ---: | :--- |",
+    ]
+    for point in sweep.points:
+        sc = point.scorecard
+        steps = "n/a" if sc.average_steps_to_success is None else f"{sc.average_steps_to_success:.1f}"
+        lines.append(
+            f"| {point.plan_horizon} | {sc.success_rate:.3f} | "
+            f"[{point.success_ci_low:.2f}, {point.success_ci_high:.2f}] | "
+            f"{steps} | {sc.average_planning_latency_ms:.3f} | "
+            f"[{point.latency_ci_low:.2f}, {point.latency_ci_high:.2f}] |"
+        )
+    return "\n".join(lines) + "\n"
 
 
 def print_horizon_sweep(sweep: HorizonSweep) -> None:

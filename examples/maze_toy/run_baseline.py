@@ -83,7 +83,11 @@ def main() -> None:
 
     random_card = compute_scorecard(random_results, policy_name="random")
     greedy_card = compute_scorecard(greedy_results, policy_name="greedy-no-waypoint")
-    wm_card = compute_scorecard(wm_results, policy_name="tabular-world-model")
+    wm_card = compute_scorecard(
+        wm_results,
+        policy_name="tabular-world-model",
+        compute_per_plan_call=wm_planner.compute_per_plan_call,
+    )
 
     print_scorecard(random_card)
     print_scorecard(greedy_card)

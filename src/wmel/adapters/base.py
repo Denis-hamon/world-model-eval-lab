@@ -20,7 +20,14 @@ class PlannerPolicy(ABC):
     Implementations are free to do anything internally (search, learned model
     rollouts, scripted heuristics). The runner only observes the planned
     sequence and the time it took to produce it.
+
+    Subclasses may set `compute_per_plan_call` to a positive float to declare
+    their estimated cost per `plan()` invocation in any agreed-upon unit
+    (model forward passes, FLOPs, rollouts). When provided, the scorecard
+    derives an average compute-per-decision figure from the aggregate stats.
     """
+
+    compute_per_plan_call: float | None = None
 
     @property
     @abstractmethod

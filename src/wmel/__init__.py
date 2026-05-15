@@ -11,7 +11,14 @@ from wmel.experiments import (
     HorizonSweepPoint,
     horizon_sweep,
     print_horizon_sweep,
+    to_markdown_horizon_sweep,
     wilson_interval,
+)
+from wmel.report import (
+    print_scorecard,
+    to_json_report,
+    to_markdown_report,
+    to_markdown_scorecard,
 )
 from wmel.metrics import (
     EpisodeResult,
@@ -23,7 +30,7 @@ from wmel.metrics import (
     perturbation_recovery_rate,
 )
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 
 __all__ = [
     "BenchmarkEnvironment",
@@ -40,6 +47,11 @@ __all__ = [
     "horizon_sweep",
     "perturbation_recovery_rate",
     "print_horizon_sweep",
+    "print_scorecard",
+    "to_json_report",
+    "to_markdown_horizon_sweep",
+    "to_markdown_report",
+    "to_markdown_scorecard",
     "wilson_interval",
     "__version__",
 ]

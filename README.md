@@ -127,9 +127,10 @@ world-model-eval-lab/
 
 - **v0.1**: two-room benchmark, random and greedy baselines, scorecard, JSON report.
 - **v0.2**: maze benchmark, concrete `TabularWorldModelPlanner` subclass of `LeWMAdapterStub`, tightened `BenchmarkEnvironment` contract (`action_space`).
-- **v0.3** (current): `horizon_sweep` experiment with Wilson and normal confidence intervals, worked planning-horizon curve on the maze, ASCII sweep printer, JSON sweep report.
-- **v0.4**: scorecard CLI, perturbation library, compute-per-decision profiling.
-- **v0.5**: adapter for a real research world model (via stub interface), public scoreboard format.
+- **v0.3.1**: `horizon_sweep` experiment with Wilson and normal confidence intervals; per-call planning latency; honest perturbation accounting; regression tests for both metric invariants.
+- **v0.4** (current): Markdown reporting (`to_markdown_scorecard`, `to_markdown_report`, `to_markdown_horizon_sweep`); compute-per-decision wired via `PlannerPolicy.compute_per_plan_call`.
+- **v0.5**: pluggable perturbation library (displacement / blocked-cell / delayed-action), scorecard CLI.
+- **v0.6**: adapter for a real research world model (via stub interface), public scoreboard format.
 
 ## Disclaimer
 

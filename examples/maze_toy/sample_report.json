@@ -11,7 +11,7 @@
         "episodes": 30,
         "success_rate": 0.0,
         "average_steps_to_success": null,
-        "average_planning_latency_ms": 0.0504412,
+        "average_planning_latency_ms": 0.022949133333333333,
         "perturbation_recovery_rate": 0.0,
         "average_compute_per_decision": null,
         "extras": {}
@@ -21,7 +21,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.05555
+            0.029746
           ],
           "perturbed": false,
           "recovered": false,
@@ -31,7 +31,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.065998
+            0.024644
           ],
           "perturbed": false,
           "recovered": false,
@@ -41,7 +41,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047744
+            0.02282
           ],
           "perturbed": false,
           "recovered": false,
@@ -51,7 +51,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048334
+            0.028208
           ],
           "perturbed": false,
           "recovered": false,
@@ -61,7 +61,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047673
+            0.022262
           ],
           "perturbed": false,
           "recovered": false,
@@ -71,7 +71,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048197
+            0.022844
           ],
           "perturbed": false,
           "recovered": false,
@@ -81,7 +81,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048662
+            0.022508
           ],
           "perturbed": false,
           "recovered": false,
@@ -91,7 +91,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048964
+            0.022784
           ],
           "perturbed": false,
           "recovered": false,
@@ -101,7 +101,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.059017
+            0.021413
           ],
           "perturbed": false,
           "recovered": false,
@@ -111,7 +111,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.046017
+            0.021322
           ],
           "perturbed": false,
           "recovered": false,
@@ -121,7 +121,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047659
+            0.022499
           ],
           "perturbed": false,
           "recovered": false,
@@ -131,7 +131,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047946
+            0.021818
           ],
           "perturbed": false,
           "recovered": false,
@@ -141,7 +141,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.046876
+            0.021783
           ],
           "perturbed": false,
           "recovered": false,
@@ -151,7 +151,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.04748
+            0.022045
           ],
           "perturbed": false,
           "recovered": false,
@@ -161,7 +161,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047643
+            0.022117
           ],
           "perturbed": false,
           "recovered": false,
@@ -171,7 +171,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048423
+            0.022297
           ],
           "perturbed": false,
           "recovered": false,
@@ -181,7 +181,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.04865
+            0.022787
           ],
           "perturbed": false,
           "recovered": false,
@@ -191,7 +191,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.050331
+            0.027615
           ],
           "perturbed": false,
           "recovered": false,
@@ -201,7 +201,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.04822
+            0.022393
           ],
           "perturbed": false,
           "recovered": false,
@@ -211,7 +211,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048127
+            0.02259
           ],
           "perturbed": false,
           "recovered": false,
@@ -221,7 +221,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.04692
+            0.021784
           ],
           "perturbed": false,
           "recovered": false,
@@ -231,7 +231,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047765
+            0.02265
           ],
           "perturbed": false,
           "recovered": false,
@@ -241,7 +241,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.06068
+            0.021815
           ],
           "perturbed": false,
           "recovered": false,
@@ -251,7 +251,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.050524
+            0.023298
           ],
           "perturbed": false,
           "recovered": false,
@@ -261,7 +261,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.04678
+            0.021514
           ],
           "perturbed": false,
           "recovered": false,
@@ -271,7 +271,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047093
+            0.021968
           ],
           "perturbed": true,
           "recovered": false,
@@ -281,7 +281,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047196
+            0.022439
           ],
           "perturbed": false,
           "recovered": false,
@@ -291,7 +291,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.048286
+            0.022241
           ],
           "perturbed": false,
           "recovered": false,
@@ -301,7 +301,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.072524
+            0.022268
           ],
           "perturbed": false,
           "recovered": false,
@@ -311,7 +311,7 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.047957
+            0.022002
           ],
           "perturbed": false,
           "recovered": false,
@@ -325,7 +325,7 @@
         "episodes": 30,
         "success_rate": 0.0,
         "average_steps_to_success": null,
-        "average_planning_latency_ms": 0.0019121816037735847,
+        "average_planning_latency_ms": 0.001774441037735849,
         "perturbation_recovery_rate": 0.0,
         "average_compute_per_decision": null,
         "extras": {}
@@ -335,20 +335,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.012729,
-            0.005133,
-            0.004588,
-            0.004568,
-            0.004526,
-            0.004469,
-            0.004413,
-            0.004423,
-            0.004404,
-            0.004428,
-            0.004453,
-            0.004432,
-            0.00441,
-            0.004352
+            0.008999,
+            0.002842,
+            0.002012,
+            0.001789,
+            0.001738,
+            0.001741,
+            0.001716,
+            0.001706,
+            0.001684,
+            0.001713,
+            0.001698,
+            0.0017,
+            0.001726,
+            0.001767
           ],
           "perturbed": false,
           "recovered": false,
@@ -358,20 +358,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.008392,
-            0.004486,
-            0.004461,
-            0.004431,
-            0.004413,
-            0.004477,
-            0.004438,
-            0.004432,
-            0.004464,
-            0.00443,
-            0.004408,
-            0.004438,
-            0.00441,
-            0.004343
+            0.003568,
+            0.001793,
+            0.001729,
+            0.001834,
+            0.001717,
+            0.001727,
+            0.001736,
+            0.001724,
+            0.001756,
+            0.001682,
+            0.001716,
+            0.001687,
+            0.0017,
+            0.001772
           ],
           "perturbed": false,
           "recovered": false,
@@ -381,20 +381,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.008183,
-            0.004474,
-            0.00443,
-            0.004432,
-            0.004427,
-            0.004419,
-            0.004432,
-            0.004436,
-            0.004411,
-            0.004422,
-            0.004415,
-            0.004427,
-            0.004422,
-            0.004284
+            0.003226,
+            0.001718,
+            0.001672,
+            0.001696,
+            0.001676,
+            0.001671,
+            0.001667,
+            0.001669,
+            0.00168,
+            0.001667,
+            0.001666,
+            0.001682,
+            0.001685,
+            0.001681
           ],
           "perturbed": false,
           "recovered": false,
@@ -404,20 +404,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.008061,
-            0.004479,
-            0.004446,
-            0.004436,
-            0.004462,
-            0.004453,
-            0.004417,
-            0.004434,
-            0.00442,
-            0.008916,
-            0.001802,
-            0.001503,
-            0.018727,
-            0.001446
+            0.00312,
+            0.001707,
+            0.001679,
+            0.001668,
+            0.001774,
+            0.001674,
+            0.001709,
+            0.001666,
+            0.001696,
+            0.001692,
+            0.001933,
+            0.001757,
+            0.001637,
+            0.001619
           ],
           "perturbed": false,
           "recovered": false,
@@ -427,507 +427,507 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.002832,
-            0.001393,
-            0.001386,
+            0.003149,
+            0.001676,
+            0.001651,
+            0.00169,
+            0.001649,
+            0.00166,
+            0.001637,
+            0.001652,
+            0.001646,
+            0.001652,
+            0.001616,
+            0.001643,
+            0.001655,
+            0.00159
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003099,
+            0.001693,
+            0.001677,
+            0.00168,
+            0.001631,
+            0.00166,
+            0.001633,
+            0.001648,
+            0.00164,
+            0.001653,
+            0.00163,
+            0.001661,
+            0.001697,
+            0.001597
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003088,
+            0.001693,
+            0.001671,
+            0.001664,
+            0.001647,
+            0.001637,
+            0.001739,
+            0.001644,
+            0.001677,
+            0.001641,
+            0.001686,
+            0.001622,
+            0.001676,
+            0.001607
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.00302,
+            0.001646,
+            0.001632,
+            0.001655,
+            0.001634,
+            0.001646,
+            0.001632,
+            0.001646,
+            0.001665,
+            0.001639,
+            0.001649,
+            0.001646,
+            0.001647,
+            0.001592
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003176,
+            0.001735,
+            0.001699,
+            0.001649,
+            0.001661,
+            0.001671,
+            0.001694,
+            0.001696,
+            0.001668,
+            0.00167,
+            0.001635,
+            0.001692,
+            0.001634,
+            0.001622
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003031,
+            0.00171,
+            0.001649,
+            0.001635,
+            0.001644,
+            0.001619,
+            0.00165,
+            0.001651,
+            0.001629,
+            0.001629,
+            0.001626,
+            0.001643,
+            0.001628,
+            0.001653
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003057,
+            0.001673,
+            0.001661,
+            0.001631,
+            0.001631,
+            0.001636,
+            0.001638,
+            0.001663,
+            0.001669,
+            0.001628,
+            0.001651,
+            0.001658,
+            0.001641,
+            0.001597
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003073,
+            0.00167,
+            0.001627,
+            0.001642,
+            0.001656,
+            0.001649,
+            0.001672,
+            0.001653,
+            0.001635,
+            0.001652,
+            0.001639,
+            0.001651,
+            0.001654,
+            0.001598
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003032,
+            0.001655,
+            0.001651,
+            0.001644,
+            0.001634,
+            0.001661,
+            0.001651,
+            0.00165,
+            0.001696,
+            0.001662,
+            0.001672,
+            0.001646,
+            0.001639,
+            0.001611
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003079,
+            0.001651,
+            0.001633,
+            0.001633,
+            0.001635,
+            0.001625,
+            0.001663,
+            0.001654,
+            0.001664,
+            0.001653,
+            0.001629,
+            0.001637,
+            0.001665,
+            0.001604
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003043,
+            0.001664,
+            0.001661,
+            0.001693,
+            0.001656,
+            0.001679,
+            0.001667,
+            0.00166,
+            0.001654,
+            0.001642,
+            0.001639,
+            0.001671,
+            0.00165,
+            0.001623
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003036,
+            0.001658,
+            0.001673,
+            0.001639,
+            0.00164,
+            0.001636,
+            0.001635,
+            0.001713,
+            0.001627,
+            0.001635,
+            0.001656,
+            0.001631,
+            0.001654,
+            0.00162
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003008,
+            0.001664,
+            0.00165,
+            0.001656,
+            0.001639,
+            0.001648,
+            0.001683,
+            0.001646,
+            0.001654,
+            0.001688,
+            0.001689,
+            0.001666,
+            0.001719,
+            0.001608
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003128,
+            0.001654,
+            0.00166,
+            0.001643,
+            0.001662,
+            0.001641,
+            0.001636,
+            0.001646,
+            0.004906,
+            0.001683,
+            0.001628,
+            0.00168,
+            0.001636,
+            0.00159
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003164,
+            0.001702,
+            0.001664,
+            0.001662,
+            0.001663,
+            0.001634,
+            0.001644,
+            0.001646,
+            0.001667,
+            0.001641,
+            0.001625,
+            0.00169,
+            0.001649,
+            0.001582
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003087,
+            0.001647,
+            0.001623,
+            0.001653,
+            0.001632,
+            0.00164,
+            0.00168,
+            0.001642,
+            0.001638,
+            0.00169,
+            0.001628,
+            0.001631,
+            0.001664,
+            0.001637
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003045,
+            0.00164,
+            0.001662,
+            0.001666,
+            0.001632,
+            0.001645,
+            0.001638,
+            0.00165,
+            0.001649,
+            0.001629,
+            0.001647,
+            0.001695,
+            0.001665,
+            0.001604
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003023,
+            0.00165,
+            0.001663,
+            0.001653,
+            0.001641,
+            0.001664,
+            0.001637,
+            0.001629,
+            0.001638,
+            0.001666,
+            0.001637,
+            0.001666,
+            0.001621,
+            0.001605
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003126,
+            0.001685,
+            0.001631,
+            0.001665,
+            0.001639,
+            0.001617,
+            0.001662,
+            0.001644,
+            0.001645,
+            0.001629,
+            0.001666,
+            0.00165,
+            0.001645,
+            0.001621
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003118,
+            0.001655,
+            0.001643,
+            0.001632,
+            0.001694,
+            0.001627,
+            0.001629,
+            0.001648,
+            0.001651,
+            0.001672,
+            0.001632,
+            0.001685,
+            0.001646,
+            0.001593
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003038,
+            0.001649,
+            0.001637,
+            0.001636,
+            0.001662,
+            0.00166,
+            0.001645,
+            0.00164,
+            0.001645,
+            0.001642,
+            0.001629,
+            0.001644,
+            0.001642,
+            0.001635
+          ],
+          "perturbed": false,
+          "recovered": false,
+          "compute_per_decision": null
+        },
+        {
+          "success": false,
+          "steps": 60,
+          "planning_latencies_ms": [
+            0.003273,
+            0.001667,
+            0.001643,
+            0.001339,
             0.001363,
-            0.001383,
-            0.001345,
-            0.001359,
-            0.001353,
-            0.001363,
+            0.001382,
             0.001349,
-            0.001368,
-            0.001369,
-            0.001369,
-            0.001331
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002585,
-            0.001391,
-            0.001361,
-            0.00136,
-            0.001421,
-            0.001356,
-            0.001368,
-            0.001373,
-            0.00137,
-            0.001355,
-            0.001396,
-            0.001356,
-            0.001363,
-            0.001339
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002658,
-            0.001396,
-            0.001372,
-            0.001364,
-            0.001365,
-            0.001376,
-            0.001441,
-            0.001361,
-            0.001366,
-            0.001355,
-            0.001388,
-            0.001357,
-            0.001394,
-            0.001336
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002612,
-            0.001383,
-            0.001365,
-            0.001353,
-            0.001354,
-            0.001365,
-            0.001367,
-            0.001353,
-            0.001365,
-            0.001361,
-            0.001374,
-            0.001382,
-            0.001381,
-            0.001312
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002596,
-            0.001408,
-            0.001366,
-            0.001365,
-            0.001371,
-            0.001364,
-            0.001365,
-            0.001364,
-            0.00138,
-            0.001356,
-            0.001357,
-            0.001367,
-            0.001353,
-            0.001326
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002635,
-            0.001379,
-            0.001348,
-            0.001383,
-            0.001367,
-            0.001367,
-            0.001356,
-            0.001366,
-            0.001406,
-            0.001356,
-            0.001382,
-            0.001364,
-            0.001378,
-            0.001327
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002603,
-            0.001385,
-            0.00138,
-            0.001356,
-            0.00138,
-            0.001377,
-            0.001356,
-            0.001375,
+            0.001324,
+            0.001327,
+            0.001325,
             0.001352,
-            0.0015,
-            0.001441,
-            0.001379,
-            0.00136,
-            0.001329
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.00261,
-            0.001393,
-            0.001368,
-            0.001369,
-            0.001359,
-            0.001376,
-            0.001386,
-            0.001366,
-            0.001368,
-            0.001375,
-            0.001377,
-            0.001379,
-            0.001374,
-            0.001333
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002562,
-            0.001365,
-            0.001362,
-            0.001391,
-            0.001366,
-            0.001362,
-            0.001366,
-            0.001365,
-            0.001361,
-            0.001364,
-            0.001348,
-            0.001374,
-            0.001371,
-            0.001341
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002567,
-            0.001374,
-            0.001405,
-            0.001377,
-            0.001359,
-            0.001359,
-            0.001376,
-            0.001378,
-            0.001351,
-            0.001367,
-            0.001375,
-            0.00137,
-            0.001386,
-            0.001323
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002568,
-            0.001377,
-            0.001371,
-            0.001379,
-            0.001387,
-            0.001367,
-            0.001369,
-            0.001389,
-            0.001382,
-            0.001378,
-            0.001377,
-            0.001368,
-            0.001377,
-            0.00135
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002641,
-            0.001367,
-            0.001385,
-            0.001367,
-            0.001384,
-            0.001353,
-            0.001351,
-            0.001431,
-            0.001365,
-            0.001381,
-            0.001363,
-            0.001383,
-            0.001381,
-            0.001335
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002604,
-            0.001377,
-            0.001387,
-            0.001377,
-            0.001368,
-            0.001381,
-            0.001375,
-            0.001351,
-            0.001364,
-            0.001351,
-            0.001375,
-            0.001366,
-            0.001386,
-            0.001324
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002522,
-            0.001374,
-            0.001379,
-            0.001378,
-            0.001359,
-            0.001375,
-            0.00138,
-            0.001357,
-            0.00136,
-            0.001367,
-            0.001343,
-            0.001367,
-            0.001346,
-            0.001325
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002507,
-            0.001384,
-            0.001365,
-            0.001369,
-            0.001344,
-            0.001363,
-            0.001379,
-            0.001363,
-            0.001353,
-            0.001365,
-            0.001345,
-            0.001359,
-            0.001357,
-            0.001328
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002575,
-            0.001412,
-            0.001358,
-            0.001361,
-            0.001353,
-            0.001396,
-            0.001367,
-            0.001361,
-            0.00136,
-            0.001402,
-            0.001402,
-            0.00137,
-            0.001358,
-            0.001338
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002624,
-            0.001432,
-            0.001396,
-            0.0014,
-            0.001411,
-            0.001396,
-            0.001403,
-            0.001396,
-            0.001387,
-            0.001366,
-            0.001378,
-            0.001362,
-            0.001368,
-            0.001335
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002618,
-            0.001393,
-            0.001363,
-            0.001368,
-            0.001364,
-            0.001358,
-            0.001365,
-            0.001359,
-            0.001361,
-            0.001361,
-            0.001353,
-            0.001372,
-            0.001374,
-            0.001334
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002566,
-            0.001397,
-            0.001348,
-            0.001373,
-            0.001355,
-            0.001366,
-            0.001358,
-            0.001365,
-            0.00135,
-            0.001377,
-            0.001366,
-            0.001382,
-            0.001374,
-            0.001349
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002571,
-            0.001394,
-            0.001365,
-            0.001379,
-            0.001368,
-            0.001377,
-            0.001365,
-            0.001368,
-            0.001363,
-            0.00136,
-            0.001369,
-            0.001391,
-            0.001397,
-            0.001336
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002537,
-            0.001394,
-            0.001364,
-            0.001387,
-            0.00138,
-            0.001373,
-            0.001359,
-            0.001362,
-            0.00135,
-            0.001369,
-            0.001375,
-            0.001357,
-            0.001361,
-            0.001323
-          ],
-          "perturbed": false,
-          "recovered": false,
-          "compute_per_decision": null
-        },
-        {
-          "success": false,
-          "steps": 60,
-          "planning_latencies_ms": [
-            0.002635,
-            0.001403,
-            0.001409,
-            0.001136,
-            0.001155,
-            0.001142,
-            0.00113,
-            0.001108,
-            0.001089,
-            0.001139,
-            0.001088,
-            0.001102,
-            0.00109,
-            0.001101,
-            0.001097,
-            0.001115,
-            0.001099,
-            0.000832
+            0.001325,
+            0.001321,
+            0.001324,
+            0.001338,
+            0.00133,
+            0.001325,
+            0.001029
           ],
           "perturbed": true,
           "recovered": false,
@@ -937,20 +937,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.00258,
-            0.001393,
-            0.001374,
-            0.001384,
-            0.001372,
-            0.00137,
-            0.001363,
-            0.00137,
-            0.001352,
-            0.001387,
-            0.001378,
-            0.001372,
-            0.001371,
-            0.001361
+            0.003155,
+            0.001747,
+            0.001652,
+            0.001689,
+            0.001703,
+            0.001637,
+            0.001686,
+            0.001624,
+            0.001636,
+            0.001669,
+            0.001636,
+            0.001627,
+            0.001633,
+            0.001602
           ],
           "perturbed": false,
           "recovered": false,
@@ -960,20 +960,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.002617,
-            0.001392,
-            0.001374,
-            0.001356,
-            0.001385,
-            0.00139,
-            0.001374,
-            0.001372,
-            0.001372,
-            0.001372,
-            0.001361,
-            0.001382,
-            0.001371,
-            0.001327
+            0.003102,
+            0.001687,
+            0.001676,
+            0.001656,
+            0.001636,
+            0.001673,
+            0.001642,
+            0.001666,
+            0.001689,
+            0.001633,
+            0.00164,
+            0.001668,
+            0.001637,
+            0.001603
           ],
           "perturbed": false,
           "recovered": false,
@@ -983,20 +983,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.002567,
-            0.001376,
-            0.001389,
-            0.001382,
-            0.001371,
-            0.001356,
-            0.001378,
-            0.001362,
-            0.001391,
-            0.001367,
-            0.001388,
-            0.001353,
-            0.001369,
-            0.001341
+            0.003041,
+            0.001652,
+            0.001633,
+            0.00165,
+            0.001659,
+            0.001675,
+            0.00163,
+            0.001653,
+            0.001684,
+            0.001621,
+            0.001645,
+            0.001674,
+            0.00165,
+            0.001625
           ],
           "perturbed": false,
           "recovered": false,
@@ -1006,20 +1006,20 @@
           "success": false,
           "steps": 60,
           "planning_latencies_ms": [
-            0.002536,
-            0.00138,
-            0.001371,
-            0.001378,
-            0.001363,
-            0.001365,
-            0.001344,
-            0.001353,
-            0.001362,
-            0.00138,
-            0.00136,
-            0.001356,
-            0.001372,
-            0.001355
+            0.003031,
+            0.001691,
+            0.001652,
+            0.001649,
+            0.001669,
+            0.001674,
+            0.001674,
+            0.001674,
+            0.001653,
+            0.001677,
+            0.001653,
+            0.001648,
+            0.00165,
+            0.001633
           ],
           "perturbed": false,
           "recovered": false,
@@ -1033,9 +1033,9 @@
         "episodes": 30,
         "success_rate": 1.0,
         "average_steps_to_success": 33.8,
-        "average_planning_latency_ms": 3.189338076923077,
+        "average_planning_latency_ms": 3.2092708923076922,
         "perturbation_recovery_rate": 1.0,
-        "average_compute_per_decision": null,
+        "average_compute_per_decision": 256.4102564102564,
         "extras": {}
       },
       "results": [
@@ -1043,8 +1043,8 @@
           "success": true,
           "steps": 36,
           "planning_latencies_ms": [
-            3.212635,
-            3.172522
+            3.456123,
+            3.260036
           ],
           "perturbed": false,
           "recovered": false,
@@ -1054,8 +1054,8 @@
           "success": true,
           "steps": 40,
           "planning_latencies_ms": [
-            3.167934,
-            3.174021
+            3.077923,
+            3.169643
           ],
           "perturbed": false,
           "recovered": false,
@@ -1065,8 +1065,8 @@
           "success": true,
           "steps": 32,
           "planning_latencies_ms": [
-            3.180736,
-            3.15611
+            3.204505,
+            3.178473
           ],
           "perturbed": false,
           "recovered": false,
@@ -1076,9 +1076,9 @@
           "success": true,
           "steps": 31,
           "planning_latencies_ms": [
-            3.249667,
-            3.20009,
-            3.164919
+            4.755816,
+            5.200851,
+            6.218532
           ],
           "perturbed": false,
           "recovered": false,
@@ -1088,8 +1088,8 @@
           "success": true,
           "steps": 36,
           "planning_latencies_ms": [
-            3.169707,
-            3.160417
+            3.073422,
+            3.055103
           ],
           "perturbed": false,
           "recovered": false,
@@ -1099,8 +1099,8 @@
           "success": true,
           "steps": 28,
           "planning_latencies_ms": [
-            3.176285,
-            3.392904
+            3.062027,
+            3.05558
           ],
           "perturbed": false,
           "recovered": false,
@@ -1110,8 +1110,8 @@
           "success": true,
           "steps": 33,
           "planning_latencies_ms": [
-            3.165709,
-            3.147212
+            3.063258,
+            3.061581
           ],
           "perturbed": false,
           "recovered": false,
@@ -1121,8 +1121,8 @@
           "success": true,
           "steps": 31,
           "planning_latencies_ms": [
-            3.154367,
-            3.258247
+            3.070613,
+            3.095937
           ],
           "perturbed": false,
           "recovered": false,
@@ -1132,8 +1132,8 @@
           "success": true,
           "steps": 38,
           "planning_latencies_ms": [
-            3.164743,
-            3.431947
+            3.072822,
+            3.130474
           ],
           "perturbed": false,
           "recovered": false,
@@ -1143,8 +1143,8 @@
           "success": true,
           "steps": 36,
           "planning_latencies_ms": [
-            3.257791,
-            3.215554
+            3.072273,
+            3.069867
           ],
           "perturbed": false,
           "recovered": false,
@@ -1154,8 +1154,8 @@
           "success": true,
           "steps": 28,
           "planning_latencies_ms": [
-            3.197076,
-            3.164224
+            3.079873,
+            3.077255
           ],
           "perturbed": false,
           "recovered": false,
@@ -1165,8 +1165,8 @@
           "success": true,
           "steps": 35,
           "planning_latencies_ms": [
-            3.15364,
-            3.084466
+            3.13393,
+            3.082685
           ],
           "perturbed": false,
           "recovered": false,
@@ -1176,8 +1176,8 @@
           "success": true,
           "steps": 39,
           "planning_latencies_ms": [
-            3.073372,
-            3.127569
+            3.093864,
+            3.065844
           ],
           "perturbed": false,
           "recovered": false,
@@ -1187,8 +1187,8 @@
           "success": true,
           "steps": 36,
           "planning_latencies_ms": [
-            3.183974,
-            3.147696
+            3.064523,
+            3.063389
           ],
           "perturbed": false,
           "recovered": false,
@@ -1198,8 +1198,8 @@
           "success": true,
           "steps": 37,
           "planning_latencies_ms": [
-            3.267782,
-            3.271576
+            3.15921,
+            3.119893
           ],
           "perturbed": false,
           "recovered": false,
@@ -1209,8 +1209,8 @@
           "success": true,
           "steps": 34,
           "planning_latencies_ms": [
-            3.544981,
-            3.518756
+            3.144874,
+            3.064475
           ],
           "perturbed": false,
           "recovered": false,
@@ -1220,8 +1220,8 @@
           "success": true,
           "steps": 33,
           "planning_latencies_ms": [
-            3.626003,
-            3.225527
+            3.065991,
+            3.07816
           ],
           "perturbed": false,
           "recovered": false,
@@ -1231,9 +1231,9 @@
           "success": true,
           "steps": 29,
           "planning_latencies_ms": [
-            3.228314,
-            3.228297,
-            3.222698
+            3.162191,
+            3.178143,
+            3.177656
           ],
           "perturbed": false,
           "recovered": false,
@@ -1243,9 +1243,9 @@
           "success": true,
           "steps": 36,
           "planning_latencies_ms": [
-            3.272657,
-            3.217196,
-            3.218004
+            3.089192,
+            3.057485,
+            3.083015
           ],
           "perturbed": false,
           "recovered": false,
@@ -1255,8 +1255,8 @@
           "success": true,
           "steps": 38,
           "planning_latencies_ms": [
-            3.282291,
-            3.230154
+            3.074577,
+            3.060843
           ],
           "perturbed": false,
           "recovered": false,
@@ -1266,8 +1266,8 @@
           "success": true,
           "steps": 39,
           "planning_latencies_ms": [
-            3.195058,
-            3.207392
+            3.077673,
+            3.070864
           ],
           "perturbed": false,
           "recovered": false,
@@ -1277,8 +1277,8 @@
           "success": true,
           "steps": 37,
           "planning_latencies_ms": [
-            3.222809,
-            3.210238
+            3.089235,
+            3.107011
           ],
           "perturbed": false,
           "recovered": false,
@@ -1288,8 +1288,8 @@
           "success": true,
           "steps": 28,
           "planning_latencies_ms": [
-            3.170745,
-            3.111043
+            3.073092,
+            3.068098
           ],
           "perturbed": false,
           "recovered": false,
@@ -1299,8 +1299,8 @@
           "success": true,
           "steps": 30,
           "planning_latencies_ms": [
-            3.108798,
-            3.074924
+            3.10571,
+            3.065579
           ],
           "perturbed": false,
           "recovered": false,
@@ -1310,8 +1310,8 @@
           "success": true,
           "steps": 34,
           "planning_latencies_ms": [
-            3.114012,
-            3.077679
+            3.101534,
+            3.068967
           ],
           "perturbed": false,
           "recovered": false,
@@ -1321,9 +1321,9 @@
           "success": true,
           "steps": 34,
           "planning_latencies_ms": [
-            3.076872,
-            3.098687,
-            3.100878
+            3.071962,
+            3.140873,
+            3.069141
           ],
           "perturbed": true,
           "recovered": true,
@@ -1333,8 +1333,8 @@
           "success": true,
           "steps": 32,
           "planning_latencies_ms": [
-            3.084707,
-            3.067858
+            3.076964,
+            3.058846
           ],
           "perturbed": false,
           "recovered": false,
@@ -1344,8 +1344,8 @@
           "success": true,
           "steps": 29,
           "planning_latencies_ms": [
-            3.068753,
-            3.093493
+            3.064005,
+            3.063722
           ],
           "perturbed": false,
           "recovered": false,
@@ -1355,9 +1355,9 @@
           "success": true,
           "steps": 37,
           "planning_latencies_ms": [
-            3.065556,
-            3.058279,
-            3.088457
+            3.064532,
+            3.089693,
+            3.225586
           ],
           "perturbed": false,
           "recovered": false,
@@ -1367,8 +1367,8 @@
           "success": true,
           "steps": 28,
           "planning_latencies_ms": [
-            3.069101,
-            3.081866
+            3.149667,
+            3.117927
           ],
           "perturbed": false,
           "recovered": false,

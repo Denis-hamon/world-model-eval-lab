@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wmel"
-version = "0.3.1"
+version = "0.4.0"
 description = "World Model Evaluation Lab - a product-oriented benchmark framework for action-conditioned world models."
 readme = "README.md"
 requires-python = ">=3.11"
