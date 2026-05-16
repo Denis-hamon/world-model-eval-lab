@@ -64,6 +64,16 @@ jobs:
         if: matrix.python-version != '3.13'
         run: python -m experiments.dmc_acrobot.baseline > /dev/null
 
+      - name: Smoke-test learned MLP world model on DMC Acrobot (Python 3.11 / 3.12 only)
+        # --smoke uses 5 train rollouts x 80 steps, 30 epochs, 2 benchmark
+        # episodes x 80 steps. ~5 s wall-clock on a runner. Locks in the
+        # full pipeline: random rollouts -> train -> plug into the planner
+        # -> generate a scorecard JSON. The 'full' run that produced the
+        # canonical results/dmc_acrobot/learned_random_rollouts.json takes
+        # ~2-5 min and is not appropriate for CI.
+        if: matrix.python-version != '3.13'
+        run: python -m experiments.dmc_acrobot.learned_baseline --smoke > /dev/null
+
   # Stdlib-only job: installs only the [dev] extra, never torch. Locks in
   # the promise that the core runtime stays import-clean without PyTorch.
   # The learned tests skip themselves via pytest.importorskip("torch"), so
