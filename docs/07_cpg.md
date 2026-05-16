@@ -91,13 +91,34 @@ The default tolerance is $\tau = 0.05$. Crucially, `MODEL BOTTLENECK` is **not**
 | Agresti--Caffo $95\%$ CI | $[-0.059, +0.559]$ |
 | Verdict | <span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span> |
 
-The data is *suggestive* of a model bottleneck &mdash; the raw point estimate is positive and large &mdash; but with $n_\ell = 10$ and the learned arm reporting $0/10$, the AC CI cannot rule out zero. The honest call is to **run more episodes**. A multi-seed extension that pushes $N$ to $100$ episodes per arm would tighten the AC half-width by roughly $\sqrt{10}$, moving the lower bound either firmly above zero or covering it more thoroughly.
+The data is *suggestive* of a model bottleneck &mdash; the raw point estimate is positive and large &mdash; but with $n_\ell = 10$ and the learned arm reporting $0/10$, the AC CI cannot rule out zero. The honest call is to **run more episodes**.
 
-Numbers are pulled verbatim from [`results/dmc_acrobot/cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cpg.json). Regenerate with:
+Numbers above are pulled verbatim from [`results/dmc_acrobot/cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cpg.json). Regenerate with:
 
 ```bash
 pip install -e ".[dev,control,learned]"
 python -m experiments.dmc_acrobot.cpg
+```
+
+  <h3 class="chapter-sub">Multi-seed extension (n = 150 pooled per arm)</h3>
+
+We pooled three seeds at $50$ episodes per arm per seed ($n = 150$ pooled) and swept the MLP's training-set size by a factor of $100$ across $\\{200,\, 2{,}000,\, 20{,}000\\}$ random-policy transitions. Every other quantity is held fixed.
+
+| Train size | Val MSE | Oracle | Learned | Raw CPG | AC 95% CI | Verdict |
+|---:|---:|---:|---:|---:|---:|---|
+| $200$ | $0.0651$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| $2{,}000$ | $0.0233$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| $20{,}000$ | $0.0004$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+
+Validation MSE drops by **~150 times** across the three cells; learned-arm planning success stays at **exactly zero**; CPG returns the same point estimate, the same CI, and the same verdict in every cell. The most parsimonious read separates *model-capacity* (refuted: the MLP is fitting the training distribution to $4\\!\\cdot\\!10^{-4}$ at $20\\,000$ transitions) from *data coverage* (consistent: random rollouts in Acrobot never reach the upright regime; the model is extrapolating during planning and its predictions are unreliable off the training manifold). Planner-side limitations (random-shooting MPC is not exhaustive search) and score-function approximation are not ruled out by this experiment; a second-axis sweep that varies the exploration policy under fixed data size would confirm coverage as the dominant driver.
+
+The recommended remediation is to change the **data-collection policy** (energy-aware exploration, relabelled trajectories) -- and to consider a stronger planner -- not to grow the model.
+
+Numbers from [`results/dmc_acrobot/cpg_sweep.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cpg_sweep.json). Regenerate with:
+
+```bash
+python -m experiments.dmc_acrobot.cpg_sweep \
+    --data-sizes 200,2000,20000 --seeds 0,1,2 --episodes 50
 ```
 </section>
 

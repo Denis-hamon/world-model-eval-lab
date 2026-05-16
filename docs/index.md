@@ -7,11 +7,11 @@ next:
 ---
 
 <div class="release-banner">
-  <span class="tag">v0.10.0</span>
+  <span class="tag">v0.11.0</span>
   <span class="release-banner-text">
-    Short paper: <strong>Counterfactual Planning Gap</strong>, a decision-grade metric with a calibrated Agresti&ndash;Caffo confidence interval and a five-branch gated verdict.
+    Multi-seed CPG sweep ships. Verdict hardens from <code>INCONCLUSIVE</code> (n = 10) to <code>MODEL BOTTLENECK</code> (n = 150 pooled); validation MSE drops 150&times; across the data-size sweep while learned-arm success stays at zero. <strong>CPG separates capacity from coverage.</strong>
   </span>
-  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.10.0">Release notes &rarr;</a>
+  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.11.0">Release notes &rarr;</a>
 </div>
 
 <section class="hero">
@@ -48,11 +48,12 @@ next:
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
 <aside class="whats-new">
-  <h3>What's new in v0.10</h3>
+  <h3>What's new in v0.11</h3>
   <ul>
-    <li>Short paper accompanying the framework: <em>Counterfactual Planning Gap: A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation</em> (LaTeX source under <a href="https://github.com/Denis-hamon/world-model-eval-lab/tree/main/paper"><code>paper/</code></a>, 23 BibTeX entries, Makefile, stdlib <code>build_figures.py</code> for reproducibility).</li>
-    <li>Three adversarial-review fixes on the paper before tag: dropped a misplaced citation, corrected a table value to match <code>cpg.json</code>, softened a line-count claim.</li>
-    <li><a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/CITATION.cff"><code>CITATION.cff</code></a> bumped, with a <code>preferred-citation</code> block pointing at the paper.</li>
+    <li><strong>Multi-seed CPG sweep</strong> on DMC Acrobot: three seeds &times; 50 episodes per arm per seed (n = 150 pooled), three training-set sizes spanning a factor of 100. Verdict <code>MODEL BOTTLENECK</code> in every cell, identical CI <code>[+0.191, +0.335]</code>.</li>
+    <li><strong>The capacity-vs-coverage diagnosis</strong>: held-out validation MSE drops 150&times; across the sweep while learned-arm planning success stays at zero. CPG correctly attributes the failure to data coverage, not model capacity.</li>
+    <li>Paper updated with <strong>Section 5.5</strong> (multi-seed extension) and <strong>Section 5.6</strong> (what CPG separates). Abstract and conclusion rewritten to reflect the powered result. <code>build_figures.py</code> extended to read <code>cpg_sweep.json</code>.</li>
+    <li>The site landing and the <a href="07_cpg.html">CPG page</a> surface the same multi-seed table.</li>
   </ul>
 </aside>
 
@@ -232,6 +233,18 @@ Sweep the planning horizon of the tabular world-model planner and watch where it
 
 A low validation MSE on prediction quality does **not** translate into closed-loop success. CPG quantifies the planning-side gap with an Agresti--Caffo $95\%$ confidence interval that **does not collapse** at the boundary proportions $p \in \\{0, 1\\}$ where the standard Wald approximation degenerates. The verdict is gated on the CI lower bound, not the raw point estimate -- at $n = 10$ the framework reports `INCONCLUSIVE` rather than over-claiming a model bottleneck.
 
+  <h3 class="chapter-sub">Multi-seed extension: capacity vs.\ coverage</h3>
+
+At $n = 10$ the framework refused to commit. We then pooled three seeds at $n = 50$ episodes per arm per seed and swept the MLP's training-set size by a factor of $100$. The verdict hardens to **MODEL BOTTLENECK** with a tight, identical confidence interval *in every cell*.
+
+| Train size | Val MSE | Oracle | Learned | Raw CPG | AC 95% CI | Verdict |
+|---:|---:|---:|---:|---:|---:|---|
+| $200$ | $0.0651$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| $2{,}000$ | $0.0233$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| $20{,}000$ | $0.0004$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+
+Held-out validation MSE drops by **~150 times** across the three cells. Planning success stays at **exactly zero**. The gap does not close. A prediction-quality metric alone would have declared the largest-data cell solved; CPG points to a *data-coverage* bottleneck (random rollouts in Acrobot never visit the upright-balancing regime) as the most parsimonious read, with planner-side and score-function residuals as plausible second-order contributors. The recommended remediation is to change the data-collection policy, not to grow the model.
+
 [Read the full page on CPG &rarr;](07_cpg.html) &nbsp;&middot;&nbsp; [Read the paper &rarr;](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex)
 </section>
 
@@ -312,8 +325,17 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 <section class="release-timeline">
   <article class="release-card release-current">
     <div class="release-head">
-      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.10.0">v0.10.0</a>
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.11.0">v0.11.0</a>
       <span class="release-meta">2026-05-16 &middot; current</span>
+    </div>
+    <p class="release-title">Multi-seed CPG sweep: capacity vs.\ coverage</p>
+    <p class="release-body">Verdict hardens from <code>INCONCLUSIVE</code> (n = 10) to <code>MODEL BOTTLENECK</code> (n = 150 pooled across three seeds); training-set sweep across <code>{200, 2 000, 20 000}</code> transitions leaves verdict and CI <em>identical</em> while validation MSE drops 150&times;. Paper Section 5.5 + 5.6 updated.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.10.0">v0.10.0</a>
+      <span class="release-meta">2026-05-16</span>
     </div>
     <p class="release-title">Short paper: Counterfactual Planning Gap</p>
     <p class="release-body">~7-page LaTeX paper under <code>paper/</code>, 23 BibTeX entries, reproducibility script, three adversarial-review findings addressed before tag.</p>
