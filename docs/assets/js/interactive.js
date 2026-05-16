@@ -72,7 +72,11 @@
     if (!tocList) return;
     var main = document.querySelector(".main-content");
     if (!main) return;
-    var headings = main.querySelectorAll("h2, h3");
+    var EXCLUDE_TOC_SCOPES = ".policy-card, .release-card, .path-card, .verdict-legend, .whats-new, .release-banner, header";
+    var allHeadings = main.querySelectorAll("h2, h3");
+    var headings = Array.prototype.filter.call(allHeadings, function (h) {
+      return !h.closest(EXCLUDE_TOC_SCOPES);
+    });
     if (headings.length < 2) {
       var aside = tocList.closest(".site-toc");
       if (aside) aside.style.display = "none";

@@ -24,8 +24,8 @@ next:
       The next bottleneck for world models is not only model quality. It is proof of usefulness.
     </blockquote>
     <div class="hero-cta">
-      <a class="btn-primary" href="07_cpg.html">Read about CPG</a>
-      <a class="btn-ghost" href="06_demo.html">Walkthrough</a>
+      <a class="btn-primary" href="#problem">Start the walkthrough</a>
+      <a class="btn-ghost" href="07_cpg.html">Read about CPG</a>
       <a class="btn-ghost" href="https://github.com/Denis-hamon/world-model-eval-lab">GitHub</a>
     </div>
   </div>
@@ -56,64 +56,36 @@ next:
   </ul>
 </aside>
 
-## The headline result: CPG on DMC Acrobot-swingup
-{:.reveal}
+<section class="chapter" id="problem" markdown="1">
+  <p class="chapter-eyebrow">Step 01</p>
+  <h2 class="chapter-title">The problem</h2>
+  <p class="chapter-lead">Action-conditioned world models are routinely evaluated on prediction quality: reconstruction loss, FID, held-out next-frame accuracy. None of these answer the question an applied team must answer before integrating a model into a control loop.</p>
 
-The framework's flagship metric. Run the same random-shooting MPC planner twice on DeepMind Control Suite Acrobot-swingup -- once against oracle dynamics (real MuJoCo physics), once against a Markovian MLP world model trained on 2&nbsp;000 random transitions. The only thing that changes is the `dynamics=` callable. The success-rate difference is the **Counterfactual Planning Gap**.
-{:.reveal}
+The question is **decision quality, not prediction quality.** Does the model, when used by a planner, produce decisions that **succeed** within the **latency** and **compute** budget the deployment will accept? Does it **recover** from perturbations? Does it **generalise** across related tasks?
 
-<section class="policy-comparison reveal">
-  <article class="policy-card policy-success">
-    <header>
-      <h3>Oracle dynamics</h3>
-      <p class="policy-tagline">Random-shooting MPC against real MuJoCo physics.</p>
-    </header>
-    <div class="big-number">30%</div>
-    <p class="big-label">success rate over 10 episodes</p>
-    <dl class="card-stats">
-      <div><dt>latency / call</dt><dd>77.3 ms</dd></div>
-      <div><dt>compute / decision</dt><dd>407.1 rollout-units</dd></div>
-      <div><dt>avg steps to success</dt><dd>180.7</dd></div>
-    </dl>
-  </article>
+A low validation MSE is necessary but not sufficient. The framework's headline example: a Markovian MLP world model with val_mse $= 0.026$ on DMC Acrobot. Predicting accurately. Planning a $0\%$ success rate.
 
-  <article class="policy-card policy-fail">
-    <header>
-      <h3>Learned MLP dynamics</h3>
-      <p class="policy-tagline">Same MPC, same scoring, MLP trained on 2&nbsp;000 random transitions.</p>
-    </header>
-    <div class="big-number">0%</div>
-    <p class="big-label">success rate over 10 episodes</p>
-    <dl class="card-stats">
-      <div><dt>latency / call</dt><dd>65.3 ms</dd></div>
-      <div><dt>compute / decision</dt><dd>157.3 rollout-units</dd></div>
-      <div><dt>val MSE</dt><dd>0.026 (low) - yet success collapses</dd></div>
-    </dl>
-  </article>
-
-  <article class="policy-card policy-cpg">
-    <header>
-      <h3>Counterfactual Planning Gap</h3>
-      <p class="policy-tagline">Decoupling model error from planner capacity.</p>
-    </header>
-    <div class="big-number">+0.30</div>
-    <p class="big-label">raw difference of success rates</p>
-    <dl class="card-stats">
-      <div><dt>AC 95% CI</dt><dd>[-0.06, +0.56]</dd></div>
-      <div><dt>n / arm</dt><dd>10 episodes</dd></div>
-      <div><dt>verdict</dt><dd><span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span></dd></div>
-    </dl>
-  </article>
+See [Thesis](00_thesis.html) and [Evaluation gap](01_evaluation_gap.html) for the long form.
 </section>
 
-A low validation MSE on prediction quality does **not** translate into closed-loop success. CPG quantifies the planning-side gap with an Agresti&ndash;Caffo $95\%$ confidence interval that **does not collapse** at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation degenerates. The verdict is gated on the CI lower bound, not the raw point estimate -- at $n = 10$ the framework reports `INCONCLUSIVE` rather than over-claiming a model bottleneck. [Read the full page on CPG &rarr;](07_cpg.html)
-{:.reveal}
+<section class="chapter" id="contract" markdown="1">
+  <p class="chapter-eyebrow">Step 02</p>
+  <h2 class="chapter-title">The evaluation contract</h2>
+  <p class="chapter-lead">Every adapter exposes four hooks. The benchmark runner does the rest: rollouts, perturbations, latency measurement, scorecard.</p>
 
-## Three policies on the maze, side by side
-{:.reveal}
+![architecture](assets/architecture.svg){:.figure-architecture-img}
 
-An earlier demonstration on the maze toy. Same environment, same 30 episodes, same seed -- three different planners. Numbers below are pulled verbatim from `examples/maze_toy/sample_report.json`, regenerated every time `python -m examples.maze_toy.run_baseline` is run.
-{:.reveal}
+The contract is intentionally minimal: `encode` (observation &rarr; latent), `rollout` (latent + action sequence &rarr; latent sequence), `score` (latent + goal &rarr; reward), `plan` (observation + goal + horizon &rarr; action sequence). Anything that implements these four methods plugs into the same runner and gets compared on the same scorecard structure.
+
+Concrete subclasses live in [`src/wmel/adapters/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/src/wmel/adapters): a stdlib tabular planner, a PyTorch MLP, and the DMC Acrobot oracle. None of them know about the runner, the metrics, or each other.
+</section>
+
+<section class="chapter" id="toy" markdown="1">
+  <p class="chapter-eyebrow">Step 03</p>
+  <h2 class="chapter-title">How it behaves on a toy</h2>
+  <p class="chapter-lead">A 7x7 maze with a vertical wall and one doorway. Same env, same 30 episodes, same seed; three different planners. The framework's first non-trivial demonstration that the contract holds and the metrics discriminate.</p>
+
+  <h3 class="chapter-sub">Three policies, side by side</h3>
 
 <section class="policy-comparison reveal">
   <article class="policy-card policy-fail">
@@ -164,11 +136,9 @@ An earlier demonstration on the maze toy. Same environment, same 30 episodes, sa
   <figcaption>Three agents, three outcomes, one shared evaluation contract.</figcaption>
 </figure>
 
-## The same contract holds for a learned model
-{:.reveal}
+  <h3 class="chapter-sub">The same contract holds for a learned model</h3>
 
-The thesis of this framework -- that *any* action-conditioned world model can plug into the same evaluation layer -- is only credible if it actually works on a learned model. The smallest possible demonstration: a tiny PyTorch MLP trained on the maze's transitions plugged in as the `dynamics` callable.
-{:.reveal}
+The thesis is only credible if a real learned model can plug into the same evaluation layer. The smallest demonstration: a tiny PyTorch MLP trained on 64 maze transitions, passed in as the `dynamics=` callable.
 
 <section class="policy-comparison reveal">
   <article class="policy-card policy-success">
@@ -201,36 +171,82 @@ The thesis of this framework -- that *any* action-conditioned world model can pl
 </section>
 
 Same success, same steps to success, same nominal compute -- **76 times the per-call latency at horizon 20.** Without measuring latency per call, you would conclude "it works just as well!" while the actual deployment cost is two orders of magnitude higher.
-{:.reveal}
 
-## The evaluation contract any world model can plug into
+  <h3 class="chapter-sub">Effective planning horizon, made visible</h3>
 
-![architecture](assets/architecture.svg){:.figure-architecture-img}
-
-Every adapter exposes the four hooks above (`encode`, `rollout`, `score`, `plan`). The benchmark runner does the rest: rollouts, perturbations, latency measurement, scorecard. Concrete subclasses live in [`src/wmel/adapters/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/src/wmel/adapters): a stdlib tabular planner, a PyTorch MLP, and the DMC Acrobot oracle.
-
-## Effective planning horizon, made visible
-{:.reveal}
-
-The framework's first headline result: sweep the planning horizon of a tabular world-model planner on the maze toy and watch where it pays off. Hover any horizon below to see all of its metrics together. Success saturates at h = 15. Per-call latency keeps climbing past the plateau without buying any extra success.
-{:.reveal}
+Sweep the planning horizon of the tabular world-model planner and watch where it pays off. Hover any horizon to see all four metrics together. Success saturates at $h = 15$; per-call latency keeps climbing past the plateau without buying any extra success.
 
 <div class="chart-container has-tooltips reveal" aria-label="Interactive horizon-sweep chart. Hover or focus a horizon to see its success rate, per-call latency, compute per decision, and average steps to success.">
   {% include_relative assets/horizon_sweep.svg %}
 </div>
+</section>
 
-## Reproduce in 25 seconds, on a laptop, no GPU
-{:.reveal}
+<section class="chapter" id="real" markdown="1">
+  <p class="chapter-eyebrow">Step 04</p>
+  <h2 class="chapter-title">How it scales to real control</h2>
+  <p class="chapter-lead">The framework's flagship metric. Run the same random-shooting MPC planner twice on DeepMind Control Suite Acrobot-swingup &mdash; once against oracle dynamics (real MuJoCo physics), once against a Markovian MLP world model trained on 2&nbsp;000 random transitions. The only thing that changes is the <code>dynamics=</code> callable. The success-rate difference is the <strong>Counterfactual Planning Gap</strong>.</p>
+
+<section class="policy-comparison reveal">
+  <article class="policy-card policy-success">
+    <header>
+      <h3>Oracle dynamics</h3>
+      <p class="policy-tagline">Random-shooting MPC against real MuJoCo physics.</p>
+    </header>
+    <div class="big-number">30%</div>
+    <p class="big-label">success rate over 10 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>77.3 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>407.1 rollout-units</dd></div>
+      <div><dt>avg steps to success</dt><dd>180.7</dd></div>
+    </dl>
+  </article>
+
+  <article class="policy-card policy-fail">
+    <header>
+      <h3>Learned MLP dynamics</h3>
+      <p class="policy-tagline">Same MPC, same scoring, MLP trained on 2&nbsp;000 random transitions.</p>
+    </header>
+    <div class="big-number">0%</div>
+    <p class="big-label">success rate over 10 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>65.3 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>157.3 rollout-units</dd></div>
+      <div><dt>val MSE</dt><dd>0.026 (low) - yet success collapses</dd></div>
+    </dl>
+  </article>
+
+  <article class="policy-card policy-cpg">
+    <header>
+      <h3>Counterfactual Planning Gap</h3>
+      <p class="policy-tagline">Decoupling model error from planner capacity.</p>
+    </header>
+    <div class="big-number">+0.30</div>
+    <p class="big-label">raw difference of success rates</p>
+    <dl class="card-stats">
+      <div><dt>AC 95% CI</dt><dd>[-0.06, +0.56]</dd></div>
+      <div><dt>n / arm</dt><dd>10 episodes</dd></div>
+      <div><dt>verdict</dt><dd><span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span></dd></div>
+    </dl>
+  </article>
+</section>
+
+A low validation MSE on prediction quality does **not** translate into closed-loop success. CPG quantifies the planning-side gap with an Agresti--Caffo $95\%$ confidence interval that **does not collapse** at the boundary proportions $p \in \\{0, 1\\}$ where the standard Wald approximation degenerates. The verdict is gated on the CI lower bound, not the raw point estimate -- at $n = 10$ the framework reports `INCONCLUSIVE` rather than over-claiming a model bottleneck.
+
+[Read the full page on CPG &rarr;](07_cpg.html) &nbsp;&middot;&nbsp; [Read the paper &rarr;](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex)
+</section>
+
+<section class="chapter" id="reproduce" markdown="1">
+  <p class="chapter-eyebrow">Step 05</p>
+  <h2 class="chapter-title">Reproduce in 25 seconds</h2>
+  <p class="chapter-lead">No GPU, no heavy ML dependency at runtime. Core install plus an installed CLI; optional extras for PyTorch and DMC.</p>
 
 ```bash
 git clone https://github.com/Denis-hamon/world-model-eval-lab.git
 cd world-model-eval-lab
 pip install -e ".[dev]"
 ```
-{:.reveal}
 
-Then run a single benchmark, or sweep the planning horizon, directly via the installed `wmel` console script:
-{:.reveal}
+Then run a single benchmark or sweep the planning horizon via the installed `wmel` console script:
 
 ```bash
 # One scorecard, one JSON report
@@ -239,20 +255,17 @@ wmel run --env maze_toy --policy tabular-world-model --episodes 30 --output run.
 # Horizon sweep, comma-separated horizons, one combined JSON
 wmel sweep --env maze_toy --plan-horizons 5,10,15,20,30 --output sweep.json
 ```
-{:.reveal}
 
-The full DMC Acrobot CPG worked example needs the `[control]` and `[learned]` extras:
-{:.reveal}
+The DMC Acrobot CPG worked example needs the `[control]` and `[learned]` extras:
 
 ```bash
 pip install -e ".[dev,control,learned]"
 python -m experiments.dmc_acrobot.cpg
 # -> results/dmc_acrobot/cpg.json
 ```
-{:.reveal}
 
-Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`, `generated_at`), so downstream tooling can rely on a stable shape across releases.
-{:.reveal}
+Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`, `generated_at`).
+</section>
 
 ## Where to read next
 
@@ -353,7 +366,5 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 </section>
 
 ## Disclaimer
-{:.reveal}
 
 This is an independent study of evaluation methodology for action-conditioned world models. It is **not** an official artifact of AMI, Meta, the LeWorldModel project, or any of their authors, and **not** an artifact of any current or past employer of the author. References to JEPA-style or LeWorldModel concepts are conceptual, not affiliational.
-{:.reveal}

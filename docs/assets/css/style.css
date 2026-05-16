@@ -1590,3 +1590,88 @@ img.figure-architecture-img.is-visible {
   color: var(--ink);
 }
 
+/* =============================================================
+ * Chapter pattern: visual structure for landing & long pages.
+ * Each chapter is a <section class="chapter"> with an eyebrow
+ * ("Step 01"), a numbered title, and a subtle rule above it.
+ * ============================================================= */
+.chapter {
+  padding: 3.5rem 0 0.5rem;
+  margin-top: 1.5rem;
+  position: relative;
+  scroll-margin-top: calc(var(--nav-height) + 1rem);
+}
+.chapter + .chapter { margin-top: 0; }
+.chapter::before {
+  content: "";
+  display: block;
+  width: 4rem;
+  height: 2px;
+  background: var(--accent);
+  margin-bottom: 1.5rem;
+  border-radius: 2px;
+  opacity: 0.55;
+}
+.chapter-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+.chapter > h2.chapter-title,
+.chapter-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.chapter-lead {
+  margin: 0 0 1.5rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 42rem;
+}
+.chapter-sub {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+/* When the chapter sits inside .main-content, give it the same
+   max-width as paragraphs but let figures and policy grids span
+   wider. */
+.chapter > p,
+.chapter > .chapter-lead,
+.chapter > ul,
+.chapter > ol,
+.chapter > pre,
+.chapter > blockquote {
+  max-width: 48rem;
+}
+.chapter > .policy-comparison,
+.chapter > .figure-wide,
+.chapter > .chart-container,
+.chapter > .reading-paths,
+.chapter > .release-timeline,
+.chapter > section,
+.chapter > figure,
+.chapter > table {
+  max-width: none;
+}
+
+@media (max-width: 640px) {
+  .chapter { padding-top: 2.5rem; }
+  .chapter > h2.chapter-title,
+  .chapter-title { font-size: 1.4rem; }
+  .chapter-lead { font-size: 0.98rem; }
+}
+
+
