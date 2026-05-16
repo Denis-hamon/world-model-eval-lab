@@ -27,8 +27,8 @@ next:
 </section>
 
 <ul class="stat-strip">
-  <li><span class="stat-value">4</span><span class="stat-label">tagged releases</span></li>
-  <li><span class="stat-value">64</span><span class="stat-label">passing tests</span></li>
+  <li><span class="stat-value">5</span><span class="stat-label">tagged releases</span></li>
+  <li><span class="stat-value">81</span><span class="stat-label">passing tests</span></li>
   <li><span class="stat-value">CPU-only</span><span class="stat-label">no GPU required</span></li>
   <li><span class="stat-value">25 s</span><span class="stat-label">to reproduce the headline sweep</span></li>
   <li><span class="stat-value">0</span><span class="stat-label">ML dependencies at runtime</span></li>
@@ -226,11 +226,36 @@ The same scorecard structure applies to every benchmark card in [03_benchmark_ca
 git clone https://github.com/Denis-hamon/world-model-eval-lab.git
 cd world-model-eval-lab
 pip install -e ".[dev]"
-python -m examples.maze_toy.run_horizon_sweep
 ```
 {:.reveal}
 
-You should see a scorecard, a Markdown-paste-ready table with Wilson confidence intervals, and a JSON report saved next to the example. All deterministic with `seed=0`.
+Then run a single benchmark, or sweep the planning horizon, directly via the installed `wmel` console script - no need to call into the `examples/` modules:
+{:.reveal}
+
+```bash
+# One scorecard, one JSON report
+wmel run --env maze_toy --policy tabular-world-model --episodes 30 --output run.json
+
+# Horizon sweep, comma-separated horizons, one combined JSON
+wmel sweep --env maze_toy --plan-horizons 5,10,15,20,30 --output sweep.json
+```
+{:.reveal}
+
+Both commands honour the same `Perturbation` library as the Python API:
+{:.reveal}
+
+```bash
+# Drop the next 2 queued actions when the perturbation fires
+wmel run --env maze_toy --policy tabular-world-model --perturbation drop-next-2 \
+  --perturb-prob 0.3 --output run.json
+
+# Compose env-default and drop-next-3 at the same trigger moment
+wmel sweep --env maze_toy --perturbation 'composite:env-default+drop-next-3' \
+  --output sweep.json
+```
+{:.reveal}
+
+Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`, `generated_at`), so downstream tooling can rely on a stable shape across releases. All runs are deterministic with `seed=0`. The same scripts under `examples/maze_toy/run_*.py` keep working for users who prefer the Python API.
 {:.reveal}
 
 ## Read more
@@ -248,6 +273,8 @@ You should see a scorecard, a Markdown-paste-ready table with Wilson confidence 
 ## Releases
 {:.reveal}
 
+- [v0.7.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.7.0) - `wmel` CLI, versioned JSON schema, perturbation-aware sweep, stdlib-only CI job.
+- [v0.6.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.6.0) - proof of contract for learned PyTorch dynamics on the maze.
 - [v0.5.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.5.0) - pluggable perturbation library.
 - [v0.4.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.4.0) - Markdown export and compute-per-decision.
 - [v0.3.1](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.3.1) - initial public release.
