@@ -1,9 +1,16 @@
 /*
- * Vanilla JS that powers two pieces of interactivity on the live site:
+ * Vanilla JS that powers five pieces of interactivity on the live site:
  *
- *   1. Scroll-triggered reveal animations (IntersectionObserver adding
+ *   1. Theme toggle (light / dark). The theme is bootstrapped synchronously
+ *      from <head> in default.html to avoid a white flash on dark-mode load;
+ *      this file only handles the click-to-toggle and the localStorage write.
+ *   2. Mobile-friendly nav toggle (collapses the section links into a
+ *      drop-down below 880px).
+ *   3. Auto-built right-rail table of contents from the page's h2/h3 nodes,
+ *      with a scroll-spy that highlights the section currently in view.
+ *   4. Scroll-triggered reveal animations (IntersectionObserver adding
  *      .is-visible to .reveal and to a couple of named figures).
- *   2. Hover tooltips on the inline horizon-sweep SVG, reading per-horizon
+ *   5. Hover tooltips on the inline horizon-sweep SVG, reading per-horizon
  *      values from data-* attributes on each `.data-slice` group.
  *
  * No frameworks, no build step.
@@ -16,7 +23,90 @@
     return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
-  // --- 1. Scroll reveals ----------------------------------------------------
+  // --- 1. Theme toggle ------------------------------------------------------
+
+  function setupThemeToggle() {
+    var btn = document.querySelector("[data-theme-toggle]");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var current = document.documentElement.getAttribute("data-theme") || "light";
+      var next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("wmel-theme", next); } catch (e) { /* ignore */ }
+      btn.setAttribute("aria-label", next === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    });
+    var initial = document.documentElement.getAttribute("data-theme") || "light";
+    btn.setAttribute("aria-label", initial === "dark" ? "Switch to light mode" : "Switch to dark mode");
+  }
+
+  // --- 2. Mobile nav toggle -------------------------------------------------
+
+  function setupNavToggle() {
+    var btn = document.querySelector("[data-nav-toggle]");
+    var nav = document.querySelector(".site-nav");
+    if (!btn || !nav) return;
+    btn.addEventListener("click", function () {
+      var open = nav.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    nav.querySelectorAll(".site-nav-links a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        nav.classList.remove("is-open");
+        btn.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  // --- 3. Right-rail TOC + scroll-spy --------------------------------------
+
+  function slugify(text) {
+    return text.toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  function setupToc() {
+    var tocList = document.querySelector("[data-toc]");
+    if (!tocList) return;
+    var main = document.querySelector(".main-content");
+    if (!main) return;
+    var headings = main.querySelectorAll("h2, h3");
+    if (headings.length < 2) {
+      var aside = tocList.closest(".site-toc");
+      if (aside) aside.style.display = "none";
+      return;
+    }
+    var items = [];
+    headings.forEach(function (h) {
+      if (!h.id) h.id = slugify(h.textContent || "");
+      if (!h.id) return;
+      var li = document.createElement("li");
+      li.className = h.tagName === "H3" ? "toc-h3" : "toc-h2";
+      var a = document.createElement("a");
+      a.href = "#" + h.id;
+      a.textContent = h.textContent || "";
+      li.appendChild(a);
+      tocList.appendChild(li);
+      items.push({ heading: h, link: a });
+    });
+    if (!("IntersectionObserver" in window)) return;
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var id = entry.target.id;
+        var match = items.find(function (it) { return it.heading.id === id; });
+        if (!match) return;
+        if (entry.isIntersecting) {
+          items.forEach(function (it) { it.link.classList.remove("is-active"); });
+          match.link.classList.add("is-active");
+        }
+      });
+    }, { rootMargin: "-30% 0px -60% 0px", threshold: 0 });
+    items.forEach(function (it) { spy.observe(it.heading); });
+  }
+
+  // --- 4. Scroll reveals ----------------------------------------------------
 
   function setupReveals() {
     var targets = document.querySelectorAll(".reveal, .chart-container, img.figure-architecture-img");
@@ -35,7 +125,7 @@
     targets.forEach(function (el) { io.observe(el); });
   }
 
-  // --- 2. Sweep chart tooltips ---------------------------------------------
+  // --- 5. Sweep chart tooltips ---------------------------------------------
 
   function fmt(value) {
     return (value === undefined || value === null) ? "n/a" : value;
@@ -59,7 +149,6 @@
         slice.addEventListener("focusin",   function () { showTooltip(container, svg, tooltip, slice); });
         slice.addEventListener("mouseleave", function () { hideTooltip(tooltip, slice); });
         slice.addEventListener("focusout",   function () { hideTooltip(tooltip, slice); });
-        // Make the slice keyboard-focusable.
         slice.setAttribute("tabindex", "0");
       });
     });
@@ -81,10 +170,8 @@
       "<div class='row'><span class='k'>compute / decision</span><span class='v'>" + fmt(compute) + "</span></div>" +
       "<div class='row'><span class='k'>avg steps</span><span class='v'>" + fmt(steps) + "</span></div>";
 
-    // Position the tooltip above the success-point of the slice.
     var successPoint = slice.querySelector(".success-point");
     if (!successPoint) return;
-    var svgRect = svg.getBoundingClientRect();
     var containerRect = container.getBoundingClientRect();
     var pointBox = successPoint.getBoundingClientRect();
     var x = pointBox.left + pointBox.width / 2 - containerRect.left;
@@ -100,13 +187,17 @@
 
   // --- bootstrap ------------------------------------------------------------
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      setupReveals();
-      setupSweepTooltips();
-    });
-  } else {
+  function boot() {
+    setupThemeToggle();
+    setupNavToggle();
+    setupToc();
     setupReveals();
     setupSweepTooltips();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
   }
 })();
