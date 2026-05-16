@@ -37,7 +37,7 @@ from wmel.metrics import (
     perturbation_recovery_rate,
 )
 
-__version__ = "0.9.0"
+__version__ = "0.10.0"
 
 __all__ = [
     "BenchmarkEnvironment",

@@ -1,0 +1,223 @@
+\documentclass[10pt,letterpaper]{article}
+
+% --- Standard packages only; should compile on any TeX Live since 2020 ---
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor={blue!50!black},
+  urlcolor={blue!50!black}
+}
+
+% Tighter section spacing for a short paper.
+\titlespacing*{\section}{0pt}{1.4ex plus 0.2ex minus 0.2ex}{0.8ex plus 0.2ex}
+\titlespacing*{\subsection}{0pt}{1.1ex plus 0.2ex minus 0.2ex}{0.6ex plus 0.2ex}
+
+\pagestyle{plain}
+
+% --- Front matter ---
+\title{
+  \textbf{Counterfactual Planning Gap}\\[0.3em]
+  \large A Decision-Grade Metric for Decoupling Model Error\\
+  from Planner Capacity in World Model Evaluation
+}
+\author{
+  Denis Hamon\\
+  \small Independent.\\
+  \small\href{mailto:denis.hamon1@gmail.com}{\texttt{denis.hamon1@gmail.com}}\\
+  \small Repository: \url{https://github.com/Denis-hamon/world-model-eval-lab}
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent Action-conditioned world models are routinely evaluated by prediction quality (reconstruction loss, frame-level FID, held-out one-step accuracy). Such metrics describe how well a model fits its training distribution. They are silent on the question that an applied team must answer before integrating a model into a control loop: \emph{does the model, when used by a planner, produce decisions that succeed at the cost the deployment will accept?} We propose the \textbf{Counterfactual Planning Gap (CPG)}: the success-rate difference between a fixed planner using oracle dynamics and the same planner using the learned model on the same benchmark. The point estimate is the raw difference of success rates; the $95\%$ interval uses the Agresti--Caffo plus-4 adjustment, which keeps the variance positive at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation collapses. We further define a five-branch verdict (\textsc{model bottleneck}, \textsc{learned outperforms oracle}, \textsc{planner bottleneck}, \textsc{model as good as oracle}, \textsc{inconclusive}) that is gated on the lower bound of the CI rather than on the raw point estimate, so that under-powered runs cannot over-claim a diagnosis. We package CPG as a $\sim 160$-line CPG addition to a reusable framework (\texttt{wmel}) that exposes a minimal evaluation contract and ships a worked example on DeepMind Control Suite Acrobot-swingup. On 10 episodes per arm with a random-shooting MPC, we observe raw $\mathrm{CPG} = +0.300$ with Agresti--Caffo $95\%$~CI $[-0.06, +0.56]$, which yields the verdict \textsc{inconclusive} -- the data is suggestive of a model bottleneck but the design is under-powered to claim it. We argue that a metric that says \emph{inconclusive} when the data is inconclusive is the correctly-calibrated behaviour, and outline what a powered version of the experiment would require.
+\end{abstract}
+
+\section{Introduction}
+
+The world-model literature has converged on three properties that motivate its existence: \emph{prediction} of future observations conditioned on actions, \emph{planning} by rolling those predictions out, and \emph{transfer} across tasks that share latent structure~\citep{ha2018world,hafner2023dreamerv3,bardes2024vjepa,bruce2024genie}. Most published evaluations focus on the first: reconstruction loss, frame-level Fréchet Inception Distance, or next-frame prediction loss on held-out trajectories. These metrics are easy to compute and easy to compare across releases, but they are silent on a question that any applied team must answer before integrating a learned world model into a control loop: \emph{does using the model to plan produce decisions that succeed at the latency and compute the deployment will tolerate?}
+
+The gap between prediction quality and decision quality is well documented. \citet{hafner2019planet} report success rates on DeepMind Control Suite tasks alongside reconstruction loss because the two metrics disagree. \citet{yu2020mopo,kidambi2020morel} explicitly study \emph{model exploitation} -- the gap between a planner using a learned model and the same planner using the true environment dynamics -- in offline model-based RL. \citet{agarwal2021precipice} document how rapidly point estimates of return mislead at small sample sizes, and prescribe interval reporting. These are all healthy signals; what is missing is a packaged, reusable, decision-grade scalar that quantifies the gap with an honest confidence interval and a decision rule.
+
+This paper makes three modest contributions:
+
+\begin{enumerate}
+  \item We define the \textbf{Counterfactual Planning Gap (CPG)} as the success-rate difference between a planner using oracle dynamics and the same planner using a learned model, computed on identical benchmark runs that differ only in their \texttt{dynamics} callable (\S\ref{sec:cpg}). The point estimate is the raw observed difference; the $95\%$ interval uses Agresti--Caffo plus-4. The verdict is gated on the AC lower bound.
+  \item We package CPG behind a minimal \emph{evaluation contract} -- a four-method adapter interface (\texttt{encode}, \texttt{rollout}, \texttt{score}, \texttt{plan}) that decouples the model from the runner and the metric (\S\ref{sec:framework}). Computing CPG is two calls to the same \texttt{BenchmarkRunner} plus one call to a metric function.
+  \item We report a worked example on DeepMind Control Suite Acrobot-swingup with a Markovian MLP world model trained on $2{,}000$ random transitions. The verdict at $n = 10$ is \textsc{inconclusive}: the raw gap is $+0.30$ but the AC CI crosses zero (\S\ref{sec:empirical}). We argue that this is the correctly-calibrated behaviour for an under-powered design, and outline the multi-seed extension that would tighten the bound.
+\end{enumerate}
+
+The framework is open source\footnote{\url{https://github.com/Denis-hamon/world-model-eval-lab}}, runs CPU-only without a GPU, and has no heavy machine-learning dependency at runtime; PyTorch and \texttt{dm-control} are pulled in only for the worked-example adapters. CI verifies the contract on Python 3.11/3.12/3.13.
+
+\section{Related Work}
+
+\paragraph{Latent-dynamics world models.} \citet{ha2018world}, \citet{hafner2019planet}, \citet{hafner2020dreamer}, and \citet{hafner2023dreamerv3} establish the latent-dynamics + planner pattern that this framework targets. \citet{schrittwieser2020muzero} demonstrates the same pattern with a value-based search; \citet{micheli2023iris} replaces the recurrent backbone with a transformer; \citet{hansen2024tdmpc2} pushes the planner side toward stochastic MPC at scale.
+
+\paragraph{Joint-embedding predictive architectures.} \citet{lecun2022jepa} proposed JEPA as a self-supervised path to world models that predicts in latent space without reconstructing pixels. \citet{assran2023ijepa} and \citet{bardes2024vjepa,bardes2025vjepa2} report results on representation quality. None of these papers report a planning-success-rate gap as a scalar; the framework here is complementary.
+
+\paragraph{Generative world models.} \citet{bruce2024genie,bruce2024genie2} demonstrate large-scale generative world models conditioned on action sequences. Evaluation in these works is dominated by perceptual and generative metrics; planning impact is not yet a standard reporting axis.
+
+\paragraph{Model exploitation in offline model-based RL.} \citet{yu2020mopo} and \citet{kidambi2020morel} measure the gap between a planner using a learned model and the same planner using the true dynamics. They report return curves; we package the same comparison as a single scalar with a confidence interval and a decision rule.
+
+\paragraph{Evaluation methodology.} \citet{henderson2018matters} document the irreproducibility of RL evaluation under typical sample sizes. \citet{agarwal2021precipice} prescribes bootstrap-based interval reporting and Pareto-style aggregate metrics. \citet{wilson1927} provides the Wilson score interval that is the close cousin of the Agresti--Caffo CI we use; \citet{agresticaffo2000} extends it to the difference of two proportions. \citet{newcombe1998} catalogues a family of interval methods for the same problem. The CPG CI is a direct application of Agresti--Caffo to the planning-comparison setting.
+
+\paragraph{Benchmarks.} We evaluate on Acrobot-swingup from the DeepMind Control Suite~\citep{tassa2018dmc,tunyasuvunakool2020dmcontrol}. Acrobot has been a reference task for model-based RL since at least \citet{schaefer2007acrobot}. \citet{park2024ogbench} and \citet{liu2023libero} are the canonical present-day benchmark suites for goal-conditioned and manipulation evaluation; integrating either is in scope for future work.
+
+\section{The Evaluation Contract and a Decision-Grade Taxonomy}
+\label{sec:framework}
+
+\subsection{The four-method contract}
+
+Every adapter in the framework implements
+\begin{align*}
+\texttt{encode}    &:\ \mathcal{O} \to \mathcal{Z}, \\
+\texttt{rollout}   &:\ \mathcal{Z} \times \mathcal{A}^H \to \mathcal{Z}^{H+1}, \\
+\texttt{score}     &:\ \mathcal{Z} \times \mathcal{Z} \to \mathbb{R}, \\
+\texttt{plan}      &:\ \mathcal{O} \times \mathcal{O} \times \mathbb{N} \to \mathcal{A}^H.
+\end{align*}
+Here $\mathcal{O}$ is the observation space, $\mathcal{Z}$ the latent space (which may coincide with $\mathcal{O}$ for fully observed envs), $\mathcal{A}$ the action space, and $H$ the planning horizon. The runner queries \texttt{plan} on every replanning step and executes one or more of the returned actions in the real environment; the planner is free to use \texttt{encode}, \texttt{rollout}, and \texttt{score} internally however it sees fit. The contract makes no statement about how the model is trained.
+
+For the present paper we use a random-shooting MPC: at each \texttt{plan} call, sample $N_{\mathrm{cand}}$ action sequences of length $H_{\mathrm{plan}}$ uniformly from $\mathcal{A}^{H_{\mathrm{plan}}}$, roll each one out through the dynamics, score the resulting trajectories, and return the best-scoring sequence prefix.
+
+\subsection{Decision-grade metrics}
+
+A metric is \emph{decision-grade} in this framework iff (i) its units translate directly to a deployment-time cost or capability and (ii) it is computable only from closed-loop runs of the model, not from the model in isolation. Reconstruction loss and FID fail (ii); model-internal alignment scores fail (i). The metrics that survive both criteria, and that we report in every scorecard, are: action success rate, average steps to success, per-call planning latency, compute per decision, perturbation recovery rate, the effective planning horizon, and -- the contribution of this paper -- the Counterfactual Planning Gap.
+
+\section{Counterfactual Planning Gap}
+\label{sec:cpg}
+
+\subsection{Definition}
+
+Fix an environment $\mathcal{E}$, a planner $\pi$, a scoring function $\sigma$, a number of episodes $N$, a horizon $T$ and a seed. Let $\mathrm{success\_rate}(D)$ denote the empirical success rate of $\pi$ on $N$ episodes of $\mathcal{E}$ when the planner queries dynamics $D$ during its internal rollouts. Let $D^{\star}$ be the \emph{oracle} dynamics (the true env's transition function) and $D_\theta$ be a learned model. The Counterfactual Planning Gap is
+\begin{equation}
+  \mathrm{CPG} \;=\; \mathrm{success\_rate}(D^{\star}) \;-\; \mathrm{success\_rate}(D_\theta).
+  \label{eq:cpg}
+\end{equation}
+All free quantities in the right-hand side -- env, planner, score, $N$, $T$, seed -- are held fixed between the two runs. The only thing that changes is the \texttt{dynamics} callable passed to the planner. This identification is what licenses interpreting CPG as a property of the model rather than the planner or the env.
+
+\subsection{Statistical reporting}
+
+Let $s_o, s_\ell$ be the success counts in the oracle and learned arms and $n_o, n_\ell$ the corresponding episode counts. The raw point estimate of CPG is the difference of proportions:
+\begin{equation}
+  \hat{\Delta} \;=\; \frac{s_o}{n_o} - \frac{s_\ell}{n_\ell}.
+\end{equation}
+The standard Wald $95\%$ CI on $\hat\Delta$ has variance $p_o(1-p_o)/n_o + p_\ell(1-p_\ell)/n_\ell$, which collapses to zero whenever \emph{either} arm sits at $p \in \{0, 1\}$. With $n_\ell = 10$ episodes and a learned planner that fails on every episode, this is precisely the regime the framework lands in. A degenerate-variance CI in this regime falsely produces a tight interval and over-claims significance.
+
+We instead use the Agresti--Caffo plus-4 adjustment~\citep{agresticaffo2000}, adding one pseudo-success and one pseudo-failure to each arm:
+\begin{align}
+  \tilde p_o     &= \frac{s_o + 1}{n_o + 2}, \quad
+  \tilde p_\ell   = \frac{s_\ell + 1}{n_\ell + 2}, \\
+  \tilde \Delta  &= \tilde p_o - \tilde p_\ell, \\
+  \mathrm{SE}    &= \sqrt{\frac{\tilde p_o (1 - \tilde p_o)}{n_o + 2} + \frac{\tilde p_\ell (1 - \tilde p_\ell)}{n_\ell + 2}}, \\
+  \mathrm{CI}_{95\%}(\mathrm{CPG}) &= \bigl[\, \tilde\Delta - 1.96\,\mathrm{SE}, \;\; \tilde\Delta + 1.96\,\mathrm{SE} \,\bigr].
+\end{align}
+The framework reports both the raw $\hat\Delta$ (what a reader expects to see) and the AC interval (what is statistically defensible). The two coincide for large $n$.
+
+\subsection{Gated verdict}
+
+A point estimate without a significance gate over-claims. The framework therefore exposes a five-branch decision rule that consults the AC interval, not the raw $\hat\Delta$:
+\begin{itemize}
+  \item \textsc{model bottleneck}: $\mathrm{CI}_{\mathrm{lo}} > 0$. The oracle is reliably better; closing the gap is a model problem.
+  \item \textsc{learned outperforms oracle}: $\mathrm{CI}_{\mathrm{hi}} < 0$. Rare; investigate regularisation or planner-search interactions.
+  \item \textsc{planner bottleneck}: CI crosses $0$ \emph{and} both success rates are within a tolerance $\tau$ of $0$. Neither planner solves the task; the framework needs a stronger search, not a stronger model.
+  \item \textsc{model as good as oracle}: CI crosses $0$ \emph{and} both success rates are within $\tau$ of $1$. The learned model matches the oracle for planning purposes on this task.
+  \item \textsc{inconclusive}: CI crosses $0$ in a middle-of-the-road regime. The sample size is insufficient to discriminate. Report this verdict and run more episodes.
+\end{itemize}
+The default tolerance is $\tau = 0.05$. Crucially, \textsc{model bottleneck} is \emph{not} the default when $\hat\Delta > 0$; it requires the AC lower bound to be strictly positive.
+
+\subsection{Properties}
+
+CPG is bounded in $[-1, 1]$, antisymmetric in the role of the two dynamics, and additive in the following sense: if one decomposes a benchmark suite into disjoint sub-tasks, CPG on the union is the episode-weighted mean of the per-sub-task CPGs. The metric is silent about \emph{why} the model degrades planning (latent shift, prediction-error accumulation, score-function mismatch); follow-up diagnostics are needed to attribute. The metric is, however, sufficient to distinguish model-side failures from planner-side failures at the verdict granularity.
+
+\section{Empirical Study: DMC Acrobot-Swingup}
+\label{sec:empirical}
+
+\subsection{Setup}
+
+We use DeepMind Control Suite Acrobot-swingup~\citep{tassa2018dmc,tunyasuvunakool2020dmcontrol}: a two-link underactuated pendulum with a continuous torque action in $[-1, +1]$ that must build energy and balance the tip upright. We discretise the action to a five-level torque set $\{-1, -0.5, 0, +0.5, +1\}$ to fit the framework's hashable-action contract. The observation is a six-dimensional vector $(\sin\theta_1, \sin\theta_2, \cos\theta_1, \cos\theta_2, \dot\theta_1, \dot\theta_2)$ in the layout returned by \texttt{dm\_control.suite.acrobot.Physics.orientations}. Success at step $t$ is $r_t \geq 0.6$ where $r_t$ is the DMC dense reward (smooth tolerance around the tip-to-target distance).
+
+The scoring function is $\sigma(\mathbf{o}, \cdot) = -(\cos\theta_1 + \cos\theta_2)$, a unit-length approximation of the negative tip height. The planner is random-shooting MPC with $N_{\mathrm{cand}} = 50$ candidate sequences of length $H_{\mathrm{plan}} = 15$, executed at every replanning step. Episodes run for at most $T = 500$ env steps. We use seed $0$ throughout.
+
+\subsection{Oracle dynamics}
+
+We construct the oracle by instantiating a private \texttt{dm\_control} environment inside a $(\mathrm{state}, \mathrm{action}) \to \mathrm{state}$ callable. Each call reconstructs $(q_{\mathrm{pos}}, q_{\mathrm{vel}})$ from the flat observation via $\mathrm{atan2}$, writes them into the private env's MuJoCo physics, calls \texttt{physics.forward}, steps once with the candidate torque, and returns the new flat observation. The construction is side-effect-free from the caller's perspective; the reconstruction is lossy modulo $2\pi$ revolutions but Acrobot dynamics depend only on $\sin/\cos$ of the joint angles. We verify the oracle reproduces \texttt{env.step} to numerical precision ($|\Delta| < 10^{-5}$) over a fifty-step random-policy rollout; this regression test is part of the repository's CI.
+
+\subsection{Learned dynamics}
+
+We train a Markovian MLP (two hidden layers of width $64$, ReLU activations) on $2{,}000$ random-policy transitions collected from ten episodes of $200$ steps each. The input concatenates the six-dimensional observation with a five-dimensional one-hot action; the output predicts the next observation. Training runs for $200$ epochs with Adam (learning rate $10^{-3}$), batch size $256$, and a $10\%$ held-out validation split at the transition level. The final validation MSE is $0.026$. We deliberately choose an MLP rather than a recurrent architecture: Acrobot is fully observed and Markov, so temporal context adds parameters without adding capacity.
+
+\subsection{Results}
+
+Table~\ref{tab:cpg} reports the two scorecards and the CPG. The headline numbers are: the oracle planner reaches the upright pose in $30\%$ of the episodes; the learned planner reaches it in $0\%$. The raw CPG is $+0.30$; the Agresti--Caffo $95\%$ interval is $[-0.06, +0.56]$, which crosses zero. The verdict is \textsc{inconclusive}.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{lrr}
+    \toprule
+                                       & Oracle dynamics                    & Learned MLP dynamics \\
+    \midrule
+    Success rate                       & $0.30$  ($3/10$)                   & $0.00$ ($0/10$)      \\
+    Avg.\ steps to success             & $180.7$                            & n/a                  \\
+    Per-call planning latency (ms)     & $77.3$                             & $65.3$               \\
+    Compute per decision (rollout-units) & $407.1$                         & $157.3$              \\
+    \bottomrule
+  \end{tabular}
+  \begin{tabular}{lr}
+    \\[0.5em]
+    \multicolumn{2}{c}{\textbf{Counterfactual Planning Gap}} \\
+    \midrule
+    Raw $\hat\Delta$                       & $+0.300$ \\
+    Agresti--Caffo $95\%$ CI               & $[-0.059, +0.559]$ \\
+    Verdict                                & \textsc{inconclusive} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Scorecards and CPG on DMC Acrobot-swingup with $N = 10$ episodes per arm, seed $0$. The raw point estimate is suggestive of a model bottleneck but the AC CI crosses zero; the verdict is correctly \textsc{inconclusive}. Numbers reproduced from \texttt{results/dmc\_acrobot/cpg.json} in the repository.}
+  \label{tab:cpg}
+\end{table}
+
+\subsection{What the result actually says}
+
+Three readings are consistent with the data, and the framework declines to choose between them at $n = 10$:
+
+\begin{enumerate}
+  \item \emph{Model bottleneck}. The model was trained on random transitions and never visited the upright energy regime; its predictions degrade there, the planner is misled, and success drops. This is the reading suggested by the positive raw $\hat\Delta = +0.30$.
+  \item \emph{Sample-size artifact}. With $n_\ell = 10$ and $s_\ell = 0$, the upper Wilson bound on the learned arm's true success rate is $\sim 0.31$. We cannot rule out that the learned planner would solve $30\%$ of a wider population of episodes -- in which case the true gap is near zero.
+  \item \emph{Score-function mismatch}. The scoring proxy $-(\cos\theta_1 + \cos\theta_2)$ approximates the DMC reward but is not identical. The oracle planner navigates the approximation well enough to occasionally swing up; the learned planner may be more sensitive to the mismatch.
+\end{enumerate}
+
+A multi-seed extension that pushes $N$ to (say) $100$ episodes per arm would tighten the AC half-width by roughly $\sqrt{10}$, moving the lower bound either firmly above zero (\textsc{model bottleneck}) or covering it more thoroughly (\textsc{inconclusive} hardened, or possibly \textsc{planner bottleneck} if the oracle success rate too proves unstable). \textbf{The metric's job at $n = 10$ is to refuse to choose; it does, correctly.}
+
+\section{Discussion and Limitations}
+
+The empirical demonstration is intentionally narrow: one environment, one learned model, one planner, one seed, ten episodes per arm. The methodological contribution -- a packaged CPG with an Agresti--Caffo CI and a gated verdict -- is decoupled from any of those choices and applies wherever an oracle dynamics is available (so: simulated environments). On hardware-in-the-loop or physical environments the metric is undefined; surrogate CPG variants (e.g.\ a higher-fidelity model standing in for the oracle) are future work.
+
+The framework's adapter interface (\S\ref{sec:framework}) is what makes CPG cheap to compute: any \texttt{dynamics} callable can be swapped into the same planner without touching anything else. We have so far demonstrated this on two stdlib-only callables (a tabular maze, an Acrobot oracle) and two learned callables (an MLP on the maze that memorises transitions, an MLP on Acrobot that generalises). A natural next step is to plug in a published research-grade world model (Dreamer-V3, TD-MPC2, or a JEPA-based predictor) and report CPG against the same oracle. This would test whether the metric is stable when the model is no longer a memoriser.
+
+Other limitations worth flagging explicitly. The discrete-torque action space is a five-level approximation of the continuous control problem; continuous CPG variants would benefit from a cross-entropy-method (CEM) planner instead of random shooting. The Acrobot success criterion ($r_t \geq 0.6$) is a binary projection of a dense reward; a continuous variant of CPG that reports the difference of mean returns is straightforward and may be more sample-efficient. The planner score is task-specific and tightly coupled to the environment's reward geometry; a learned score function (predicting the DMC reward directly from the latent state) would remove this coupling, at the cost of a second model component.
+
+\section{Conclusion}
+
+We have proposed the Counterfactual Planning Gap as a decision-grade metric for world-model evaluation, packaged it behind a minimal evaluation contract, and reported a worked example on DMC Acrobot-swingup. The headline number at $n = 10$ is \textsc{inconclusive}, which is the correct verdict at that sample size and the verdict the framework reports. We argue this kind of calibrated honesty -- a metric that refuses to claim more than the data supports -- is the right design target for a methodology paper that wants to sit usefully next to a fast-moving model literature.
+
+\section*{Acknowledgements}
+
+This work is independent. It is not affiliated with the AMI (Advanced Machine Intelligence) program at Meta, the LeWorldModel project, the authors of any of the cited papers, or any current or past employer of the author. The repository was developed end-to-end with an LLM coding agent in the loop (Claude Code); a description of the development recipe and the pre-tag adversarial-review pattern that caught most of the metric-correctness bugs along the way is included in the repository at \texttt{docs/process/llm\_agent\_recipe.md}.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

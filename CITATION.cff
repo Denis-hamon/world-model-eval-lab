@@ -1,16 +1,16 @@
 cff-version: 1.2.0
-message: "If you use this software in your work, please cite it as below."
+message: "If you use this software in your work, please cite both the software and the accompanying paper as below."
 type: software
 title: "World Model Evaluation Lab"
-abstract: "A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks. Independent methodology study of evaluation infrastructure for planning latency, perturbation recovery, compute per decision, and effective planning horizon."
+abstract: "A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks. Independent methodology study of evaluation infrastructure for planning latency, perturbation recovery, compute per decision, effective planning horizon, and the Counterfactual Planning Gap metric."
 authors:
   - given-names: Denis
     family-names: Hamon
 url: "https://github.com/Denis-hamon/world-model-eval-lab"
 repository-code: "https://github.com/Denis-hamon/world-model-eval-lab"
 license: MIT
-version: "0.5.0"
-date-released: 2026-05-15
+version: "0.10.0"
+date-released: 2026-05-16
 keywords:
   - world-models
   - benchmark
@@ -20,3 +20,13 @@ keywords:
   - methodology
   - model-based-rl
   - decision-grade
+  - counterfactual-planning-gap
+preferred-citation:
+  type: unpublished
+  title: "Counterfactual Planning Gap: A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation"
+  authors:
+    - given-names: Denis
+      family-names: Hamon
+  year: 2026
+  notes: "Short paper accompanying the World Model Evaluation Lab framework. LaTeX source in paper/main.tex of this repository."
+  url: "https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex"

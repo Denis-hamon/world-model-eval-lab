@@ -173,9 +173,14 @@ world-model-eval-lab/
 - **v0.4**: Markdown reporting (`to_markdown_scorecard`, `to_markdown_report`, `to_markdown_horizon_sweep`); compute-per-decision wired via `PlannerPolicy.compute_per_plan_call`.
 - **v0.5**: pluggable perturbation library (`Perturbation`, `EnvPerturbation`, `DropNextActions`, `CompositePerturbation`); runner accepts custom perturbations via a `perturbation` kwarg; `Scorecard.perturbation_name` records which strategy was used; runner inner loop switched to `deque` for O(1) action-queue pops.
 - **v0.6**: proof-of-contract for learned dynamics. `wmel.adapters.learned_dynamics_torch` ships a PyTorch MLP that fits the maze's transition table and plugs into `TabularWorldModelPlanner` as a drop-in `dynamics` callable. Identical success rate to the oracle, 76x higher per-call latency - exactly the trade-off the framework is built to expose. PyTorch is an optional dependency (`pip install -e ".[learned]"`); core runtime stays stdlib-only.
-- **v0.7** (current): `wmel` CLI (`wmel run`, `wmel sweep`) installed as a console script; `horizon_sweep` accepts a `Perturbation` argument; JSON reports versioned via a `schema_version` envelope with `wmel_version`, `generated_at`, and an extensible `metadata` block; second CI job `test-stdlib-only` locks in the no-torch runtime promise.
-- **v0.8**: perturbation-axis sweeps (the same sweep machinery driven across `Perturbation` strategies instead of horizons), Markdown export for sweep reports.
-- **v0.9**: adapter for a real research world model (via stub interface), public scoreboard format reading the v1 schema.
+- **v0.7**: `wmel` CLI (`wmel run`, `wmel sweep`) installed as a console script; `horizon_sweep` accepts a `Perturbation` argument; JSON reports versioned via a `schema_version` envelope with `wmel_version`, `generated_at`, and an extensible `metadata` block; second CI job `test-stdlib-only` locks in the no-torch runtime promise.
+- **v0.8**: first non-toy environment - DeepMind Control Suite Acrobot-swingup wired in via `wmel.envs.dmc_acrobot`, with a `make_acrobot_oracle_dynamics()` factory and a Markovian MLP learned dynamics, both plugging into the same random-shooting MPC planner. `dm-control` is an optional extra (`pip install -e ".[control]"`).
+- **v0.9**: Counterfactual Planning Gap (CPG) metric: a five-branch verdict gated on an Agresti--Caffo plus-4 $95\%$ CI rather than the raw point estimate, computed by running the same planner against the oracle and the learned dynamics. The Acrobot worked example reports the honest `INCONCLUSIVE` verdict at $n = 10$ instead of over-claiming.
+- **v0.10** (current): short paper. `paper/` ships the LaTeX source, BibTeX bibliography, a stdlib `build_figures.py` that reproduces the table values from `results/dmc_acrobot/cpg.json`, and a Makefile. The paper is intentionally narrow: one env, one model, one seed, ten episodes per arm; the methodological contribution is decoupled from any of those choices.
+
+## Paper
+
+A short paper accompanies the framework: **"Counterfactual Planning Gap: A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation"**. LaTeX source in [`paper/`](paper/). It formalises the CPG metric (definition, Agresti--Caffo confidence interval, gated verdict), defines the four-method evaluation contract, and reports the worked example on DMC Acrobot-swingup with the honest `INCONCLUSIVE` verdict at $n = 10$. Build with `make` inside `paper/` after installing `texlive-latex-extra` and `texlive-bibtex-extra`.
 
 ## Related work
 
