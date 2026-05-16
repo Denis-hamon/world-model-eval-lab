@@ -42,3 +42,41 @@ These are not exotic concerns. They are the first questions any applied team wou
 Better predictors will keep being published. The community needs a shared, lightweight, opinionated way to ask **"useful for what, and at what cost?"** - and to answer that question with numbers a non-researcher can read.
 
 This repository is one attempt at that shared layer.
+
+## Related work
+
+The world-model literature this study sits next to (not on top of). All citations are intentional, not affiliational.
+
+**Predictive / latent world models**
+
+- Ha & Schmidhuber, *World Models*, 2018.
+- Hafner et al., *Learning Latent Dynamics for Planning from Pixels* (PlaNet), ICML 2019.
+- Hafner et al., *Dream to Control: Learning Behaviors by Latent Imagination* (Dreamer), ICLR 2020.
+- Hafner et al., *Mastering Diverse Domains through World Models* (Dreamer-V3), 2023.
+- Schrittwieser et al., *Mastering Atari, Go, Chess and Shogi by Planning with a Learned Model* (MuZero), Nature 2020.
+- Micheli, Alonso & Fleuret, *Transformers are Sample-Efficient World Models* (IRIS), ICLR 2023.
+- Robine et al., *TransDreamer: Reinforcement Learning with Transformer World Models*, 2022.
+- Bruce et al., *Genie: Generative Interactive Environments*, ICML 2024.
+- Bruce et al., *Genie 2: A large-scale foundation world model*, 2024.
+
+**Joint-embedding predictive architectures (the AMI line of work)**
+
+- LeCun, *A Path Towards Autonomous Machine Intelligence*, 2022.
+- Assran et al., *Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture* (I-JEPA), CVPR 2023.
+- Bardes et al., *V-JEPA: Latent Video Prediction for Visual Representation Learning*, 2024.
+- Bardes et al., *V-JEPA 2*, 2025.
+
+**Action-conditioned planning evaluation**
+
+- Tassa et al., *DeepMind Control Suite*, 2018.
+- Park et al., *OGBench: Benchmarking Offline Goal-Conditioned RL*, 2024.
+- Liu et al., *LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning*, NeurIPS 2023.
+- Hansen, Su & Wang, *TD-MPC2: Scalable, Robust World Models for Continuous Control*, ICLR 2024.
+
+**Evaluation methodology (statistics, reproducibility)**
+
+- Wilson, *Probable Inference, the Law of Succession, and Statistical Inference*, JASA 1927.
+- Henderson et al., *Deep Reinforcement Learning that Matters*, AAAI 2018.
+- Agarwal et al., *Deep Reinforcement Learning at the Edge of the Statistical Precipice* (rliable), NeurIPS 2021.
+
+This list is selective and is expected to grow as the study moves from toy environments to the real benchmarks listed in the [30-day plan](05_30_day_prototype_plan.html).

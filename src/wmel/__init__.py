@@ -1,9 +1,8 @@
 """World Model Evaluation Lab - a lightweight, decision-oriented benchmark framework.
 
-This package is an independent study of evaluation methodology for
-action-conditioned world models. It is not affiliated with AMI, Meta, the
-LeWorldModel project, any of their authors, or any current or past employer
-of the author.
+An independent study of evaluation methodology for action-conditioned world
+models. See the disclaimer at the bottom of the Pages site for affiliation
+status.
 """
 
 from wmel.adapters.base import BenchmarkEnvironment, PlannerPolicy

@@ -8,7 +8,19 @@ next:
 ---
 # 02 - Metric Taxonomy
 
-This is the first pass of a decision-grade metric set for action-conditioned world models. Each metric is chosen because it answers a question an applied team would actually ask before integrating a model.
+This is the first pass of a **decision-grade** metric set for action-conditioned world models. Each metric is chosen because it answers a question an applied team would actually ask before integrating a model.
+
+## What "decision-grade" means here
+
+A metric is **decision-grade** when both of the following hold:
+
+1. **Its units translate directly to a deployment-time cost or capability.** Success rate is a fraction in `[0, 1]`. Planning latency is in milliseconds. Compute per decision is in policy-declared units (FLOPs, model forward passes, rollouts). Perturbation recovery is a fraction. All of these are quantities a procurement, robotics, or controls team can act on without further conversion.
+
+2. **It is computable from a closed-loop run of the model, not from the model in isolation.** Reconstruction loss, FID, next-frame prediction error, and embedding-distance benchmarks are *model-internal* quantities - they describe how well the model fits its training distribution. A decision-grade metric requires the model to be *used* (encoded, rolled out, scored, planned) inside an environment, and reports what happened to the agent as a result.
+
+The two criteria together exclude both pure prediction quality (which fails criterion 2) and abstract "alignment" or "interpretability" scores that do not translate into shippable units (which fail criterion 1).
+
+The taxonomy below lists the metrics that meet both criteria in this study's first pass. Additions are welcome; the contribution procedure in [CONTRIBUTING.md](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/CONTRIBUTING.md) requires every proposed metric to pass the same two-criterion test.
 
 ## Summary table
 

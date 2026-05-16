@@ -8,6 +8,8 @@ next:
 ---
 # 04 - Industrial Use Cases
 
+> **Status: speculative.** None of the nine cases below are implemented as benchmarks in this repository. The page is a market landscape - a forward-looking note on where a decision-grade evaluation layer would matter most - not a results report. The actual benchmarks shipped today are limited to the toy maze and the two-room env. See [the demo walkthrough](06_demo.html) for what is currently measurable, and [the 30-day study plan](05_30_day_prototype_plan.html) for what is in scope next.
+
 This page connects the metric taxonomy and the benchmark cards to concrete industrial contexts where action-conditioned world models could plausibly add real value. The aim is to give a non-researcher a place to point when they ask "why should I care?" - and to make explicit which of these are speculative versus where billions of dollars of capex are already chasing the same thesis.
 
 For each domain we list:

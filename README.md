@@ -177,9 +177,13 @@ world-model-eval-lab/
 - **v0.8**: perturbation-axis sweeps (the same sweep machinery driven across `Perturbation` strategies instead of horizons), Markdown export for sweep reports.
 - **v0.9**: adapter for a real research world model (via stub interface), public scoreboard format reading the v1 schema.
 
-## Disclaimer
+## Related work
 
-This is an independent study of evaluation methodology for action-conditioned world models. It is **not** an official artifact of AMI, Meta, the LeWorldModel project, or any of their authors, and **not** an artifact of any current or past employer of the author. Any references to JEPA-style or LeWorldModel concepts are conceptual, not affiliational.
+This repository sits next to a substantial body of published work on world models (Dreamer-V3, MuZero, IRIS, Genie / Genie 2), joint-embedding predictive architectures (I-JEPA, V-JEPA / V-JEPA 2), action-conditioned benchmarks (DeepMind Control Suite, OGBench, LIBERO), and evaluation methodology (rliable, Wilson intervals, "Deep RL that Matters"). See the full list with one-line annotations under [docs/00_thesis.md#related-work](docs/00_thesis.md#related-work).
+
+## Affiliation
+
+Independent study. See the [disclaimer at the bottom of the Pages site](https://denis-hamon.github.io/world-model-eval-lab/#disclaimer) for the canonical statement.
 
 ## Contributing
 
