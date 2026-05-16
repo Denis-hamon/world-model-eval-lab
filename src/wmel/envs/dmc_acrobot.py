@@ -36,7 +36,8 @@ without the `control` extras installed raises a clear ImportError.
 
 from __future__ import annotations
 
-from typing import Tuple
+import math
+from typing import Callable, Tuple
 
 try:
     import numpy as np
@@ -156,3 +157,72 @@ class DMCAcrobotEnv(BenchmarkEnvironment):
         """The dense DMC reward of the most recent step. Useful for richer
         scorecard fields once perturbation-aware metrics arrive in v0.9."""
         return self._last_reward
+
+
+def make_acrobot_oracle_dynamics(
+    task_kwargs: dict | None = None,
+    reset_every: int = 800,
+) -> Callable[[Observation, Action], Observation]:
+    """Build a `(state, action) -> next_state` callable backed by the real
+    Acrobot physics, side-effect-free from the caller's perspective.
+
+    Each call reconstructs `(qpos, qvel)` from the flat observation tuple,
+    writes them into an internal `dm_control` env, calls `physics.forward()`,
+    steps the env, and returns the new flat observation. The reconstruction
+    is lossy modulo `2*pi` revolutions, but Acrobot's dynamics depend only
+    on `sin/cos` of the joint angles, so the loss does not affect physics.
+
+    Parameters
+    ----------
+    task_kwargs
+        Forwarded to `dm_control.suite.load`. Defaults to `{"random": 0}` for
+        a deterministic initialisation; the value rarely matters because every
+        call overwrites the env state.
+    reset_every
+        How many internal calls to allow before quietly resetting the env to
+        avoid hitting `dm_control`'s default 1000-step time limit. The state
+        reconstruction means resets do not bias outputs.
+
+    Returns
+    -------
+    A callable that maps `(state, action) -> next_state` where `state` and
+    `next_state` use the same flattened layout as `DMCAcrobotEnv.observation`:
+    `(sin_upper, sin_lower, cos_upper, cos_lower, v_shoulder, v_elbow)`.
+
+    Use this with `TabularWorldModelPlanner(dynamics=oracle, ...)` to build
+    a planner whose model errors are zero by construction. Pair it with a
+    second run that uses a *learned* dynamics callable, and feed both result
+    lists to `wmel.metrics.counterfactual_planning_gap`.
+    """
+    sim_env = suite.load(
+        domain_name="acrobot",
+        task_name="swingup",
+        task_kwargs=task_kwargs if task_kwargs is not None else {"random": 0},
+    )
+    sim_env.reset()
+
+    counter = {"calls": 0}
+
+    def _dynamics(state: Observation, action: Action) -> Observation:
+        if counter["calls"] >= reset_every:
+            sim_env.reset()
+            counter["calls"] = 0
+
+        sin_u, sin_l, cos_u, cos_l, v_shoulder, v_elbow = state
+        theta_upper = math.atan2(sin_u, cos_u)
+        theta_lower = math.atan2(sin_l, cos_l)
+        # DMC Acrobot joint angles: shoulder = world-frame inclination of the
+        # upper arm; elbow = relative angle between the two arms.
+        physics = sim_env.physics
+        physics.named.data.qpos["shoulder"] = theta_upper
+        physics.named.data.qpos["elbow"] = theta_lower - theta_upper
+        physics.named.data.qvel["shoulder"] = v_shoulder
+        physics.named.data.qvel["elbow"] = v_elbow
+        physics.forward()
+
+        torque = np.asarray(action, dtype=np.float32)
+        ts = sim_env.step(torque)
+        counter["calls"] += 1
+        return _flatten_observation(ts.observation)
+
+    return _dynamics

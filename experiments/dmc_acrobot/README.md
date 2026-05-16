@@ -38,8 +38,14 @@ Writes a `Scorecard` JSON to [`results/dmc_acrobot/baseline_random.json`](../../
   3. **Score approximation**: `acrobot_upright_score` uses `-(cos(upper) + cos(lower))` rather than the exact DMC reward; the gradient direction is right but the magnitude may not be aligned.
   The right way to decompose these is the Counterfactual Planning Gap metric, scheduled for v0.9.
 
-- **v0.9 planned**: the **Counterfactual Planning Gap** metric. Same env, same planner, two dynamics callables (oracle vs learned MLP). CPG = success_rate(oracle) - success_rate(learned), reported across seeds. Decomposes the failure cleanly: a near-zero CPG with both at 0% says "planner is the bottleneck", a positive CPG says "model is the bottleneck".
+- **v0.9 (current): the Counterfactual Planning Gap metric shipped, with an honest small-n verdict.** `experiments/dmc_acrobot/cpg.py` runs the same `TabularWorldModelPlanner` twice on the same benchmark, once with `make_acrobot_oracle_dynamics()` (real mujoco physics) and once with the learned MLP dynamics. The result lives in `results/dmc_acrobot/cpg.json`:
 
-- **v1.0 planned**: extend to multiple seeds with rliable-style confidence intervals, and add a second env (Cartpole-swingup or DMC Reacher) to test cross-task generalisation of any improvements.
+  - **Oracle planner**: success rate 0.30 over 10 episodes, average steps to success ~180. Random-shooting MPC over 5 discretised torques × 15-step horizon **does** swing Acrobot up some of the time when the dynamics is exact - so the planner is not a *complete* bottleneck.
+  - **Learned planner**: success rate 0.00 (same as v0.8).
+  - **Raw CPG = +0.30.** Agresti-Caffo plus-4 95% CI on the gap: **[-0.06, +0.56]** - the CI **crosses zero** at this sample size.
+  - **Verdict: INCONCLUSIVE.** The data is *suggestive* of a model bottleneck (the raw point estimate is positive and large), but with only 10 episodes per arm and one planner reporting 0/10, the Agresti-Caffo CI on the difference of proportions cannot rule out zero. The honest call is to run more episodes - or accept the metric is telling us the experimental design is underpowered. An earlier draft of this README claimed `MODEL BOTTLENECK` based on a Wald CI that pinned `Var(p_l) = 0`; the AC CI corrects that artefact. See the v0.9 adversarial review findings for the trail.
+  - **What the experiment packages.** A scalar CPG with an AC CI and a gated verdict, computed end-to-end from two `BenchmarkRunner` runs that differ only in their `dynamics=` callable. The pattern of comparing oracle to learned rollouts is in the spirit of MOPO and MOReL's model-exploitation analyses; the contribution here is the scalar+CI+verdict packaging on top of a reusable framework contract.
+
+- **v1.0 planned**: multi-seed reporting with rliable-style aggregation to push the CI lower bound above zero (or honestly confirm it does not), perturbation-aware CPG (does the gap widen under sensor noise?), and a second env (Cartpole-swingup or DMC Reacher) to test whether the CPG diagnosis generalises across tasks.
 
 See [docs/05_30_day_prototype_plan.md](../../docs/05_30_day_prototype_plan.md) for the broader roadmap.

@@ -165,6 +165,19 @@ Hover (or focus) any metric name to see its formula in a popover. The popover is
       <td>Normal works here because latencies are bounded away from 0 and we typically have many samples.</td>
       <td>$\bar{\ell} = 2.35 \pm 0.05$ ms per call on the maze toy at horizon 15.</td>
     </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Counterfactual Planning Gap (CPG)</a>
+        <div class="formula-popover formula-popover-wide" role="tooltip">
+          <p class="popover-reads">Reads as: the success-rate cost of using a learned model instead of the oracle in the same planner.</p>
+          $$\mathrm{CPG} \;=\; \mathrm{success\_rate}(\mathrm{oracle}) \;-\; \mathrm{success\_rate}(\mathrm{learned})$$
+          <p class="popover-note">Both planners share env, episodes, seed, horizon, and score function. Only the <code>dynamics</code> callable changes. The 95% CI uses the <strong>Agresti-Caffo plus-4</strong> adjustment, which keeps the variance positive at $p \in \{0, 1\}$ and gives honest coverage for small $n$. The <code>cpg_verdict()</code> branch is gated on the AC lower bound, not on the raw point estimate, so a noisy $+0.10$ gap from $n=10$ correctly reports <code>INCONCLUSIVE</code> rather than <code>MODEL BOTTLENECK</code>. See <code>wmel.metrics.CPGResult</code> and <code>cpg_verdict</code>.</p>
+        </div>
+      </td>
+      <td>Success-rate gap between an oracle-dynamics planner and the same planner using a learned model. Packaged as a single scalar with an Agresti-Caffo CI and a gated verdict.</td>
+      <td>Decomposes model error from planner capacity. The packaged-scalar form (with CI and gated verdict) is new in this framework; the underlying oracle-vs-learned-rollout comparison is in the spirit of model-exploitation analyses in MOPO and MOReL.</td>
+      <td>On DMC Acrobot-swingup with random-shooting MPC, 10 episodes each: raw $\mathrm{CPG} = +0.30$, AC 95% CI $[-0.06, +0.56]$ (crosses zero). Verdict: <code>INCONCLUSIVE</code> at $n=10$ - suggestive of a model bottleneck but more episodes are needed to confirm.</td>
+    </tr>
   </tbody>
 </table>
 

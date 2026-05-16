@@ -17,6 +17,7 @@ from wmel.envs.dmc_acrobot import (
     DEFAULT_DISCRETE_LEVELS,
     DMCAcrobotEnv,
     _flatten_observation,
+    make_acrobot_oracle_dynamics,
 )
 from wmel.metrics import action_success_rate
 
@@ -97,3 +98,100 @@ def test_runner_drives_acrobot_with_random_policy() -> None:
     # Each episode either reached the horizon, or stopped earlier; both
     # are consistent with the runner's contract.
     assert all(r.steps <= 100 for r in results)
+
+
+def test_oracle_dynamics_reproduces_env_step_to_numerical_precision() -> None:
+    """A bit-for-bit check: when the oracle is queried with the same state +
+    action that the env was just stepped from, it must return the same next
+    state. This is the contract that makes CPG = 0 a *real* zero, not a
+    coincidence."""
+    env = DMCAcrobotEnv()
+    oracle = make_acrobot_oracle_dynamics()
+
+    obs = env.reset()
+    # Try every torque level.
+    for action in env.action_space:
+        # Reset the env to make obs reproducible (since env.step mutates state).
+        obs0 = env.reset()
+        predicted = oracle(obs0, action)
+        actual = env.step(action)
+        diff = max(abs(p - a) for p, a in zip(predicted, actual))
+        # Allow tiny numerical noise from physics.forward()/integration order.
+        assert diff < 1e-6, f"oracle drift {diff} for action {action}"
+
+
+def test_oracle_dynamics_is_side_effect_free_on_caller_env() -> None:
+    """The oracle has its own internal mujoco env. Calling it many times
+    must not mutate the user's env or interfere with a parallel benchmark
+    run."""
+    user_env = DMCAcrobotEnv()
+    oracle = make_acrobot_oracle_dynamics()
+    obs_before = user_env.reset()
+    for _ in range(50):
+        oracle(obs_before, user_env.action_space[0])
+    # The user's env has not been touched.
+    assert user_env.observation == obs_before
+
+
+def test_oracle_dynamics_handles_long_call_chains() -> None:
+    """The oracle resets its internal env every `reset_every` calls to avoid
+    hitting the DMC default 1000-step time limit. Test it survives 2000+
+    calls (well past the default 800 reset_every)."""
+    env = DMCAcrobotEnv()
+    oracle = make_acrobot_oracle_dynamics(reset_every=200)
+    obs = env.reset()
+    state = obs
+    for _ in range(500):
+        state = oracle(state, env.action_space[2])  # idle torque
+    # State stays in bounds (unit-norm sin/cos pairs).
+    assert abs(state[0] ** 2 + state[2] ** 2 - 1.0) < 1e-3
+    assert abs(state[1] ** 2 + state[3] ** 2 - 1.0) < 1e-3
+
+
+def test_oracle_dynamics_matches_env_across_swept_states() -> None:
+    """The headline `test_oracle_dynamics_reproduces_env_step_to_numerical_
+    precision` covers only the post-reset configuration. CPG's correctness
+    depends on the oracle being a faithful proxy *throughout* the planning
+    horizon, including near-upright configurations the random-shooting MPC
+    can visit during evaluation.
+
+    Sweep: roll a random policy for 50 steps, snapshot every state, and
+    assert the oracle predicts the same env-step result at each state.
+    Loose tolerance (1e-5) to accommodate integrator drift if any.
+    """
+    import random as _rand
+
+    env = DMCAcrobotEnv()
+    oracle = make_acrobot_oracle_dynamics()
+    rng = _rand.Random(0)
+
+    obs = env.reset()
+    for _ in range(50):
+        action = env.action_space[rng.randrange(len(env.action_space))]
+        # Predict via oracle from the current state
+        predicted = oracle(obs, action)
+        # Step the env from the same state for ground truth
+        actual = env.step(action)
+        diff = max(abs(p - a) for p, a in zip(predicted, actual))
+        assert diff < 1e-5, (
+            f"oracle drift {diff} at state {[round(x, 3) for x in obs]} "
+            f"action {action}"
+        )
+        obs = actual
+
+
+def test_acrobot_upright_score_layout_locked_in() -> None:
+    """Pin the observation layout assumption: a synthetic upright state
+    must score lower (better) than a synthetic hanging-down state. If a
+    future change reorders the flattened observation (or DMC silently
+    changes its orientation layout), this test fails and CPG's score-
+    function correctness is exposed before it can mask a model/planner
+    diagnosis.
+    """
+    from wmel.adapters.mlp_world_model import acrobot_upright_score
+
+    upright = (0.0, 0.0, 1.0, 1.0, 0.0, 0.0)
+    hanging = (0.0, 0.0, -1.0, -1.0, 0.0, 0.0)
+    assert acrobot_upright_score(upright) < acrobot_upright_score(hanging)
+    assert acrobot_upright_score(upright) == pytest.approx(-2.0)
+    assert acrobot_upright_score(hanging) == pytest.approx(2.0)

@@ -74,6 +74,15 @@ jobs:
         if: matrix.python-version != '3.13'
         run: python -m experiments.dmc_acrobot.learned_baseline --smoke > /dev/null
 
+      - name: Smoke-test CPG experiment on DMC Acrobot (Python 3.11 / 3.12 only)
+        # --smoke runs oracle dynamics + learned dynamics back-to-back on
+        # 2 episodes each and computes the Counterfactual Planning Gap.
+        # ~10 s wall-clock. The full CPG run committed under
+        # results/dmc_acrobot/cpg.json takes ~5-10 min (oracle dynamics
+        # calls into real mujoco physics on every candidate evaluation).
+        if: matrix.python-version != '3.13'
+        run: python -m experiments.dmc_acrobot.cpg --smoke > /dev/null
+
   # Stdlib-only job: installs only the [dev] extra, never torch. Locks in
   # the promise that the core runtime stays import-clean without PyTorch.
   # The learned tests skip themselves via pytest.importorskip("torch"), so
