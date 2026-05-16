@@ -50,6 +50,12 @@ learned = [
     # contract on a PyTorch-trained MLP. CPU-only; no GPU required.
     "torch>=2.0",
 ]
+control = [
+    # DeepMind Control Suite via dm-control. Pulls mujoco (CPU physics)
+    # and numpy / scipy. Headless: rendering is not used by `wmel.envs.dmc_*`.
+    "dm-control>=1.0",
+    "numpy>=1.24",
+]
 
 [project.urls]
 Homepage = "https://denis-hamon.github.io/world-model-eval-lab/"

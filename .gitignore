@@ -43,3 +43,4 @@ Thumbs.db
 !examples/maze_toy/horizon_sweep_report.json
 !examples/maze_toy/learned_baseline_report.json
 !examples/maze_toy/learned_horizon_sweep_report.json
+!results/**/*.json
