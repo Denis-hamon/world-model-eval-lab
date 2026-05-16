@@ -62,6 +62,42 @@ def main() -> None:
     print(f"AC 95% CI high     : {cpg['gap_ci_high']:+.3f}")
     print(f"Verdict            : {cpg['verdict']}")
 
+    # ----------------------------------------------------------------
+    # Section 5.5 / Table 2 (multi-seed CPG sweep across training-set
+    # sizes). Generated only if the sweep JSON exists.
+    # ----------------------------------------------------------------
+    sweep_path = _REPO_ROOT / "results" / "dmc_acrobot" / "cpg_sweep.json"
+    if not sweep_path.exists():
+        print()
+        print(f"# (No sweep JSON at {sweep_path.relative_to(_REPO_ROOT)} - "
+              "Section 5.5 table will not be regenerated.)")
+        return
+
+    sweep = json.loads(sweep_path.read_text())
+    print()
+    print("# Values to paste into paper/main.tex Table 2 (\\label{tab:sweep}).")
+    print(f"# Source: {sweep_path.relative_to(_REPO_ROOT)}")
+    print(f"# wmel_version: {sweep.get('wmel_version')}, "
+          f"generated_at: {sweep.get('generated_at')}, seeds: {sweep.get('seeds')}")
+    print()
+    print(f"{'data':>6}  {'val_mse':>8}  {'oracle':>11}  {'learned':>11}  "
+          f"{'CPG':>7}  {'CI low':>7}  {'CI hi':>7}  verdict")
+    for cell in sweep["cells"]:
+        per_seed = cell["per_seed"]
+        avg_val_mse = sum(s["val_mse"] for s in per_seed) / len(per_seed)
+        o_succ = sum(s["oracle_successes"] for s in per_seed)
+        o_n = sum(s["n_oracle"] for s in per_seed)
+        l_succ = sum(s["learned_successes"] for s in per_seed)
+        l_n = sum(s["n_learned"] for s in per_seed)
+        p = cell["pooled_cpg"]
+        print(
+            f"{cell['data_size']:>6}  {avg_val_mse:>8.4f}  "
+            f"{o_succ:>3}/{o_n:<3} ={p['oracle_success_rate']:>5.3f}  "
+            f"{l_succ:>3}/{l_n:<3} ={p['learned_success_rate']:>5.3f}  "
+            f"{p['gap']:>+.3f}  {p['gap_ci_low']:>+.3f}  {p['gap_ci_high']:>+.3f}  "
+            f"{p['verdict']}"
+        )
+
 
 if __name__ == "__main__":
     main()

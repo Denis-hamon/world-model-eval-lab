@@ -29,7 +29,7 @@ Writes a `Scorecard` JSON to [`results/dmc_acrobot/baseline_random.json`](../../
 
 ## Status
 
-- **v0.8 (current): two baselines committed.**
+- **v0.8: two baselines committed.**
   - `baseline.py` -> random policy. `results/dmc_acrobot/baseline_random.json`. Success rate 0%.
   - `learned_baseline.py` -> Markovian MLP world model trained on 10 x 200 = 2 000 random transitions (200 epochs), plugged into `TabularWorldModelPlanner` via the existing `dynamics=` argument with a task-specific `acrobot_upright_score`. `results/dmc_acrobot/learned_random_rollouts.json`. Validation MSE on held-out transitions ~0.026; success rate is still 0%.
 - **What the two scorecards together actually show.** Prediction quality (val_mse) is good, decision quality (success_rate) is bad. The two are decoupled by construction. Three candidate explanations remain open:
@@ -38,7 +38,7 @@ Writes a `Scorecard` JSON to [`results/dmc_acrobot/baseline_random.json`](../../
   3. **Score approximation**: `acrobot_upright_score` uses `-(cos(upper) + cos(lower))` rather than the exact DMC reward; the gradient direction is right but the magnitude may not be aligned.
   The right way to decompose these is the Counterfactual Planning Gap metric, scheduled for v0.9.
 
-- **v0.9 (current): the Counterfactual Planning Gap metric shipped, with an honest small-n verdict.** `experiments/dmc_acrobot/cpg.py` runs the same `TabularWorldModelPlanner` twice on the same benchmark, once with `make_acrobot_oracle_dynamics()` (real mujoco physics) and once with the learned MLP dynamics. The result lives in `results/dmc_acrobot/cpg.json`:
+- **v0.9: the Counterfactual Planning Gap metric shipped, with an honest small-n verdict.** `experiments/dmc_acrobot/cpg.py` runs the same `TabularWorldModelPlanner` twice on the same benchmark, once with `make_acrobot_oracle_dynamics()` (real mujoco physics) and once with the learned MLP dynamics. The result lives in `results/dmc_acrobot/cpg.json`:
 
   - **Oracle planner**: success rate 0.30 over 10 episodes, average steps to success ~180. Random-shooting MPC over 5 discretised torques × 15-step horizon **does** swing Acrobot up some of the time when the dynamics is exact - so the planner is not a *complete* bottleneck.
   - **Learned planner**: success rate 0.00 (same as v0.8).
@@ -46,6 +46,13 @@ Writes a `Scorecard` JSON to [`results/dmc_acrobot/baseline_random.json`](../../
   - **Verdict: INCONCLUSIVE.** The data is *suggestive* of a model bottleneck (the raw point estimate is positive and large), but with only 10 episodes per arm and one planner reporting 0/10, the Agresti-Caffo CI on the difference of proportions cannot rule out zero. The honest call is to run more episodes - or accept the metric is telling us the experimental design is underpowered. An earlier draft of this README claimed `MODEL BOTTLENECK` based on a Wald CI that pinned `Var(p_l) = 0`; the AC CI corrects that artefact. See the v0.9 adversarial review findings for the trail.
   - **What the experiment packages.** A scalar CPG with an AC CI and a gated verdict, computed end-to-end from two `BenchmarkRunner` runs that differ only in their `dynamics=` callable. The pattern of comparing oracle to learned rollouts is in the spirit of MOPO and MOReL's model-exploitation analyses; the contribution here is the scalar+CI+verdict packaging on top of a reusable framework contract.
 
-- **v1.0 planned**: multi-seed reporting with rliable-style aggregation to push the CI lower bound above zero (or honestly confirm it does not), perturbation-aware CPG (does the gap widen under sensor noise?), and a second env (Cartpole-swingup or DMC Reacher) to test whether the CPG diagnosis generalises across tasks.
+- **v0.11 (current): the multi-seed extension promised in v0.9 shipped.** `experiments/dmc_acrobot/cpg_sweep.py` pools three seeds at 50 episodes per arm per seed (n = 150 pooled) and sweeps the MLP's training-set size across `{200, 2 000, 20 000}` random-policy transitions. The result lives in `results/dmc_acrobot/cpg_sweep.json`:
+
+  - In **every** cell: oracle 40/150 = 0.267, learned 0/150 = 0.000, raw CPG = +0.267, AC 95% CI = [+0.191, +0.335], verdict **MODEL BOTTLENECK**.
+  - Held-out validation MSE drops by ~150x across the cells (0.065 -> 0.0004); learned-arm planning success stays at zero.
+  - The flat CPG curve under monotonically improving prediction loss is the result: CPG distinguishes a *model-capacity* bottleneck (refuted at 20 000 transitions) from a *data-coverage* bottleneck (consistent; random rollouts never reach the upright regime). Remediation: change the data-collection policy, not the model architecture.
+  - The v0.9 INCONCLUSIVE verdict at n = 10 was the framework being honest about an under-powered design; the v0.11 verdict at n = 150 is the framework committing once the data supports it. The metric's behaviour at both sample sizes is the correctly-calibrated one.
+
+- **v1.0 planned**: second-axis sweep (energy-aware exploration vs random rollouts under fixed data size) to confirm the coverage diagnosis from v0.11; perturbation-aware CPG (does the gap widen under sensor noise?); and a second env (Cartpole-swingup or DMC Reacher) to test whether the CPG diagnosis generalises across tasks.
 
 See [docs/05_30_day_prototype_plan.md](../../docs/05_30_day_prototype_plan.md) for the broader roadmap.
