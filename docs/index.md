@@ -6,6 +6,14 @@ next:
   url: 00_thesis.html
 ---
 
+<div class="release-banner">
+  <span class="tag">v0.10.0</span>
+  <span class="release-banner-text">
+    Short paper: <strong>Counterfactual Planning Gap</strong>, a decision-grade metric with a calibrated Agresti&ndash;Caffo confidence interval and a five-branch gated verdict.
+  </span>
+  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.10.0">Release notes &rarr;</a>
+</div>
+
 <section class="hero">
   <div class="hero-copy">
     <h1>Evaluating world models <span class="accent">like they will ship</span></h1>
@@ -16,8 +24,9 @@ next:
       The next bottleneck for world models is not only model quality. It is proof of usefulness.
     </blockquote>
     <div class="hero-cta">
-      <a class="btn-primary" href="06_demo.html">Read the walkthrough</a>
-      <a class="btn-ghost" href="https://github.com/Denis-hamon/world-model-eval-lab">Code on GitHub</a>
+      <a class="btn-primary" href="07_cpg.html">Read about CPG</a>
+      <a class="btn-ghost" href="06_demo.html">Walkthrough</a>
+      <a class="btn-ghost" href="https://github.com/Denis-hamon/world-model-eval-lab">GitHub</a>
     </div>
   </div>
   <figure class="hero-figure">
@@ -27,10 +36,10 @@ next:
 </section>
 
 <ul class="stat-strip">
-  <li><span class="stat-value">5</span><span class="stat-label">tagged releases</span></li>
-  <li><span class="stat-value">81</span><span class="stat-label">passing tests</span></li>
+  <li><span class="stat-value">10</span><span class="stat-label">tagged releases</span></li>
+  <li><span class="stat-value">114</span><span class="stat-label">passing tests</span></li>
+  <li><span class="stat-value">2 envs</span><span class="stat-label">maze toy + DMC Acrobot</span></li>
   <li><span class="stat-value">CPU-only</span><span class="stat-label">no GPU required</span></li>
-  <li><span class="stat-value">25 s</span><span class="stat-label">to reproduce the headline sweep</span></li>
   <li><span class="stat-value">0</span><span class="stat-label">ML dependencies at runtime</span></li>
 </ul>
 
@@ -38,10 +47,72 @@ next:
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
+<aside class="whats-new">
+  <h3>What's new in v0.10</h3>
+  <ul>
+    <li>Short paper accompanying the framework: <em>Counterfactual Planning Gap: A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation</em> (LaTeX source under <a href="https://github.com/Denis-hamon/world-model-eval-lab/tree/main/paper"><code>paper/</code></a>, 23 BibTeX entries, Makefile, stdlib <code>build_figures.py</code> for reproducibility).</li>
+    <li>Three adversarial-review fixes on the paper before tag: dropped a misplaced citation, corrected a table value to match <code>cpg.json</code>, softened a line-count claim.</li>
+    <li><a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/CITATION.cff"><code>CITATION.cff</code></a> bumped, with a <code>preferred-citation</code> block pointing at the paper.</li>
+  </ul>
+</aside>
+
+## The headline result: CPG on DMC Acrobot-swingup
+{:.reveal}
+
+The framework's flagship metric. Run the same random-shooting MPC planner twice on DeepMind Control Suite Acrobot-swingup -- once against oracle dynamics (real MuJoCo physics), once against a Markovian MLP world model trained on 2&nbsp;000 random transitions. The only thing that changes is the `dynamics=` callable. The success-rate difference is the **Counterfactual Planning Gap**.
+{:.reveal}
+
+<section class="policy-comparison reveal">
+  <article class="policy-card policy-success">
+    <header>
+      <h3>Oracle dynamics</h3>
+      <p class="policy-tagline">Random-shooting MPC against real MuJoCo physics.</p>
+    </header>
+    <div class="big-number">30%</div>
+    <p class="big-label">success rate over 10 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>77.3 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>407.1 rollout-units</dd></div>
+      <div><dt>avg steps to success</dt><dd>180.7</dd></div>
+    </dl>
+  </article>
+
+  <article class="policy-card policy-fail">
+    <header>
+      <h3>Learned MLP dynamics</h3>
+      <p class="policy-tagline">Same MPC, same scoring, MLP trained on 2&nbsp;000 random transitions.</p>
+    </header>
+    <div class="big-number">0%</div>
+    <p class="big-label">success rate over 10 episodes</p>
+    <dl class="card-stats">
+      <div><dt>latency / call</dt><dd>65.3 ms</dd></div>
+      <div><dt>compute / decision</dt><dd>157.3 rollout-units</dd></div>
+      <div><dt>val MSE</dt><dd>0.026 (low) - yet success collapses</dd></div>
+    </dl>
+  </article>
+
+  <article class="policy-card policy-cpg">
+    <header>
+      <h3>Counterfactual Planning Gap</h3>
+      <p class="policy-tagline">Decoupling model error from planner capacity.</p>
+    </header>
+    <div class="big-number">+0.30</div>
+    <p class="big-label">raw difference of success rates</p>
+    <dl class="card-stats">
+      <div><dt>AC 95% CI</dt><dd>[-0.06, +0.56]</dd></div>
+      <div><dt>n / arm</dt><dd>10 episodes</dd></div>
+      <div><dt>verdict</dt><dd><span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span></dd></div>
+    </dl>
+  </article>
+</section>
+
+A low validation MSE on prediction quality does **not** translate into closed-loop success. CPG quantifies the planning-side gap with an Agresti&ndash;Caffo $95\%$ confidence interval that **does not collapse** at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation degenerates. The verdict is gated on the CI lower bound, not the raw point estimate -- at $n = 10$ the framework reports `INCONCLUSIVE` rather than over-claiming a model bottleneck. [Read the full page on CPG &rarr;](07_cpg.html)
+{:.reveal}
+
 ## Three policies on the maze, side by side
 {:.reveal}
 
-Same environment, same 30 episodes, same seed - three different planners. Numbers below are pulled verbatim from `examples/maze_toy/sample_report.json`, regenerated every time `python -m examples.maze_toy.run_baseline` is run.
+An earlier demonstration on the maze toy. Same environment, same 30 episodes, same seed -- three different planners. Numbers below are pulled verbatim from `examples/maze_toy/sample_report.json`, regenerated every time `python -m examples.maze_toy.run_baseline` is run.
 {:.reveal}
 
 <section class="policy-comparison reveal">
@@ -90,53 +161,20 @@ Same environment, same 30 episodes, same seed - three different planners. Number
 
 <figure class="figure-wide reveal">
   <img src="assets/policy_comparison.svg" alt="Three side-by-side mini-mazes. The random agent wanders near the start; the greedy agent walks into the wall and stays stuck; the world-model agent finds the corridor and walks the optimal path to the goal." />
-  <figcaption>Three agents, three outcomes, one shared evaluation contract. Each panel animates the agent of its policy in the same maze.</figcaption>
+  <figcaption>Three agents, three outcomes, one shared evaluation contract.</figcaption>
 </figure>
-
-The captured terminal output of the run that produced those numbers:
-{:.reveal}
-
-```text
-$ python -m examples.maze_toy.run_baseline
-Scorecard: random  (perturbation: env-default)
-  episodes                       : 30
-  action success rate            : 0.000
-  average steps to success       : n/a
-  planning latency per call (ms) : 0.026
-  perturbation recovery rate     : 0.000
-  average compute per decision   : n/a
-
-Scorecard: greedy-no-waypoint  (perturbation: env-default)
-  episodes                       : 30
-  action success rate            : 0.000
-  average steps to success       : n/a
-  planning latency per call (ms) : 0.002
-  perturbation recovery rate     : 0.000
-  average compute per decision   : n/a
-
-Scorecard: tabular-world-model  (perturbation: env-default)
-  episodes                       : 30
-  action success rate            : 1.000
-  average steps to success       : 33.800
-  planning latency per call (ms) : 3.120
-  perturbation recovery rate     : 1.000
-  average compute per decision   : 256.410
-
-Wrote sample report to examples/maze_toy/sample_report.json
-```
-{:.reveal}
 
 ## The same contract holds for a learned model
 {:.reveal}
 
-The three policies above use stdlib-only Python. The thesis of this framework - that *any* action-conditioned world model can plug into the same evaluation layer - is only credible if it actually works on a learned model. So here is the smallest possible demonstration: train a tiny PyTorch MLP on the maze's transitions, plug it in as the `dynamics` callable, run the same benchmark.
+The thesis of this framework -- that *any* action-conditioned world model can plug into the same evaluation layer -- is only credible if it actually works on a learned model. The smallest possible demonstration: a tiny PyTorch MLP trained on the maze's transitions plugged in as the `dynamics` callable.
 {:.reveal}
 
 <section class="policy-comparison reveal">
   <article class="policy-card policy-success">
     <header>
       <h3>Oracle dynamics (stdlib)</h3>
-      <p class="policy-tagline">The reference run from the section above, kept here for side-by-side reading.</p>
+      <p class="policy-tagline">The reference run from the section above.</p>
     </header>
     <div class="big-number">100%</div>
     <p class="big-label">success rate over 30 episodes</p>
@@ -150,7 +188,7 @@ The three policies above use stdlib-only Python. The thesis of this framework - 
   <article class="policy-card policy-success">
     <header>
       <h3>Learned MLP dynamics (PyTorch)</h3>
-      <p class="policy-tagline">Same MPC planner, but `dynamics` is now a tiny MLP trained on 64 (state, action, next_state) transitions.</p>
+      <p class="policy-tagline">Same MPC planner, dynamics is now a tiny MLP trained on 64 transitions.</p>
     </header>
     <div class="big-number">100%</div>
     <p class="big-label">success rate over 30 episodes</p>
@@ -162,62 +200,24 @@ The three policies above use stdlib-only Python. The thesis of this framework - 
   </article>
 </section>
 
-Same success, same steps to success, same nominal compute - **76 times the per-call latency at horizon 20.** Without measuring latency per call, you would conclude "it works just as well!" while the actual deployment cost is two orders of magnitude higher. That is exactly the trade-off the framework is built to expose.
-{:.reveal}
-
-<figure class="figure-wide reveal">
-  <img src="assets/horizon_sweep_compare.svg" alt="Two stacked panels. Top: success rate vs plan horizon, with the oracle and learned curves overlapping at 100% past horizon 15. Bottom: per-call planning latency, with the learned curve sitting 62 to 77 times above the oracle curve depending on the horizon." />
-  <figcaption>Same maze, same MPC, same evaluation contract. The success-rate curves overlap; per-call latency is <strong>62 to 77 times higher</strong> for the learned MLP, depending on the horizon. Generated by <code>python -m examples.maze_toy.run_learned_sweep</code>.</figcaption>
-</figure>
-
-The captured terminal output of the run that produced the cards above:
-{:.reveal}
-
-```text
-$ pip install -e ".[learned]"
-$ python -m examples.maze_toy.run_learned_baseline
-Training MLP dynamics on maze transitions (~64 samples, 800 epochs)...
-Training done.
-
-Scorecard: tabular-world-model (oracle dynamics)  (perturbation: env-default)
-  episodes                       : 30
-  action success rate            : 1.000
-  average steps to success       : 33.800
-  planning latency per call (ms) : 3.116
-  perturbation recovery rate     : 1.000
-  average compute per decision   : 256.410
-
-Scorecard: tabular-world-model (learned MLP dynamics)  (perturbation: env-default)
-  episodes                       : 30
-  action success rate            : 1.000
-  average steps to success       : 33.800
-  planning latency per call (ms) : 236.926
-  perturbation recovery rate     : 1.000
-  average compute per decision   : 256.410
-```
-{:.reveal}
-
-The proof of contract: a 70-line PyTorch adapter is a drop-in for `TabularWorldModelPlanner`'s `dynamics` argument. The rest of the framework - the runner, the metrics, the scorecard, the perturbation library, the horizon sweep - does not change. Source: [`src/wmel/adapters/learned_dynamics_torch.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/src/wmel/adapters/learned_dynamics_torch.py).
+Same success, same steps to success, same nominal compute -- **76 times the per-call latency at horizon 20.** Without measuring latency per call, you would conclude "it works just as well!" while the actual deployment cost is two orders of magnitude higher.
 {:.reveal}
 
 ## The evaluation contract any world model can plug into
 
 ![architecture](assets/architecture.svg){:.figure-architecture-img}
 
-Every adapter exposes the four hooks above (`encode`, `rollout`, `score`, `plan`). The benchmark runner does the rest: rollouts, perturbations, latency measurement, scorecard. A concrete subclass under [`src/wmel/adapters/tabular_world_model.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/src/wmel/adapters/tabular_world_model.py) implements all four with stdlib-only random-shooting MPC.
+Every adapter exposes the four hooks above (`encode`, `rollout`, `score`, `plan`). The benchmark runner does the rest: rollouts, perturbations, latency measurement, scorecard. Concrete subclasses live in [`src/wmel/adapters/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/src/wmel/adapters): a stdlib tabular planner, a PyTorch MLP, and the DMC Acrobot oracle.
 
 ## Effective planning horizon, made visible
 {:.reveal}
 
-The framework's first headline result: sweep the planning horizon of a tabular world-model planner on the maze toy and watch where it pays off. Hover any horizon below to see all of its metrics together. Success saturates at h = 15. Per-call latency keeps climbing past the plateau without buying any extra success - and steps-to-success start to degrade as the planner over-commits before replanning.
+The framework's first headline result: sweep the planning horizon of a tabular world-model planner on the maze toy and watch where it pays off. Hover any horizon below to see all of its metrics together. Success saturates at h = 15. Per-call latency keeps climbing past the plateau without buying any extra success.
 {:.reveal}
 
 <div class="chart-container has-tooltips reveal" aria-label="Interactive horizon-sweep chart. Hover or focus a horizon to see its success rate, per-call latency, compute per decision, and average steps to success.">
   {% include_relative assets/horizon_sweep.svg %}
 </div>
-
-The same scorecard structure applies to every benchmark card in [03_benchmark_cards.html](03_benchmark_cards.html). The applied questions change - "Can a world model push a part into spec faster than a hand-tuned controller on a 50 ms decision loop?" for Push-T, "Does a stacking model transfer to a new goal without retraining?" for OGBench Cube - but the columns stay the same.
-{:.reveal}
 
 ## Reproduce in 25 seconds, on a laptop, no GPU
 {:.reveal}
@@ -229,7 +229,7 @@ pip install -e ".[dev]"
 ```
 {:.reveal}
 
-Then run a single benchmark, or sweep the planning horizon, directly via the installed `wmel` console script - no need to call into the `examples/` modules:
+Then run a single benchmark, or sweep the planning horizon, directly via the installed `wmel` console script:
 {:.reveal}
 
 ```bash
@@ -241,44 +241,116 @@ wmel sweep --env maze_toy --plan-horizons 5,10,15,20,30 --output sweep.json
 ```
 {:.reveal}
 
-Both commands honour the same `Perturbation` library as the Python API:
+The full DMC Acrobot CPG worked example needs the `[control]` and `[learned]` extras:
 {:.reveal}
 
 ```bash
-# Drop the next 2 queued actions when the perturbation fires
-wmel run --env maze_toy --policy tabular-world-model --perturbation drop-next-2 \
-  --perturb-prob 0.3 --output run.json
-
-# Compose env-default and drop-next-3 at the same trigger moment
-wmel sweep --env maze_toy --perturbation 'composite:env-default+drop-next-3' \
-  --output sweep.json
+pip install -e ".[dev,control,learned]"
+python -m experiments.dmc_acrobot.cpg
+# -> results/dmc_acrobot/cpg.json
 ```
 {:.reveal}
 
-Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`, `generated_at`), so downstream tooling can rely on a stable shape across releases. All runs are deterministic with `seed=0`. The same scripts under `examples/maze_toy/run_*.py` keep working for users who prefer the Python API.
+Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`, `generated_at`), so downstream tooling can rely on a stable shape across releases.
 {:.reveal}
 
-## Read more
-{:.reveal}
+## Where to read next
 
-- [Thesis](00_thesis.html) - why static benchmarks miss the point.
-- [Evaluation gap](01_evaluation_gap.html) - what is missing between research and deployment.
-- [Metric taxonomy](02_metric_taxonomy.html) - the metric set, with a worked horizon-sweep example.
-- [Benchmark cards](03_benchmark_cards.html) - Push-T, Reacher, Two-Room, Maze, OGBench Cube.
-- [Industrial use cases](04_industrial_use_cases.html) - robotics, industrial automation, datacenter ops, logistics, safety monitoring.
-- [30-day study plan](05_30_day_prototype_plan.html) - week-by-week scope and status.
-- [Reading a scorecard](06_demo.html) - row-by-row walkthrough of a real sweep result.
-{:.reveal}
+<section class="reading-paths">
+  <article class="path-card">
+    <p class="path-eyebrow">For the researcher</p>
+    <h3>How the framework thinks</h3>
+    <p class="path-lead">The metric taxonomy, the four-method evaluation contract, and the CPG definition with its Agresti-Caffo CI and gated verdict.</p>
+    <ul class="path-links">
+      <li><a href="00_thesis.html">Thesis</a></li>
+      <li><a href="01_evaluation_gap.html">Evaluation gap</a></li>
+      <li><a href="02_metric_taxonomy.html">Metric taxonomy</a></li>
+      <li><a href="07_cpg.html">Counterfactual Planning Gap</a></li>
+    </ul>
+  </article>
+
+  <article class="path-card">
+    <p class="path-eyebrow">For the practitioner</p>
+    <h3>Plug a model in</h3>
+    <p class="path-lead">A walkthrough of one scorecard, the benchmark cards each environment maps to, and the industrial use-cases the framework is built around.</p>
+    <ul class="path-links">
+      <li><a href="06_demo.html">Reading a scorecard</a></li>
+      <li><a href="03_benchmark_cards.html">Benchmark cards</a></li>
+      <li><a href="04_industrial_use_cases.html">Industrial use cases</a></li>
+      <li><a href="05_30_day_prototype_plan.html">30-day study plan</a></li>
+    </ul>
+  </article>
+
+  <article class="path-card">
+    <p class="path-eyebrow">For the reader</p>
+    <h3>The paper and its sources</h3>
+    <p class="path-lead">The short paper accompanying the framework, the LaTeX source, the reproducibility script, and the citation entry.</p>
+    <ul class="path-links">
+      <li><a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex">Paper (main.tex)</a></li>
+      <li><a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/references.bib">BibTeX (references.bib)</a></li>
+      <li><a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/build_figures.py"><code>build_figures.py</code></a></li>
+      <li><a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/CITATION.cff"><code>CITATION.cff</code></a></li>
+    </ul>
+  </article>
+</section>
 
 ## Releases
-{:.reveal}
 
-- [v0.7.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.7.0) - `wmel` CLI, versioned JSON schema, perturbation-aware sweep, stdlib-only CI job.
-- [v0.6.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.6.0) - proof of contract for learned PyTorch dynamics on the maze.
-- [v0.5.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.5.0) - pluggable perturbation library.
-- [v0.4.0](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.4.0) - Markdown export and compute-per-decision.
-- [v0.3.1](https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.3.1) - initial public release.
-{:.reveal}
+<section class="release-timeline">
+  <article class="release-card release-current">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.10.0">v0.10.0</a>
+      <span class="release-meta">2026-05-16 &middot; current</span>
+    </div>
+    <p class="release-title">Short paper: Counterfactual Planning Gap</p>
+    <p class="release-body">~7-page LaTeX paper under <code>paper/</code>, 23 BibTeX entries, reproducibility script, three adversarial-review findings addressed before tag.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.9.0">v0.9.0</a>
+      <span class="release-meta">2026-05</span>
+    </div>
+    <p class="release-title">CPG metric with Agresti-Caffo CI and gated verdict</p>
+    <p class="release-body">Five-branch verdict gated on the CI lower bound; honest <code>INCONCLUSIVE</code> at n=10 instead of over-claiming a Wald-CI-driven significance.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.8.0">v0.8.0</a>
+      <span class="release-meta">2026-05</span>
+    </div>
+    <p class="release-title">DMC Acrobot-swingup wired in</p>
+    <p class="release-body">First non-toy environment via <code>wmel.envs.dmc_acrobot</code>, with a Markovian MLP learned dynamics and an oracle dynamics factory. <code>dm-control</code> is an optional extra.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.7.0">v0.7.0</a>
+      <span class="release-meta">2026-04</span>
+    </div>
+    <p class="release-title">CLI, versioned JSON schema, perturbation-aware sweep</p>
+    <p class="release-body"><code>wmel run</code> / <code>wmel sweep</code> console scripts; JSON envelope with <code>schema_version</code>, <code>wmel_version</code>, <code>generated_at</code>. Second CI job locks the no-torch runtime promise.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.6.0">v0.6.0</a>
+      <span class="release-meta">2026-04</span>
+    </div>
+    <p class="release-title">Proof of contract for learned PyTorch dynamics</p>
+    <p class="release-body">PyTorch MLP fits the maze's transition table and plugs in as a drop-in <code>dynamics=</code> callable. Identical success, 76x higher per-call latency -- the trade-off the framework is built to expose.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.5.0">v0.5.0</a>
+      <span class="release-meta">2026-04</span>
+    </div>
+    <p class="release-title">Pluggable perturbation library</p>
+    <p class="release-body"><code>Perturbation</code>, <code>EnvPerturbation</code>, <code>DropNextActions</code>, <code>CompositePerturbation</code>. Runner inner loop switched to <code>deque</code> for O(1) action-queue pops.</p>
+  </article>
+</section>
 
 ## Disclaimer
 {:.reveal}

@@ -9,7 +9,8 @@
  *              (Jekyll default in _config.yml).
  */
 
-:root {
+:root,
+[data-theme="light"] {
   --ink: #1f2933;
   --ink-soft: #323f4b;
   --muted: #52606d;
@@ -18,11 +19,19 @@
   --accent-strong: #0a4ba0;
   --accent-soft: #e6efff;
   --warn: #b34a00;
+  --ok: #0e7a47;
+  --danger: #c0392b;
   --surface: #f7f9fc;
   --surface-strong: #eef2f7;
   --border: #d8e0e8;
   --border-soft: #e4ebf2;
   --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(15, 25, 35, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 25, 35, 0.06);
+  --shadow-lg: 0 12px 32px rgba(15, 25, 35, 0.08);
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --nav-bg-solid: #ffffff;
 
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -30,6 +39,33 @@
     Menlo, Consolas, "Liberation Mono", monospace;
 
   --content-max: 56rem;
+  --nav-height: 56px;
+  --shell-max: 88rem;
+  --toc-width: 16rem;
+}
+
+[data-theme="dark"] {
+  --ink: #e6ebf2;
+  --ink-soft: #cfd6df;
+  --muted: #9aa3ad;
+  --muted-soft: #6f7884;
+  --accent: #5fa1ff;
+  --accent-strong: #7eb4ff;
+  --accent-soft: #14233b;
+  --warn: #f0a060;
+  --ok: #4dc787;
+  --danger: #ef6a5a;
+  --surface: #161c25;
+  --surface-strong: #1d2530;
+  --border: #2a3340;
+  --border-soft: #232a35;
+  --bg: #0f141c;
+  --bg-elevated: #161c25;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --nav-bg: rgba(15, 20, 28, 0.85);
+  --nav-bg-solid: #0f141c;
 }
 
 * {
@@ -75,71 +111,264 @@ body {
   text-decoration: none;
 }
 
-/* Header. */
-.page-header {
-  background: var(--bg);
+/* =============================================================
+ * Sticky slim site nav (replaces the old GitHub-Pages-style banner).
+ * ============================================================= */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--nav-bg);
+  backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 2rem 1.5rem 1.5rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-.page-header > * {
-  max-width: var(--content-max);
-  margin-left: auto;
-  margin-right: auto;
+.site-nav-inner {
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  height: var(--nav-height);
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.page-header .project-name {
-  font-size: 1.6rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--accent);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.page-header .project-name a {
-  color: inherit;
+.site-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--ink);
   text-decoration: none;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   border-bottom: none;
 }
-.page-header .project-name a:hover {
-  color: var(--accent-strong);
+.site-brand:hover {
+  color: var(--accent);
+  border-bottom: none;
 }
-
-.page-header .project-tagline {
+.brand-mark {
+  font-family: var(--font-mono);
   font-size: 1rem;
-  font-weight: 400;
-  color: var(--muted);
-  margin: 0.4rem 0 1rem;
-  max-width: 48rem;
-  line-height: 1.5;
-}
-
-.page-header .btn {
-  display: inline-block;
-  padding: 0.45rem 1rem;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--accent);
   background: var(--accent-soft);
-  border: 1px solid transparent;
+  padding: 0.18rem 0.5rem;
   border-radius: 4px;
-  text-decoration: none;
-  margin-right: 0.5rem;
-  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.02em;
 }
-.page-header .btn:hover {
-  background: var(--accent);
-  color: white;
-  border-bottom: 1px solid transparent;
+.brand-version {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
 }
 
-/* Main content area. */
+.site-nav-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+}
+.site-nav-links li { margin: 0; }
+.site-nav-links li::marker { content: none; }
+.site-nav-links a {
+  display: inline-block;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: none;
+  transition: background 0.15s, color 0.15s;
+}
+.site-nav-links a:hover,
+.site-nav-links a:focus-visible {
+  color: var(--ink);
+  background: var(--surface);
+  border-bottom: none;
+  outline: none;
+}
+
+.site-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.theme-toggle,
+.site-nav-github {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.theme-toggle:hover,
+.site-nav-github:hover,
+.theme-toggle:focus-visible,
+.site-nav-github:focus-visible {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--border);
+  outline: none;
+}
+.theme-toggle svg { width: 18px; height: 18px; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* Mobile menu toggle (hidden on desktop). */
+.site-nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0 8px;
+}
+.site-nav-toggle span {
+  display: block;
+  height: 2px;
+  width: 20px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+@media (max-width: 880px) {
+  .site-nav-links {
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.75rem 1rem 1rem;
+    background: var(--nav-bg-solid);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s;
+  }
+  .site-nav.is-open .site-nav-links {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .site-nav-links a {
+    display: block;
+    padding: 0.6rem 0.75rem;
+  }
+  .site-nav-toggle { display: inline-flex; }
+}
+
+/* =============================================================
+ * Site shell + content area.
+ * ============================================================= */
+.site-shell {
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+}
+
+@media (min-width: 1180px) {
+  .site-shell {
+    grid-template-columns: minmax(0, 1fr) var(--toc-width);
+    align-items: flex-start;
+  }
+}
+
 .main-content {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  width: 100%;
+  padding: 2.5rem 0 4rem;
+}
+
+@media (min-width: 1180px) {
+  .main-content {
+    margin: 0;
+    padding: 2.5rem 1.5rem 4rem 0;
+  }
+}
+
+/* =============================================================
+ * Right-rail TOC (auto-built from page headings by interactive.js).
+ * ============================================================= */
+.site-toc {
+  display: none;
+}
+@media (min-width: 1180px) {
+  .site-toc {
+    display: block;
+    position: sticky;
+    top: calc(var(--nav-height) + 1.5rem);
+    align-self: flex-start;
+    padding: 2.5rem 0 4rem;
+  }
+}
+.site-toc-inner {
+  border-left: 1px solid var(--border);
+  padding: 0.25rem 0 0.25rem 1rem;
+}
+.site-toc-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-soft);
+  margin-bottom: 0.6rem;
+}
+.site-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.site-toc-list li { margin: 0; }
+.site-toc-list li::marker { content: none; }
+.site-toc-list li.toc-h3 { padding-left: 0.9rem; }
+.site-toc-list a {
+  display: block;
+  padding: 0.25rem 0;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: none;
+  transition: color 0.15s;
+}
+.site-toc-list a:hover {
+  color: var(--ink);
+  border-bottom: none;
+}
+.site-toc-list a.is-active {
+  color: var(--accent);
+  font-weight: 500;
 }
 
 /* Typography. */
@@ -318,7 +547,15 @@ img[src^="/assets/"] {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   padding: 1.25rem;
-  background: white;
+  background: var(--bg-elevated);
+}
+[data-theme="dark"] img[src*="github.io"][src$=".svg"],
+[data-theme="dark"] img[src^="assets/"],
+[data-theme="dark"] img[src^="/assets/"] {
+  /* Inline SVGs are authored on a light palette; tint them with a subtle
+     surface tone in dark mode rather than inverting (inversion hurts the
+     coloured policy lines in the sweep chart). */
+  background: #f7f9fc;
 }
 
 /* Status badges (img.shields.io or GitHub actions badge). */
@@ -335,11 +572,17 @@ img[src*="badge.svg"] {
 
 /* Footer. */
 .site-footer {
-  margin-top: 3.5rem;
-  padding: 1.25rem 0 0;
+  margin-top: 4rem;
   border-top: 1px solid var(--border-soft);
+  background: var(--surface);
+  padding: 1.5rem 1.25rem;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.site-footer-inner {
+  max-width: var(--shell-max);
+  margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -354,18 +597,17 @@ img[src*="badge.svg"] {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+.site-footer .footer-disclaimer { color: var(--muted); }
 
 /* Responsive tightening. */
 @media (max-width: 640px) {
   html {
     font-size: 15px;
   }
-  .page-header {
-    padding: 1.5rem 1rem 1rem;
-  }
   .main-content {
-    padding: 1.5rem 1rem 3rem;
+    padding: 1.5rem 0 3rem;
   }
+  .site-shell { padding: 0 1rem; }
   h1 { font-size: 1.8rem; }
   h2 { font-size: 1.3rem; }
   table { font-size: 0.88rem; }
@@ -375,7 +617,8 @@ img[src*="badge.svg"] {
 /* Print: minimal black on white. */
 @media print {
   body { color: #000; background: #fff; }
-  .page-header .btn { display: none; }
+  .site-nav, .site-toc, .theme-toggle, .site-nav-github, .site-nav-toggle { display: none; }
+  .release-banner, .whats-new { background: none; border: 1px solid #ccc; }
   a { color: #000; text-decoration: underline; }
   img { border: 1px solid #999; }
 }
@@ -474,7 +717,7 @@ img[src*="badge.svg"] {
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   padding: 1rem;
-  background: white;
+  background: var(--bg-elevated);
   box-shadow: 0 10px 30px -18px rgba(15, 95, 191, 0.35);
 }
 .hero-figure > svg,
@@ -568,9 +811,18 @@ img[src*="badge.svg"] {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   padding: 1.25rem;
-  background: white;
+  background: var(--bg-elevated);
   margin: 1.5rem 0;
+  /* The inline horizon-sweep SVG is authored on a light palette; keep its
+     canvas light in dark mode rather than inverting the strokes. */
 }
+[data-theme="dark"] .chart-container {
+  background: #f7f9fc;
+  color: var(--ink);
+  /* Cancel the body's dark text color for the chart's text elements; the
+     SVG draws on a light canvas so dark text remains legible. */
+}
+[data-theme="dark"] .chart-container * { color: #1f2933; }
 
 .chart-container svg {
   display: block;
@@ -711,6 +963,13 @@ img[src*="badge.svg"] {
   background: #16a34a; /* a green that pairs with the blue accent */
 }
 
+.policy-card.policy-cpg::before {
+  background: var(--accent);
+}
+.policy-card.policy-cpg .big-number {
+  color: var(--accent);
+}
+
 .policy-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 30px -18px rgba(15, 95, 191, 0.25);
@@ -797,8 +1056,11 @@ img[src*="badge.svg"] {
   margin: 0;
   border: 1px solid var(--border-soft);
   border-radius: 10px;
-  background: white;
+  background: var(--bg-elevated);
   padding: 1rem;
+}
+[data-theme="dark"] .figure-wide > img {
+  background: #f7f9fc;
 }
 .figure-wide figcaption {
   margin-top: 0.5rem;
@@ -864,7 +1126,7 @@ a.metric-link:focus-visible {
   width: 460px;
   max-width: calc(100vw - 2rem);
   z-index: 60;
-  background: white;
+  background: var(--bg-elevated);
   color: var(--ink);
   padding: 1rem 1.1rem 0.9rem;
   border: 1px solid var(--border-soft);
@@ -1047,3 +1309,284 @@ img.figure-architecture-img.is-visible {
     transition: none;
   }
 }
+
+/* =============================================================
+ * Current-release banner (above the hero on the landing).
+ * ============================================================= */
+.release-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0.85rem;
+  margin: 1.5rem 0 1.25rem;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+.release-banner .tag {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--bg-elevated);
+  padding: 0.18rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  letter-spacing: 0.02em;
+}
+.release-banner .release-banner-text { flex: 1; min-width: 14rem; }
+.release-banner a {
+  color: var(--accent);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+}
+.release-banner a:hover { border-bottom-color: var(--accent); }
+
+/* =============================================================
+ * CPG verdict pills (used in the dedicated CPG page and the
+ * landing's Acrobot scorecard summary).
+ * ============================================================= */
+.verdict-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.verdict-pill::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.verdict-pill.verdict-model-bottleneck {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+}
+.verdict-pill.verdict-learned-outperforms {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ok) 25%, transparent);
+}
+.verdict-pill.verdict-planner-bottleneck {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 28%, transparent);
+}
+.verdict-pill.verdict-as-good-as {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.verdict-pill.verdict-inconclusive {
+  color: var(--muted);
+  background: var(--surface-strong);
+  border-color: var(--border);
+}
+
+.verdict-legend {
+  margin: 1.25rem 0 2rem;
+}
+.verdict-legend p {
+  margin: 0.5rem 0;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.verdict-legend p .verdict-pill {
+  flex-shrink: 0;
+}
+
+/* =============================================================
+ * Reading paths grid (replaces the flat "Read more" list).
+ * ============================================================= */
+.reading-paths {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  margin: 1.5rem 0 2rem;
+}
+@media (min-width: 760px) {
+  .reading-paths { grid-template-columns: repeat(3, 1fr); }
+}
+.path-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  padding: 1.25rem 1.25rem 1.1rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.path-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: var(--shadow-md);
+}
+.path-card .path-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-soft);
+  margin: 0 0 0.4rem;
+}
+.path-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.path-card p.path-lead {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.path-card ul.path-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+.path-card ul.path-links li { margin: 0.15rem 0; }
+.path-card ul.path-links li::marker { content: none; }
+.path-card ul.path-links a {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+}
+.path-card ul.path-links a:hover {
+  border-bottom-color: var(--accent);
+}
+.path-card ul.path-links a::before {
+  content: "\2192";
+  margin-right: 0.4rem;
+  color: var(--muted-soft);
+  font-family: var(--font-mono);
+}
+
+/* =============================================================
+ * Release timeline (replaces the flat bulleted releases list).
+ * ============================================================= */
+.release-timeline {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+  margin: 1.5rem 0 2rem;
+}
+@media (min-width: 760px) {
+  .release-timeline { grid-template-columns: repeat(2, 1fr); }
+}
+.release-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+}
+.release-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.release-card.release-current {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: linear-gradient(180deg, var(--accent-soft), var(--bg-elevated) 80%);
+}
+.release-card .release-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.release-card .release-version {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  border-bottom: none;
+}
+.release-card .release-version:hover {
+  text-decoration: underline;
+}
+.release-card .release-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted-soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.release-card .release-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.release-card .release-body {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* =============================================================
+ * "What's new" panel (compact summary of the current release).
+ * ============================================================= */
+.whats-new {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  background: var(--surface);
+  margin: 1.5rem 0 2rem;
+}
+.whats-new h3 {
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.whats-new ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+.whats-new ul li { margin: 0.2rem 0; }
+
+/* =============================================================
+ * Stat-strip refinement (dark-mode aware).
+ * Existing rules already use var(--surface) etc., so dark mode is
+ * mostly automatic. Add subtle border so the strip stays visible
+ * against the page background in both themes.
+ * ============================================================= */
+.stat-strip {
+  border-color: var(--border);
+}
+
+/* Selection colour. */
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--ink);
+}
+
