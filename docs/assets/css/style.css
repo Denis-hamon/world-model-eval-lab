@@ -1413,6 +1413,103 @@ img.figure-architecture-img.is-visible {
 }
 
 /* =============================================================
+ * Paper page (docs/paper.md): hero header + tables + PDF actions.
+ * ============================================================= */
+.paper-header {
+  padding: 2.5rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.paper-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+.paper-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 0.4rem;
+  line-height: 1.15;
+}
+.paper-subtitle {
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  margin: 0 0 0.9rem;
+  line-height: 1.45;
+  font-style: italic;
+  max-width: 48rem;
+}
+.paper-author {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 1.2rem;
+}
+.paper-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.8rem;
+}
+.paper-actions .btn-primary,
+.paper-actions .btn-ghost {
+  font-size: 0.92rem;
+}
+.paper-pdf-note {
+  font-size: 0.82rem;
+  color: var(--muted-soft);
+  margin: 0;
+  max-width: 48rem;
+}
+.paper-pdf-note code {
+  font-size: 0.78rem;
+}
+
+/* Paper-page tables: keep them readable, hairline-style.
+   The paper.md page uses raw <table class="paper-table"> rather
+   than markdown tables so verdict pills can sit cleanly inside
+   cells; this is the styling for those. */
+.paper-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+.paper-table thead { background: var(--surface); }
+.paper-table th,
+.paper-table td {
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.paper-table th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.paper-table tbody tr:last-child td { border-bottom: none; }
+.paper-table tbody tr:hover { background: var(--surface); }
+.paper-table.paper-table-narrow { max-width: 32rem; }
+
+@media (max-width: 640px) {
+  .paper-title { font-size: 1.6rem; }
+  .paper-subtitle { font-size: 1rem; }
+  .paper-table { font-size: 0.86rem; }
+  .paper-table th,
+  .paper-table td { padding: 0.45rem 0.6rem; }
+}
+
+/* =============================================================
  * Reading paths grid (replaces the flat "Read more" list).
  * ============================================================= */
 .reading-paths {

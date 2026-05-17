@@ -1,0 +1,82 @@
+name: paper-pdf
+
+# Builds paper/main.pdf and commits it back to the repo so the
+# Download-PDF button on the live site can link to the raw GitHub URL.
+# Also uploads it as a workflow artifact (one-click download from the
+# Actions UI) and attaches it to a release on tag pushes.
+#
+# Triggers:
+#   - push to main that touches paper/** or this workflow file
+#   - tag push (so each release has a paper attached)
+#   - manual dispatch from the Actions tab
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+# Note: no `paths:` filter on purpose. A `paths:` filter would also apply
+# to tag pushes, which would skip the release-attach step whenever a tag
+# happens to land on a commit that did not touch `paper/**`. The build is
+# ~2 minutes; running it on every main push is the simpler, never-misses
+# choice. The commit-back step is idempotent (the diff is empty when
+# nothing changed) so this does not generate noise commits.
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # Need full history so the commit-back step can push without
+          # the shallow-clone restriction.
+          fetch-depth: 0
+
+      - name: Install TeX Live (minimal set)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-bibtex-extra \
+            texlive-science \
+            biber
+
+      - name: Build paper
+        working-directory: paper
+        run: |
+          make
+          ls -la main.pdf
+
+      - name: Upload PDF as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-main-pdf
+          path: paper/main.pdf
+          retention-days: 90
+
+      - name: Commit PDF back to paper/main.pdf
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name  "paper-pdf-bot"
+          git config user.email "noreply@github.com"
+          git add paper/main.pdf
+          if git diff --cached --quiet; then
+            echo "No PDF changes to commit."
+          else
+            git commit -m "ci(paper): rebuild main.pdf [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Attach PDF to release if this is a tag push
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: paper/main.pdf
+          fail_on_unmatched_files: false

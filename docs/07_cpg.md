@@ -114,6 +114,23 @@ Validation MSE drops by **~150 times** across the three cells; learned-arm plann
 
 The recommended remediation is to change the **data-collection policy** (energy-aware exploration, relabelled trajectories) -- and to consider a stronger planner -- not to grow the model.
 
+  <h3 class="chapter-sub">Empirical receipt for the coverage claim</h3>
+
+We measure the visited-state distribution directly. On the natural "uprightness" axis $u(\mathbf{o}) = \cos\theta_1 + \cos\theta_2 \in [-2, +2]$ (upright pose at $+2$):
+
+| Dataset | $n$ states | Mean $u$ | Max $u$ | Frac $u > 1.0$ | Frac $u > 1.5$ |
+|---|---:|---:|---:|---:|---:|
+| Random rollouts | 2 000 | $-0.503$ | $+0.865$ | **0.00%** | **0.00%** |
+| Oracle planner | 846 | $+0.161$ | $+1.866$ | 20.2% | 12.2% |
+
+The upright regime that swing-up requires is **strictly absent** from the training distribution: $0/2000$ random-rollout states have $u > 1.0$. The oracle planner visits that regime in roughly one-fifth of its trajectory. The MLP has never been shown a state from which the planner needs to predict.
+
+Numbers from [`results/dmc_acrobot/coverage.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/coverage.json). Regenerate with:
+
+```bash
+python -m experiments.dmc_acrobot.coverage_analysis
+```
+
 Numbers from [`results/dmc_acrobot/cpg_sweep.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cpg_sweep.json). Regenerate with:
 
 ```bash
