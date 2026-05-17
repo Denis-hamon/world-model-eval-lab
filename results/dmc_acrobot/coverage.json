@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.11.0",
+  "generated_at": "2026-05-17T08:57:11+00:00",
+  "environment": "dmc_acrobot_swingup",
+  "metric": "state_space_coverage",
+  "axis": "uprightness = cos(upper) + cos(lower)",
+  "seed": 0,
+  "config": {
+    "random_episodes": 10,
+    "random_steps": 200,
+    "oracle_episodes": 5,
+    "oracle_steps": 300,
+    "num_candidates": 50,
+    "plan_horizon": 15
+  },
+  "datasets": [
+    {
+      "label": "random_rollouts",
+      "n_states": 2000,
+      "episodes": 10,
+      "max_steps_per_episode": 200,
+      "bucket_edges": [
+        -2.0,
+        -1.5,
+        -1.0,
+        -0.5,
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0
+      ],
+      "bucket_counts": [
+        271,
+        479,
+        277,
+        272,
+        343,
+        358,
+        0,
+        0
+      ],
+      "mean_uprightness": -0.5032590847135574,
+      "max_uprightness": 0.8654646192517681,
+      "frac_above_1_0": 0.0,
+      "frac_above_1_5": 0.0
+    },
+    {
+      "label": "oracle_planner",
+      "n_states": 846,
+      "episodes": 5,
+      "max_steps_per_episode": 300,
+      "bucket_edges": [
+        -2.0,
+        -1.5,
+        -1.0,
+        -0.5,
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0
+      ],
+      "bucket_counts": [
+        70,
+        65,
+        115,
+        100,
+        125,
+        200,
+        68,
+        103
+      ],
+      "mean_uprightness": 0.16080792956723747,
+      "max_uprightness": 1.8663580433907132,
+      "frac_above_1_0": 0.20212765957446807,
+      "frac_above_1_5": 0.12174940898345153
+    }
+  ]
+}

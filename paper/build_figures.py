@@ -98,6 +98,30 @@ def main() -> None:
             f"{p['verdict']}"
         )
 
+    # ----------------------------------------------------------------
+    # Section 5.6.1 coverage receipt. Generated only if coverage.json
+    # exists.
+    # ----------------------------------------------------------------
+    cov_path = _REPO_ROOT / "results" / "dmc_acrobot" / "coverage.json"
+    if not cov_path.exists():
+        print()
+        print(f"# (No coverage JSON at {cov_path.relative_to(_REPO_ROOT)} - "
+              "Section 5.6.1 receipt will not be regenerated.)")
+        return
+
+    cov = json.loads(cov_path.read_text())
+    print()
+    print("# Values for paper/main.tex Section 5.6.1 'Empirical receipt for the coverage claim'.")
+    print(f"# Source: {cov_path.relative_to(_REPO_ROOT)}")
+    print()
+    print(f"{'dataset':>18}  {'n':>5}  {'mean u':>7}  {'max u':>7}  {'frac>1.0':>9}  {'frac>1.5':>9}")
+    for d in cov["datasets"]:
+        print(
+            f"{d['label']:>18}  {d['n_states']:>5}  "
+            f"{d['mean_uprightness']:>+7.3f}  {d['max_uprightness']:>+7.3f}  "
+            f"{d['frac_above_1_0']*100:>8.2f}%  {d['frac_above_1_5']*100:>8.2f}%"
+        )
+
 
 if __name__ == "__main__":
     main()
