@@ -1,0 +1,34 @@
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in YOUR values.
+# terraform.tfvars is gitignored - it must NEVER be committed.
+# =============================================================================
+
+# OVH Public Cloud project ID. Find at:
+#   https://www.ovh.com/manager/#/public-cloud/pci/projects
+# It is the long UUID-like string in the URL.
+ovh_service_name = "REPLACE_WITH_YOUR_PROJECT_ID"
+
+# Region for the GPU instance and the S3 datastore.
+# Tip: A100 availability varies by region. Verify with `ovhai capabilities flavor list`.
+region = "GRA"
+
+# Which GPU. Defaults are A100 80GB which is the recommended training target.
+# Other valid values:  ai1-1-v100s, ai1-1-l40s, ai1-1-l4, ai1-1-h100, ai1-1-a100-40
+gpu_flavor = "ai1-1-a100-80"
+gpu_count  = 1
+
+# What to run inside the job. The default is the v0.11 CPG smoke test which is
+# CPU-bound and is intended only to validate the pipeline. For an actual
+# GPU-burning training run, override with your TD-MPC2 / Dreamer-V3 entry point
+# once the adapter is committed in src/wmel/adapters/.
+wmel_git_ref       = "main"
+experiment_command = "experiments.dmc_acrobot.cpg"
+
+# Hard kill switch on the job. Default = 12 hours.
+job_timeout_seconds = 43200
+
+# Credentials: DO NOT set these in this file. Use environment variables:
+#   export OVH_APPLICATION_KEY="..."
+#   export OVH_APPLICATION_SECRET="..."
+#   export OVH_CONSUMER_KEY="..."
+# Generate fresh ones at: https://api.ovh.com/createToken

@@ -1,0 +1,15 @@
+# NEVER commit the populated tfvars or local state - both contain secrets.
+terraform.tfvars
+*.tfvars
+!terraform.tfvars.example
+
+# Terraform state and lock.
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+crash.log
+crash.*.log
+
+# Plan output.
+*.tfplan
