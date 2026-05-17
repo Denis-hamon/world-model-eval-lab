@@ -46,6 +46,7 @@ jobs:
             texlive-fonts-recommended \
             texlive-bibtex-extra \
             texlive-science \
+            lmodern \
             biber
 
       - name: Build paper
