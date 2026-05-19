@@ -1,0 +1,180 @@
+\begin{thebibliography}{25}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Agarwal et~al.(2021)Agarwal, Schwarzer, Castro, Courville, and
+  Bellemare]{agarwal2021precipice}
+Rishabh Agarwal, Max Schwarzer, Pablo~Samuel Castro, Aaron Courville, and
+  Marc~G. Bellemare.
+\newblock Deep reinforcement learning at the edge of the statistical precipice.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2021.
+
+\bibitem[Agresti and Caffo(2000)]{agresticaffo2000}
+Alan Agresti and Brian Caffo.
+\newblock Simple and effective confidence intervals for proportions and
+  differences of proportions result from adding two successes and two failures.
+\newblock \emph{The American Statistician}, 54\penalty0 (4):\penalty0 280--288,
+  2000.
+
+\bibitem[Assran et~al.(2023)Assran, Duval, Misra, Bojanowski, Vincent, Rabbat,
+  LeCun, and Ballas]{assran2023ijepa}
+Mahmoud Assran, Quentin Duval, Ishan Misra, Piotr Bojanowski, Pascal Vincent,
+  Michael Rabbat, Yann LeCun, and Nicolas Ballas.
+\newblock Self-supervised learning from images with a joint-embedding
+  predictive architecture.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition (CVPR)}, 2023.
+
+\bibitem[Bardes et~al.(2024)Bardes, Garrido, Ponce, Rabbat, LeCun, Assran, and
+  Ballas]{bardes2024vjepa}
+Adrien Bardes, Quentin Garrido, Jean Ponce, Michael Rabbat, Yann LeCun, Mahmoud
+  Assran, and Nicolas Ballas.
+\newblock {V-JEPA}: Latent video prediction for visual representation learning,
+  2024.
+
+\bibitem[Bardes et~al.(2025)]{bardes2025vjepa2}
+Adrien Bardes et~al.
+\newblock {V-JEPA~2}, 2025.
+\newblock Meta AI technical report.
+
+\bibitem[Bruce et~al.(2024{\natexlab{a}})Bruce, Dennis, Edwards,
+  et~al.]{bruce2024genie}
+Jake Bruce, Michael Dennis, Ashley Edwards, et~al.
+\newblock {Genie}: Generative interactive environments.
+\newblock In \emph{Proceedings of the International Conference on Machine
+  Learning (ICML)}, 2024{\natexlab{a}}.
+
+\bibitem[Bruce et~al.(2024{\natexlab{b}})]{bruce2024genie2}
+Jake Bruce et~al.
+\newblock {Genie 2}: A large-scale foundation world model, 2024{\natexlab{b}}.
+\newblock DeepMind technical report.
+
+\bibitem[Ha and Schmidhuber(2018)]{ha2018world}
+David Ha and J{\"u}rgen Schmidhuber.
+\newblock World models, 2018.
+
+\bibitem[Hafner et~al.(2019)Hafner, Lillicrap, Fischer, Villegas, Ha, Lee, and
+  Davidson]{hafner2019planet}
+Danijar Hafner, Timothy Lillicrap, Ian Fischer, Ruben Villegas, David Ha,
+  Honglak Lee, and James Davidson.
+\newblock Learning latent dynamics for planning from pixels.
+\newblock In \emph{Proceedings of the International Conference on Machine
+  Learning (ICML)}, 2019.
+
+\bibitem[Hafner et~al.(2020)Hafner, Lillicrap, Ba, and
+  Norouzi]{hafner2020dreamer}
+Danijar Hafner, Timothy Lillicrap, Jimmy Ba, and Mohammad Norouzi.
+\newblock Dream to control: Learning behaviors by latent imagination.
+\newblock In \emph{Proceedings of the International Conference on Learning
+  Representations (ICLR)}, 2020.
+
+\bibitem[Hafner et~al.(2023)Hafner, Pasukonis, Ba, and
+  Lillicrap]{hafner2023dreamerv3}
+Danijar Hafner, Jurgis Pasukonis, Jimmy Ba, and Timothy Lillicrap.
+\newblock Mastering diverse domains through world models, 2023.
+
+\bibitem[Hansen et~al.(2024)Hansen, Su, and Wang]{hansen2024tdmpc2}
+Nicklas Hansen, Hao Su, and Xiaolong Wang.
+\newblock {TD-MPC2}: Scalable, robust world models for continuous control.
+\newblock In \emph{Proceedings of the International Conference on Learning
+  Representations (ICLR)}, 2024.
+
+\bibitem[Henderson et~al.(2018)Henderson, Islam, Bachman, Pineau, Precup, and
+  Meger]{henderson2018matters}
+Peter Henderson, Riashat Islam, Philip Bachman, Joelle Pineau, Doina Precup,
+  and David Meger.
+\newblock Deep reinforcement learning that matters.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}, 2018.
+
+\bibitem[Kidambi et~al.(2020)Kidambi, Rajeswaran, Netrapalli, and
+  Joachims]{kidambi2020morel}
+Rahul Kidambi, Aravind Rajeswaran, Praneeth Netrapalli, and Thorsten Joachims.
+\newblock {MOReL}: Model-based offline reinforcement learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2020.
+
+\bibitem[LeCun(2022)]{lecun2022jepa}
+Yann LeCun.
+\newblock A path towards autonomous machine intelligence, 2022.
+\newblock OpenReview position paper.
+
+\bibitem[Liu et~al.(2023)Liu, Zhu, Gao, Feng, Liu, Zhu, and
+  Stone]{liu2023libero}
+Bo~Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter
+  Stone.
+\newblock {LIBERO}: Benchmarking knowledge transfer for lifelong robot
+  learning.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)
+  Datasets and Benchmarks Track}, 2023.
+
+\bibitem[Micheli et~al.(2023)Micheli, Alonso, and Fleuret]{micheli2023iris}
+Vincent Micheli, Eloi Alonso, and Fran{\c{c}}ois Fleuret.
+\newblock Transformers are sample-efficient world models.
+\newblock In \emph{Proceedings of the International Conference on Learning
+  Representations (ICLR)}, 2023.
+
+\bibitem[Newcombe(1998)]{newcombe1998}
+Robert~G. Newcombe.
+\newblock Interval estimation for the difference between independent
+  proportions: Comparison of eleven methods.
+\newblock \emph{Statistics in Medicine}, 17\penalty0 (8):\penalty0 873--890,
+  1998.
+
+\bibitem[Park et~al.(2024)]{park2024ogbench}
+Seohong Park et~al.
+\newblock {OGBench}: Benchmarking offline goal-conditioned rl.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2024.
+
+\bibitem[Sch{\"a}fer et~al.(2007)Sch{\"a}fer, Udluft, and
+  Zimmermann]{schaefer2007acrobot}
+Anton~M. Sch{\"a}fer, Steffen Udluft, and Hans-Georg Zimmermann.
+\newblock The recurrent control neural network.
+\newblock \emph{Engineering Applications of Artificial Intelligence},
+  20\penalty0 (2):\penalty0 197--210, 2007.
+
+\bibitem[Schrittwieser et~al.(2020)Schrittwieser, Antonoglou, Hubert, Simonyan,
+  Sifre, Schmitt, Guez, Lockhart, Hassabis, Graepel, Lillicrap, and
+  Silver]{schrittwieser2020muzero}
+Julian Schrittwieser, Ioannis Antonoglou, Thomas Hubert, Karen Simonyan,
+  Laurent Sifre, Simon Schmitt, Arthur Guez, Edward Lockhart, Demis Hassabis,
+  Thore Graepel, Timothy Lillicrap, and David Silver.
+\newblock Mastering {A}tari, {G}o, chess and shogi by planning with a learned
+  model.
+\newblock \emph{Nature}, 588:\penalty0 604--609, 2020.
+
+\bibitem[Tassa et~al.(2018)Tassa, Doron, Muldal, Erez, Li, de~Las~Casas,
+  Budden, Abdolmaleki, Merel, Lefrancq, Lillicrap, and
+  Riedmiller]{tassa2018dmc}
+Yuval Tassa, Yotam Doron, Alistair Muldal, Tom Erez, Yazhe Li, Diego
+  de~Las~Casas, David Budden, Abbas Abdolmaleki, Josh Merel, Andrew Lefrancq,
+  Timothy Lillicrap, and Martin Riedmiller.
+\newblock {DeepMind} control suite, 2018.
+
+\bibitem[Tunyasuvunakool et~al.(2020)Tunyasuvunakool, Muldal, Doron, Liu,
+  Bohez, Merel, Erez, Lillicrap, Heess, and
+  Tassa]{tunyasuvunakool2020dmcontrol}
+Saran Tunyasuvunakool, Alistair Muldal, Yotam Doron, Siqi Liu, Steven Bohez,
+  Josh Merel, Tom Erez, Timothy Lillicrap, Nicolas Heess, and Yuval Tassa.
+\newblock {dm\_control}: Software and tasks for continuous control, 2020.
+
+\bibitem[Wilson(1927)]{wilson1927}
+Edwin~B. Wilson.
+\newblock Probable inference, the law of succession, and statistical inference.
+\newblock \emph{Journal of the American Statistical Association}, 22\penalty0
+  (158):\penalty0 209--212, 1927.
+
+\bibitem[Yu et~al.(2020)Yu, Thomas, Yu, Ermon, Zou, Levine, Finn, and
+  Ma]{yu2020mopo}
+Tianhe Yu, Garrett Thomas, Lantao Yu, Stefano Ermon, James Zou, Sergey Levine,
+  Chelsea Finn, and Tengyu Ma.
+\newblock {MOPO}: Model-based offline policy optimization.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2020.
+
+\end{thebibliography}
