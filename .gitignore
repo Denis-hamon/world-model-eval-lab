@@ -36,6 +36,16 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Third-party clones (use scripts/setup_tdmpc2.sh to populate)
+third_party/
+
+# Trained model checkpoints (too large for git; reproduce via experiments/)
+results/**/*.pt
+results/dmc_acrobot/tdmpc2_workdir/
+
+# Training console logs (large, ephemeral)
+results/**/*.log
+
 # JSON reports (kept by exception)
 *.json
 !examples/two_room_toy/sample_report.json
