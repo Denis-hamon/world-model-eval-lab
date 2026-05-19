@@ -53,6 +53,35 @@ Writes a `Scorecard` JSON to [`results/dmc_acrobot/baseline_random.json`](../../
   - The flat CPG curve under monotonically improving prediction loss is the result: CPG distinguishes a *model-capacity* bottleneck (refuted at 20 000 transitions) from a *data-coverage* bottleneck (consistent; random rollouts never reach the upright regime). Remediation: change the data-collection policy, not the model architecture.
   - The v0.9 INCONCLUSIVE verdict at n = 10 was the framework being honest about an under-powered design; the v0.11 verdict at n = 150 is the framework committing once the data supports it. The metric's behaviour at both sample sizes is the correctly-calibrated one.
 
-- **v1.0 planned**: second-axis sweep (energy-aware exploration vs random rollouts under fixed data size) to confirm the coverage diagnosis from v0.11; perturbation-aware CPG (does the gap widen under sensor noise?); and a second env (Cartpole-swingup or DMC Reacher) to test whether the CPG diagnosis generalises across tasks.
+- **v0.12 (current): first published-world-model arm, plus a direct test of the v0.11 coverage diagnosis.** Two new experiments and one adapter:
+
+  - `src/wmel/adapters/tdmpc2_adapter.py` - thin checkpoint loader for TD-MPC2 (encoder + latent dynamics + post-hoc obs decoder), exposing the planner contract.
+  - `experiments/dmc_acrobot/tdmpc2_cpg.py` - trains TD-MPC2 (2M env steps, model_size=1, 1-step frame-skip), fits the decoder on the joint (encoder, post-dynamics) latents, runs CPG. `results/dmc_acrobot/tdmpc2_cpg.json`.
+  - `experiments/dmc_acrobot/coverage_mlp_on_tdmpc2.py` - same MLP arch / optimiser / training schedule as v0.11, but data collected by TD-MPC2 eval-mode policy with continuous-to-discrete action snapping. `results/dmc_acrobot/coverage_mlp_on_tdmpc2_cpg.json`.
+
+  Three arms at $n = 10$, seed 0, otherwise identical to v0.11:
+
+  | Arm | val MSE | Oracle | Learned | CPG (AC 95% CI) | Verdict |
+  |---|---|---|---|---|---|
+  | v0.11 MLP / random rollouts (20k) | $4 \cdot 10^{-4}$ | 0.30 | 0.00 | $+0.300\ [-0.06, +0.56]$ | INCONCLUSIVE |
+  | TD-MPC2 enc + dyn + decoder (2M) | n/a | 0.30 | 0.00 | $+0.300\ [-0.06, +0.56]$ | INCONCLUSIVE |
+  | v0.11 MLP / TD-MPC2 rollouts (20k) | $7.7 \cdot 10^{-5}$ | 0.30 | 0.00 | $+0.300\ [-0.06, +0.56]$ | INCONCLUSIVE |
+
+  Coverage axis $u = \cos\theta_1 + \cos\theta_2$:
+
+  | Source | $u_{\max}$ | frac($u > 1$) | frac($u > 1.5$) |
+  |---|---|---|---|
+  | random rollouts (paper) | 0.865 | 0.000 | 0.000 |
+  | TD-MPC2 rollouts (v0.12) | 1.439 | 0.106 | 0.000 |
+  | oracle planner states (paper) | 1.866 | 0.202 | 0.122 |
+
+  **Reading**: the v0.11 conclusion ("remediation: change the data-collection policy, not the network") was tested directly. The data axis moved (random 0% upright → TD-MPC2 10.6%), the MLP fit the new distribution tighter ($5\times$ lower val MSE), and the planner success stayed at zero. A strict "coverage alone" diagnosis is therefore too strong; coverage is either a continuum (10.6% upright still insufficient vs the oracle's 20%) and/or the random-shooting MPC compounds learned-dynamics error across the 15-step plan horizon. The framework's gated verdict correctly stayed `INCONCLUSIVE` at $n = 10$; this is the metric refusing to convict a hypothesis the data does not support.
+
+- **What's next** (sequenced by cost / payoff):
+  1. **Stronger planner on the three v0.12 arms** (a few GPU-hours). Replace random-shooting MPC with CEM or gradient MPC. Decisively separates *model accuracy* from *planner capacity* - the two are confounded in the three identical INCONCLUSIVE numbers above.
+  2. **Paper v0.12** (1-2 days). Update Sections 4-5 with the phase-5d refinement. The "coverage alone" reading of v0.11 becomes a more honest "coverage is necessary but the data on a single seed does not show it is sufficient", and the metric's behaviour - flat CPG under improving val MSE and improving coverage - becomes the headline argument for CPG over prediction-quality metrics.
+  3. **Multi-seed pooled-150 on the three v0.12 arms** (~50-90 GPU-hours). Reproduce seeds 1 and 2 at $n = 50$ per seed per arm; pool. Tightens the AC CI from $\pm 0.30$ to $\pm 0.07$ and either lifts the verdict to `MODEL BOTTLENECK` simultaneously on all three arms, or stays INCONCLUSIVE with a much narrower bound. Worth doing only after (1) clarifies the planner question.
+
+- **v1.0 planned (deferred)**: perturbation-aware CPG (does the gap widen under sensor noise?); a second env (DMC Cartpole-swingup or Reacher) to test whether the CPG verdict pattern generalises across tasks; an energy-aware exploration data-collection axis paired with a fixed-data-size sweep to *quantify* the coverage continuum surfaced by v0.12.
 
 See [docs/05_30_day_prototype_plan.md](../../docs/05_30_day_prototype_plan.md) for the broader roadmap.
