@@ -24,7 +24,8 @@ python -m experiments.dmc_acrobot.cpg_sweep             # cpg_sweep.json (Table 
 python -m experiments.dmc_acrobot.tdmpc2_cpg            # ~12-20 h on an RTX 5000, model_size=1
 python -m experiments.dmc_acrobot.coverage_mlp_on_tdmpc2 # ~30 min after the agent ckpt exists
 python -m experiments.dmc_acrobot.cem_cpg               # ~1 h after the agent ckpt exists
-python -m experiments.dmc_acrobot.cem_cpg_sweep         # ~5-6 h after the agent ckpt exists (pooled-150 rows)
+python -m experiments.dmc_acrobot.cem_cpg_sweep         # ~5-6 h after the agent ckpt exists (pooled-150 rows of Table 3)
+python -m experiments.dmc_acrobot.perturbation_cpg      # ~3-4 h after the agent ckpt exists (Table 4)
 python paper/build_figures.py                           # prints LaTeX-ready values for Table 1
 ```
 
