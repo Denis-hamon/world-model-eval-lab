@@ -215,6 +215,14 @@ def main() -> None:
     cfg_dict = _config(smoke=args.smoke, n_transitions=args.n_transitions)
     seed = args.seed
     levels = DEFAULT_DISCRETE_LEVELS
+    suffix = f"_seed{seed}" if seed != 0 else ""
+    global AGENT_PATH, JSON_PATH
+    # If the caller did not override --agent-ckpt, point at the seed-suffixed
+    # agent so seeds > 0 pick up their own training run.
+    if args.agent_ckpt == str(AGENT_PATH):
+        args.agent_ckpt = str(_REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt")
+    AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"coverage_mlp_on_tdmpc2_cpg{suffix}.json"
 
     # Validate code path with random data if smoke OR if the data-source is
     # random; otherwise load the TD-MPC2 agent and run its policy.
