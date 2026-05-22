@@ -86,8 +86,17 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--data-source", choices=["tdmpc2", "random"], default="tdmpc2", help="Data-collection policy.")
     p.add_argument("--n-transitions", type=int, default=20_000, help="Target number of transitions to collect.")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--model-size", type=int, default=1, help="TD-MPC2 size preset used by the loaded agent.")
     p.add_argument("--agent-ckpt", default=str(AGENT_PATH), help="Path to a tdmpc2 agent checkpoint (used iff --data-source=tdmpc2).")
     return p.parse_args()
+
+
+def _output_suffix(model_size: int, seed: int) -> str:
+    if model_size == 1 and seed == 0:
+        return ""
+    if model_size == 1:
+        return f"_seed{seed}"
+    return f"_size{model_size}_seed{seed}"
 
 
 def _config(smoke: bool, n_transitions: int) -> dict:
@@ -162,7 +171,7 @@ def _collect_tdmpc2_rollouts(agent, env_factory, n_transitions: int, levels: tup
     return transitions
 
 
-def _load_tdmpc2_agent(ckpt_path: Path, seed: int):
+def _load_tdmpc2_agent(ckpt_path: Path, seed: int, model_size: int = 1):
     """Load a TDMPC2 agent from the checkpoint produced by tdmpc2_cpg.py."""
     import hydra.utils
     hydra.utils.get_original_cwd = lambda: os.getcwd()
@@ -188,7 +197,7 @@ def _load_tdmpc2_agent(ckpt_path: Path, seed: int):
     cfg.obs = "state"
     cfg.steps = 1
     cfg.seed = int(seed)
-    cfg.model_size = 1
+    cfg.model_size = int(model_size)
     cfg.compile = False
     cfg.save_video = False
     cfg.save_agent = False
@@ -214,7 +223,16 @@ def main() -> None:
     args = _parse_args()
     cfg_dict = _config(smoke=args.smoke, n_transitions=args.n_transitions)
     seed = args.seed
+    model_size = args.model_size
     levels = DEFAULT_DISCRETE_LEVELS
+    suffix = _output_suffix(model_size, seed)
+    global AGENT_PATH, JSON_PATH
+    # If the caller did not override --agent-ckpt, point at the (size, seed)-
+    # suffixed agent so each (size, seed) cell picks up its own training run.
+    if args.agent_ckpt == str(AGENT_PATH):
+        args.agent_ckpt = str(_REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt")
+    AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"coverage_mlp_on_tdmpc2_cpg{suffix}.json"
 
     # Validate code path with random data if smoke OR if the data-source is
     # random; otherwise load the TD-MPC2 agent and run its policy.
@@ -223,7 +241,7 @@ def main() -> None:
         ckpt = Path(args.agent_ckpt)
         if not ckpt.exists():
             raise FileNotFoundError(f"TD-MPC2 agent checkpoint not found at {ckpt}. Run experiments.dmc_cartpole.tdmpc2_cpg first or pass --data-source random.")
-        agent = _load_tdmpc2_agent(ckpt, seed=seed)
+        agent = _load_tdmpc2_agent(ckpt, seed=seed, model_size=model_size)
         print(f"[1/5] Collecting {cfg_dict['n_transitions']} transitions from TD-MPC2 eval-mode policy...")
         transitions = _collect_tdmpc2_rollouts(
             agent=agent,

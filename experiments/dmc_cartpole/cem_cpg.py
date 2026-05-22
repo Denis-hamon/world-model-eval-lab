@@ -93,10 +93,19 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--smoke", action="store_true", help="Tiny CEM config, random data (no TD-MPC2 ckpt needed).")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--model-size", type=int, default=1, help="TD-MPC2 size preset for the loaded agent / dynamics.")
     p.add_argument("--mlp-data-source", choices=["tdmpc2", "random"], default="tdmpc2",
                    help="Where to source MLP training data (mirrors coverage_mlp_on_tdmpc2).")
     p.add_argument("--n-mlp-transitions", type=int, default=20_000)
     return p.parse_args()
+
+
+def _output_suffix(model_size: int, seed: int) -> str:
+    if model_size == 1 and seed == 0:
+        return ""
+    if model_size == 1:
+        return f"_seed{seed}"
+    return f"_size{model_size}_seed{seed}"
 
 
 def _config(smoke: bool, n_mlp_transitions: int) -> dict:
@@ -167,7 +176,13 @@ def main() -> None:
     args = _parse_args()
     cfg = _config(smoke=args.smoke, n_mlp_transitions=args.n_mlp_transitions)
     seed = args.seed
+    model_size = args.model_size
     levels = DEFAULT_DISCRETE_LEVELS
+    suffix = _output_suffix(model_size, seed)
+    global TDMPC2_AGENT_PATH, TDMPC2_DYNAMICS_PATH, JSON_PATH
+    TDMPC2_AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
+    TDMPC2_DYNAMICS_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cartpole{suffix}.pt"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"cem_cpg{suffix}.json"
 
     use_tdmpc2 = (args.mlp_data_source == "tdmpc2") and not args.smoke
 
@@ -182,7 +197,7 @@ def main() -> None:
             raise FileNotFoundError(
                 f"TD-MPC2 dynamics checkpoint not found at {TDMPC2_DYNAMICS_PATH}."
             )
-        agent = _load_tdmpc2_agent(TDMPC2_AGENT_PATH, seed=seed)
+        agent = _load_tdmpc2_agent(TDMPC2_AGENT_PATH, seed=seed, model_size=model_size)
         print(f"[data] Collecting {cfg['n_mlp_transitions']} transitions from TD-MPC2 eval policy...")
         transitions = _collect_tdmpc2_rollouts(
             agent=agent,
