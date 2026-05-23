@@ -4,12 +4,13 @@
 % Numbers (kept here so the figure is self-checking against the table):
 %   data=200    val_mse=0.0651  CPG=+0.267  AC 95% CI [+0.191, +0.335]
 %   data=2000   val_mse=0.0233  CPG=+0.267  AC 95% CI [+0.191, +0.335]
-%   data=20000  val_mse=0.0004  CPG=+0.267  AC 95% CI [+0.191, +0.335]
+%   data=20000  val_mse=0.00042 CPG=+0.267  AC 95% CI [+0.191, +0.335]
 %
-% AC CI half-width = 0.072 (symmetric around the AC midpoint 0.263; the raw
-% CPG point 0.267 sits ~0.004 above the AC midpoint due to the plus-4
-% adjustment, so the symmetric whiskers around 0.267 approximate the AC
-% interval to within that 0.004).
+% The CPG whiskers are asymmetric to match the AC CI exactly:
+%   lower whisker = 0.267 - 0.191 = 0.076
+%   upper whisker = 0.335 - 0.267 = 0.068
+% (the plus-4 adjustment offsets the AC midpoint 0.263 from the raw CPG
+% 0.267, so the interval is not symmetric around the point estimate).
 \begin{figure}[t]
   \centering
   \begin{tikzpicture}
@@ -39,7 +40,7 @@
         },
       ]
       \addplot[color=red!75!black, mark=square*, thick]
-        coordinates {(200, 0.0651) (2000, 0.0233) (20000, 0.0004)};
+        coordinates {(200, 0.0651) (2000, 0.0233) (20000, 0.00042)};
       \addlegendentry{Val MSE (MLP, held-out)}
     \end{axis}
     \begin{axis}[
@@ -58,14 +59,22 @@
         },
       ]
       \draw[dashed, gray!50] (axis cs:200, 0) -- (axis cs:20000, 0);
-      \addplot[
+      \addplot+[
           color=blue!70!black, mark=triangle*, thick,
-          error bars/.cd, y dir=both, y explicit,
+          error bars/.cd,
+          y dir=both,
+          y explicit,
         ]
-        coordinates {
-          (200,   0.267) +- (0, 0.072)
-          (2000,  0.267) +- (0, 0.072)
-          (20000, 0.267) +- (0, 0.072)
+        table[
+          x=x, y=y,
+          y error plus=eplus,
+          y error minus=eminus,
+          row sep=\\,
+        ]{
+          x     y     eplus  eminus \\
+          200   0.267 0.068  0.076  \\
+          2000  0.267 0.068  0.076  \\
+          20000 0.267 0.068  0.076  \\
         };
       \addlegendentry{CPG (AC 95\% CI, $n = 150$)}
     \end{axis}
