@@ -1,0 +1,12 @@
+# Build artefact produced by `make arxiv`. Reproducible from main.tex
+# + main.bbl (both tracked), so no reason to commit the tarball itself.
+arxiv-submission.tar.gz
+
+# LaTeX intermediate artefacts (the build chain in Makefile leaves these).
+# main.bbl is the only one committed back (the paper-pdf CI workflow
+# commits both main.pdf and main.bbl alongside main.tex).
+main.aux
+main.log
+main.out
+main.toc
+main.blg

@@ -137,6 +137,21 @@ Numbers from [`results/dmc_acrobot/cpg_sweep.json`](https://github.com/Denis-ham
 python -m experiments.dmc_acrobot.cpg_sweep \
     --data-sizes 200,2000,20000 --seeds 0,1,2 --episodes 50
 ```
+
+  <h3 class="chapter-sub">Robustness: published model, stronger planner, in-episode perturbation</h3>
+
+Three further axes test how robust the `MODEL BOTTLENECK` verdict really is, all sharing the §4 setup with only one knob changed at a time.
+
+| Knob changed | Result | Verdict |
+|---|---|---|
+| MLP $\rightarrow$ TD-MPC2 (2M env steps), random-shooting unchanged | oracle 0.30, learned 0.00 | <span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span> at $n=10$ |
+| Random-shooting $\rightarrow$ CEM, MLP retrained on TD-MPC2 collection data | oracle 0.90, learned 0.00, CPG $+0.900$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| CEM, both MLP-on-TD-MPC2-data and TD-MPC2 arms, pooled $n = 150$ | CPG $+0.880$, CI $[+0.814, +0.923]$, half-width $0.054$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> confirmed |
+| In-episode `DropNextActions(k)` for $k \in \{0, 1, 5\}$ | oracle drops $\sim 6$ pp at $k=5$, both learned arms stay at $0/50$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> at every cell |
+
+The verdict survives all four swaps. A stronger planner does not close the gap on the learned arms — it widens it, because the oracle is no longer the constraint. An in-episode action-burst only hurts the oracle further, so the gap holds. The decomposition CPG provides is robust to the four most obvious "is this just an artifact?" hypotheses a reviewer raises.
+
+Sources: [`cem_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cem_cpg.json), [`cem_cpg_sweep.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cem_cpg_sweep.json), [`tdmpc2_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/tdmpc2_cpg.json), [`perturbation_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/perturbation_cpg.json).
 </section>
 
 <section class="chapter" id="use-cases" markdown="1">
