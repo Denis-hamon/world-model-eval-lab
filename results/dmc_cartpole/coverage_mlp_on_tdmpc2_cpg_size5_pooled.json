@@ -1,0 +1,25 @@
+{
+  "environment": "dmc_cartpole_swingup",
+  "metric": "counterfactual_planning_gap",
+  "learned_model": "mlp_world_model",
+  "data_source": "tdmpc2",
+  "pooling": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_per_seed": 10,
+    "n_total": 30
+  },
+  "cpg": {
+    "oracle_success_rate": 0.9,
+    "learned_success_rate": 0.0,
+    "gap": 0.9,
+    "n_episodes_oracle": 30,
+    "n_episodes_learned": 30,
+    "gap_ci_low": 0.7142710637907655,
+    "gap_ci_high": 0.9732289362092345,
+    "verdict": "MODEL BOTTLENECK"
+  }
+}

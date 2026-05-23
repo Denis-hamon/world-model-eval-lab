@@ -1,0 +1,35 @@
+{
+  "environment": "dmc_cartpole_swingup",
+  "metric": "counterfactual_planning_gap",
+  "learned_model": "tdmpc2",
+  "pooling": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_per_seed": 10,
+    "n_total": 30
+  },
+  "cpg": {
+    "oracle_success_rate": 0.9,
+    "learned_success_rate": 0.2,
+    "gap": 0.7,
+    "n_episodes_oracle": 30,
+    "n_episodes_learned": 30,
+    "gap_ci_low": 0.47281928781723875,
+    "gap_ci_high": 0.8396807121827612,
+    "verdict": "MODEL BOTTLENECK"
+  },
+  "training": {
+    "training_steps": 1000000,
+    "tdmpc2_model_size": 5,
+    "frame_skip": 1,
+    "decoder": {
+      "final_train_mse": 8.294372673844919e-05,
+      "full_dataset_mse": 0.00010961841326206923,
+      "samples": 9990,
+      "steps": 5000
+    }
+  }
+}
