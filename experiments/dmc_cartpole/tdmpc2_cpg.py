@@ -351,7 +351,14 @@ def main() -> None:
     cfg_dict = _config(smoke=args.smoke, steps_override=args.steps)
     seed = args.seed
     device = args.device if torch.cuda.is_available() else "cpu"
-    print(f"[setup] device={device}, smoke={args.smoke}, training_steps={cfg_dict['training_steps']}")
+    # Seed-suffixed outputs let multiple seeds coexist; seed 0 keeps the
+    # original file names so existing analyses still resolve.
+    suffix = f"_seed{seed}" if seed != 0 else ""
+    global CHECKPOINT_PATH, JSON_PATH, TDMPC2_AGENT_PATH
+    CHECKPOINT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cartpole{suffix}.pt"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cpg{suffix}.json"
+    TDMPC2_AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
+    print(f"[setup] device={device}, smoke={args.smoke}, training_steps={cfg_dict['training_steps']}, seed={seed}")
 
     _patch_dmcontrol_no_frame_skip()
     tdmpc2_cfg = _build_cfg(task="cartpole-swingup", steps=cfg_dict["training_steps"], seed=seed)

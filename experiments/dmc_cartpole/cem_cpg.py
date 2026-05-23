@@ -168,6 +168,11 @@ def main() -> None:
     cfg = _config(smoke=args.smoke, n_mlp_transitions=args.n_mlp_transitions)
     seed = args.seed
     levels = DEFAULT_DISCRETE_LEVELS
+    suffix = f"_seed{seed}" if seed != 0 else ""
+    global TDMPC2_AGENT_PATH, TDMPC2_DYNAMICS_PATH, JSON_PATH
+    TDMPC2_AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
+    TDMPC2_DYNAMICS_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cartpole{suffix}.pt"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"cem_cpg{suffix}.json"
 
     use_tdmpc2 = (args.mlp_data_source == "tdmpc2") and not args.smoke
 
