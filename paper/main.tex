@@ -8,6 +8,9 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{natbib}         % \citet, \citep, plainnat bib style
+\usepackage{tikz}           % figures in paper/figures/
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{url}
@@ -228,6 +231,10 @@ The result is striking. Across the three cells the MLP's held-out validation MSE
 
 The reading at $n = 10$ admitted three explanations (\S\ref{sec:empirical}): \emph{model bottleneck}, \emph{sample-size artifact}, and \emph{score-function mismatch}. The multi-seed result rules out the sample-size artifact (the CI no longer crosses zero) and is consistent with the score-function-mismatch hypothesis only as a contributor, not as the primary driver. The dominant story is \emph{model bottleneck} -- but with a precise attribution that prediction quality alone obscures.
 
+\input{figures/cpg_vs_data.tex}
+
+Figure~\ref{fig:cpg_vs_data} shows the punch line: across the three cells the validation MSE drops by $\sim\!150\times$ on a log scale while the CPG point estimate and its Agresti--Caffo CI stay exactly flat. Improvements in prediction quality bought zero improvement in planning success.
+
 \subsection{What CPG separates: capacity vs.\ coverage}
 \label{sec:capvscov}
 
@@ -238,7 +245,9 @@ What it has \emph{not} been asked to predict is the upright-balancing regime. Ra
 This is most parsimoniously read as a \emph{coverage} bottleneck rather than a \emph{capacity} bottleneck. CPG cannot tell the two apart on its own, but in conjunction with held-out validation it can: a flat CPG curve across data-size sweeps, paired with a monotonically decreasing prediction loss, points to a data-distribution problem rather than to model size or architecture. Two second-order contributors are not ruled out by this experiment: a planner that is too weak to exploit a perfect model in the high-energy regime (the oracle planner reaches the upright pose in only $27\%$ of episodes, so a stronger search procedure -- CEM, gradient-based MPC -- might lift both arms), and a score function $\sigma$ that approximates rather than matches the DMC reward. We treat coverage as the dominant explanation given the $\sim\!150\times$ drop in validation loss with no movement in success.
 
 \paragraph{Empirical receipt for the coverage claim.}
-We measure the visited-state distribution directly. On the natural ``uprightness'' axis $u(\mathbf{o}) = \cos\theta_1 + \cos\theta_2 \in [-2, +2]$ (upright pose at $+2$), $2{,}000$ random-policy transitions yield a maximum $u = +0.865$ and \emph{exactly zero states} with $u > 1.0$. By contrast, $846$ oracle-planner states from five episodes reach a maximum of $+1.866$, with $20.2\%$ of states satisfying $u > 1.0$ and $12.2\%$ satisfying $u > 1.5$. The upright regime that swing-up requires is therefore strictly absent from the training distribution; the MLP has never been shown a state from which the planner needs to predict. Numbers from \texttt{results/dmc\_acrobot/coverage.json}; the script is \texttt{experiments/dmc\_acrobot/coverage\_analysis.py}.
+We measure the visited-state distribution directly. On the natural ``uprightness'' axis $u(\mathbf{o}) = \cos\theta_1 + \cos\theta_2 \in [-2, +2]$ (upright pose at $+2$), $2{,}000$ random-policy transitions yield a maximum $u = +0.865$ and \emph{exactly zero states} with $u > 1.0$. By contrast, $846$ oracle-planner states from five episodes reach a maximum of $+1.866$, with $20.2\%$ of states satisfying $u > 1.0$ and $12.2\%$ satisfying $u > 1.5$. The upright regime that swing-up requires is therefore strictly absent from the training distribution; the MLP has never been shown a state from which the planner needs to predict. Figure~\ref{fig:coverage_histogram} shows the full bucketed distribution. Numbers from \texttt{results/dmc\_acrobot/coverage.json}; the script is \texttt{experiments/dmc\_acrobot/coverage\_analysis.py}.
+
+\input{figures/coverage_histogram.tex}
 
 A second-axis sweep that varies the exploration policy under fixed data size would directly confirm coverage as the dominant driver. The next subsection delivers this sweep alongside a planner-capacity sweep.
 
