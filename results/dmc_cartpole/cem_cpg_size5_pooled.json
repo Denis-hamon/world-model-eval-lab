@@ -1,0 +1,37 @@
+{
+  "environment": "dmc_cartpole_swingup",
+  "metric": "counterfactual_planning_gap",
+  "planner": "cem",
+  "mlp_data_source": "tdmpc2",
+  "pooling": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_per_seed": 10,
+    "n_total": 30
+  },
+  "cpgs": {
+    "mlp_on_data": {
+      "oracle_success_rate": 0.5,
+      "learned_success_rate": 0.0,
+      "gap": 0.5,
+      "n_episodes_oracle": 30,
+      "n_episodes_learned": 30,
+      "gap_ci_low": 0.28531928781723875,
+      "gap_ci_high": 0.6521807121827612,
+      "verdict": "MODEL BOTTLENECK"
+    },
+    "tdmpc2": {
+      "oracle_success_rate": 0.5,
+      "learned_success_rate": 0.13333333333333333,
+      "gap": 0.3666666666666667,
+      "n_episodes_oracle": 30,
+      "n_episodes_learned": 30,
+      "gap_ci_low": 0.12964861210894732,
+      "gap_ci_high": 0.5578513878910527,
+      "verdict": "MODEL BOTTLENECK"
+    }
+  }
+}

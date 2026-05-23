@@ -101,8 +101,20 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--smoke", action="store_true", help="Smaller config for end-to-end validation (~5 min).")
     p.add_argument("--steps", type=int, default=None, help="Override training steps (default: 500_000, smoke: 5_000).")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--model-size", type=int, default=1, help="TD-MPC2 size preset (1, 5, 19, ...). Sets cfg.model_size.")
     p.add_argument("--device", default="cuda")
     return p.parse_args()
+
+
+def _output_suffix(model_size: int, seed: int) -> str:
+    # size=1, seed=0 keeps the legacy unsuffixed names; size=1 with seed>0
+    # uses the phase-5m-cartpole-seed{N} convention; size!=1 always
+    # carries both axes to avoid collisions across (size, seed) pairs.
+    if model_size == 1 and seed == 0:
+        return ""
+    if model_size == 1:
+        return f"_seed{seed}"
+    return f"_size{model_size}_seed{seed}"
 
 
 def _patch_dmcontrol_no_frame_skip() -> None:
@@ -127,13 +139,13 @@ def _patch_dmcontrol_no_frame_skip() -> None:
     cls._wmel_frame_skip = 1
 
 
-def _build_cfg(task: str, steps: int, seed: int) -> object:
+def _build_cfg(task: str, steps: int, seed: int, model_size: int = 1) -> object:
     cfg = OmegaConf.load(str(_TDMPC2_PKG / "config.yaml"))
     cfg.task = task
     cfg.obs = "state"
     cfg.steps = int(steps)
     cfg.seed = int(seed)
-    cfg.model_size = 1            # smallest preset (~1M params), single-task, GPU-light
+    cfg.model_size = int(model_size)
     cfg.compile = False           # avoid torch.compile fragility on this stack
     cfg.save_video = False
     cfg.save_agent = False
@@ -350,18 +362,17 @@ def main() -> None:
     args = _parse_args()
     cfg_dict = _config(smoke=args.smoke, steps_override=args.steps)
     seed = args.seed
+    model_size = args.model_size
     device = args.device if torch.cuda.is_available() else "cpu"
-    # Seed-suffixed outputs let multiple seeds coexist; seed 0 keeps the
-    # original file names so existing analyses still resolve.
-    suffix = f"_seed{seed}" if seed != 0 else ""
+    suffix = _output_suffix(model_size, seed)
     global CHECKPOINT_PATH, JSON_PATH, TDMPC2_AGENT_PATH
     CHECKPOINT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cartpole{suffix}.pt"
     JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cpg{suffix}.json"
     TDMPC2_AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
-    print(f"[setup] device={device}, smoke={args.smoke}, training_steps={cfg_dict['training_steps']}, seed={seed}")
+    print(f"[setup] device={device}, smoke={args.smoke}, training_steps={cfg_dict['training_steps']}, seed={seed}, model_size={model_size}")
 
     _patch_dmcontrol_no_frame_skip()
-    tdmpc2_cfg = _build_cfg(task="cartpole-swingup", steps=cfg_dict["training_steps"], seed=seed)
+    tdmpc2_cfg = _build_cfg(task="cartpole-swingup", steps=cfg_dict["training_steps"], seed=seed, model_size=model_size)
     set_seed(seed)
 
     print("[1/5] Building TD-MPC2 env and agent...")
