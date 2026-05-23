@@ -7,11 +7,11 @@ next:
 ---
 
 <div class="release-banner">
-  <span class="tag">v0.11.0</span>
+  <span class="tag">v0.14.0</span>
   <span class="release-banner-text">
-    Multi-seed CPG sweep ships. Verdict hardens from <code>INCONCLUSIVE</code> (n = 10) to <code>MODEL BOTTLENECK</code> (n = 150 pooled); validation MSE drops 150&times; across the data-size sweep while learned-arm success stays at zero. <strong>CPG separates capacity from coverage.</strong>
+    Robustness sweep ships: TD-MPC2 (2M env steps) as a published learned dynamics, CEM as a stronger planner, action-burst perturbation as a stress axis. The <code>MODEL BOTTLENECK</code> verdict survives all three swaps; pooled-150 under CEM tightens CI to half-width $0.054$.
   </span>
-  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.11.0">Release notes &rarr;</a>
+  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.0">Release notes &rarr;</a>
 </div>
 
 <section class="hero">
@@ -48,12 +48,12 @@ next:
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
 <aside class="whats-new">
-  <h3>What's new in v0.11</h3>
+  <h3>What's new in v0.14</h3>
   <ul>
-    <li><strong>Multi-seed CPG sweep</strong> on DMC Acrobot: three seeds &times; 50 episodes per arm per seed (n = 150 pooled), three training-set sizes spanning a factor of 100. Verdict <code>MODEL BOTTLENECK</code> in every cell, identical CI <code>[+0.191, +0.335]</code>.</li>
-    <li><strong>The capacity-vs-coverage diagnosis</strong>: held-out validation MSE drops 150&times; across the sweep while learned-arm planning success stays at zero. CPG correctly attributes the failure to data coverage, not model capacity.</li>
-    <li>Paper updated with <strong>Section 5.5</strong> (multi-seed extension) and <strong>Section 5.6</strong> (what CPG separates). Abstract and conclusion rewritten to reflect the powered result. <code>build_figures.py</code> extended to read <code>cpg_sweep.json</code>.</li>
-    <li>The site landing and the <a href="07_cpg.html">CPG page</a> surface the same multi-seed table.</li>
+    <li><strong>Published-world-model arm</strong>: TD-MPC2 (2M env steps) plugged in as a <code>dynamics=</code> callable behind the same planner. At $n = 10$ under random-shooting it fails as completely as the v0.11 MLP (0/10), validating the dynamics-adapter slot on a SOTA published model.</li>
+    <li><strong>Stronger planner (CEM)</strong>: oracle's success rate triples at $n = 10$ (0.30 to 0.90), both learned arms stay at <code>0/10</code>. Pooled across three seeds at $n = 150$ per arm, oracle 0.88, both learned arms at <code>0/150</code>: CPG <code>+0.880</code>, CI <code>[+0.814, +0.923]</code>, half-width <code>0.054</code>. The gap is a dynamics-quality bottleneck the planner cannot close.</li>
+    <li><strong>In-episode perturbation</strong>: <code>DropNextActions(k)</code> at $k \in \{0, 1, 5\}$. The <code>MODEL BOTTLENECK</code> verdict survives every cell &mdash; the oracle loses about 6 percentage points at $k=5$, both learned arms stay at <code>0/50</code>, the gap holds.</li>
+    <li>Paper updated with <strong>Sections 5.8</strong> (robustness) and <strong>5.9</strong> (perturbation). Abstract and conclusion rewritten. The HTML paper at <a href="paper.html">/paper.html</a> and the <a href="07_cpg.html">CPG page</a> mirror the new tables.</li>
   </ul>
 </aside>
 
@@ -325,8 +325,17 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 <section class="release-timeline">
   <article class="release-card release-current">
     <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.0">v0.14.0</a>
+      <span class="release-meta">2026-05-23 &middot; current</span>
+    </div>
+    <p class="release-title">Robustness sweep: published model, stronger planner, perturbation</p>
+    <p class="release-body">Three new axes test the v0.11 <code>MODEL BOTTLENECK</code> verdict: TD-MPC2 (2M env steps) as <code>dynamics</code>, CEM as planner, <code>DropNextActions(k)</code> as in-episode perturbation. Verdict survives all three; pooled-150 under CEM tightens CI half-width to <code>0.054</code>. Paper Sections 5.8 + 5.9.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
       <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.11.0">v0.11.0</a>
-      <span class="release-meta">2026-05-16 &middot; current</span>
+      <span class="release-meta">2026-05-16</span>
     </div>
     <p class="release-title">Multi-seed CPG sweep: capacity vs.\ coverage</p>
     <p class="release-body">Verdict hardens from <code>INCONCLUSIVE</code> (n = 10) to <code>MODEL BOTTLENECK</code> (n = 150 pooled across three seeds); training-set sweep across <code>{200, 2 000, 20 000}</code> transitions leaves verdict and CI <em>identical</em> while validation MSE drops 150&times;. Paper Section 5.5 + 5.6 updated.</p>

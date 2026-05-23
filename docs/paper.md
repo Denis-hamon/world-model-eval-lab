@@ -11,7 +11,7 @@ next:
 ---
 
 <div class="paper-header">
-  <p class="paper-eyebrow">Short paper &middot; v0.11.0</p>
+  <p class="paper-eyebrow">Short paper &middot; v0.14.0</p>
   <h1 class="paper-title">Counterfactual Planning Gap</h1>
   <p class="paper-subtitle">A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation</p>
   <p class="paper-author">Denis Hamon &nbsp;&middot;&nbsp; Independent &nbsp;&middot;&nbsp; <a href="mailto:denis.hamon1@gmail.com">denis.hamon1@gmail.com</a></p>
@@ -205,6 +205,59 @@ The upright regime that swing-up requires is **strictly absent** from the traini
 
 A second-axis sweep that varies the exploration policy under fixed data size would directly confirm coverage as the dominant driver. The natural remediation we recommend is to change the data-collection policy (energy-aware exploration, or relabelled trajectories that visit the swing-up regime), not to enlarge the network.
 
+### 4.7 Robustness: a published world model and a stronger planner {#sec-robustness}
+
+We add two robustness axes to the §4.4 setup. First, the bespoke MLP is replaced by **TD-MPC2** [Hansen et al., 2024] trained for $2 \times 10^{6}$ env steps; its encoder + latent dynamics are wrapped as a `dynamics=` callable for the same `TabularWorldModelPlanner`. Second, the random-shooting MPC is replaced by **CEM** of comparable compute (a fixed candidate budget, two iterations, top-fraction elite selection).
+
+<table class="paper-table">
+  <thead>
+    <tr><th>Planner</th><th>Dynamics</th><th>Oracle</th><th>Learned</th><th>Raw CPG</th><th>AC 95% CI</th><th>Verdict</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Random-shooting</td><td>MLP (v0.11 random-rollout data)</td><td>0.30</td><td>0.00</td><td>+0.300</td><td>[-0.059, +0.559]</td><td><span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span></td></tr>
+    <tr><td>Random-shooting</td><td>TD-MPC2 (2M)</td><td>0.30</td><td>0.00</td><td>+0.300</td><td>[-0.059, +0.559]</td><td><span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span></td></tr>
+    <tr><td>CEM</td><td>MLP (on TD-MPC2 data)</td><td>0.90</td><td>0.00</td><td>+0.900</td><td>[+0.487, +1.013]</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+    <tr><td>CEM</td><td>TD-MPC2 (2M)</td><td>0.90</td><td>0.00</td><td>+0.900</td><td>[+0.487, +1.013]</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+  </tbody>
+</table>
+
+Under random-shooting MPC the published TD-MPC2 dynamics fails as completely as the homemade MLP at $n = 10$. The CEM planner triples the oracle's success rate (`0.30` to `0.90`), but **both** learned arms stay at `0/10` — so the gap opens to `+0.900` and the verdict commits to `MODEL BOTTLENECK`. A stronger planner does not close the gap on the learned arms; it widens it, because the oracle is no longer the constraint.
+
+Pooling three seeds under CEM (n = 150 per arm) tightens this to:
+
+<table class="paper-table paper-table-narrow">
+  <thead>
+    <tr><th colspan="2">CEM pooled (n = 150 per arm)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Raw CPG</td><td>+0.880</td></tr>
+    <tr><td>AC 95% CI</td><td>[+0.814, +0.923]</td></tr>
+    <tr><td>Half-width</td><td>0.054</td></tr>
+    <tr><td>Verdict</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+  </tbody>
+</table>
+
+Both learned arms still at `0/150`. Numbers from [`results/dmc_acrobot/cem_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cem_cpg.json) and [`results/dmc_acrobot/cem_cpg_sweep.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cem_cpg_sweep.json).
+
+### 4.8 Robustness under in-episode perturbation
+
+A second robustness check adds an action-burst perturbation. The same three CEM arms benchmark against `DropNextActions(k)` from `wmel.perturbations`, fired once per episode at a uniformly chosen step in `[1, T/2]` with `perturb_prob = 1.0` and `T = 500`. The sweep covers $k \in \{0, 1, 5\}$.
+
+<table class="paper-table">
+  <thead>
+    <tr><th>$k$</th><th>Perturbation</th><th>Oracle</th><th>MLP</th><th>TD-MPC2</th><th>CPG (AC 95% CI), verdict</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0</td><td>no-op</td><td>0.880</td><td>0.000</td><td>0.000</td><td>+0.880 [+0.75, +0.95], <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+    <tr><td>1</td><td>drop-next-1</td><td>0.900</td><td>0.000</td><td>0.000</td><td>+0.900 [+0.77, +0.96], <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+    <tr><td>5</td><td>drop-next-5</td><td>0.820</td><td>0.000</td><td>0.000</td><td>+0.820 [+0.68, +0.90], <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+  </tbody>
+</table>
+
+The `MODEL BOTTLENECK` verdict survives every cell. The experiment is structurally one-sided: with both learned arms at zero in the unperturbed cell, the gap can only stay flat or shrink as the perturbation hurts the oracle. A genuine fragility test would need a regime where both arms have non-zero success in the unperturbed cell, or an observation-noise perturbation that hurts the learned arms differentially.
+
+Numbers from [`results/dmc_acrobot/perturbation_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/perturbation_cpg.json).
+
 ## 5. Discussion and Limitations
 
 The empirical demonstration is intentionally narrow: one environment, one learned model, one planner, one seed family ($\{0, 1, 2\}$). The methodological contribution — a packaged CPG with an Agresti--Caffo CI and a gated verdict — is decoupled from any of those choices and applies wherever an oracle dynamics is available (so: simulated environments). On hardware-in-the-loop or physical environments the metric is undefined; surrogate CPG variants (a higher-fidelity model standing in for the oracle) are future work.
@@ -215,7 +268,7 @@ Other limitations worth flagging. The discrete-torque action space is a five-lev
 
 ## 6. Conclusion
 
-We have proposed the Counterfactual Planning Gap as a decision-grade metric for world-model evaluation, packaged it behind a minimal evaluation contract, and reported a worked example on DMC Acrobot-swingup. At $n = 10$ the framework reports `INCONCLUSIVE`, which is the correctly-calibrated verdict at that sample size. The multi-seed extension to $n = 150$ pooled per arm tightens the CI off zero and returns `MODEL BOTTLENECK`; sweeping the training-set size across nearly three orders of magnitude leaves the verdict unchanged while the held-out prediction loss drops by $\sim\!150\times$. The takeaway is methodological: a metric that separates closed-loop success from prediction quality reveals that the bottleneck here is not the size of the model but the coverage of its training distribution — a diagnosis a prediction-quality metric alone would mask. We argue this kind of calibrated honesty — a metric that refuses to claim more than the data supports, and that supports a precise attribution once the data is sufficient — is the right design target for a methodology paper that wants to sit usefully next to a fast-moving model literature.
+We have proposed the Counterfactual Planning Gap as a decision-grade metric for world-model evaluation, packaged it behind a minimal evaluation contract, and reported a worked example on DMC Acrobot-swingup. At $n = 10$ under random-shooting MPC the framework reports `INCONCLUSIVE`; pooled-150 tightens the CI off zero and returns `MODEL BOTTLENECK`; sweeping the training-set size across nearly three orders of magnitude leaves the verdict unchanged while the held-out prediction loss drops by $\sim\!150\times$. The robustness sweep in §4.7 adds a published-world-model arm (TD-MPC2) and a CEM planner: both learned arms remain at $0$ success, the oracle's success rate triples under CEM (`0.30` to `0.90`), and the gap opens to `+0.900` with a CI that no longer crosses zero at $n = 10$. A pooled-150 extension of the CEM rows tightens this to `+0.880`, CI `[+0.814, +0.923]`, with both learned arms still at `0/150`. An action-burst perturbation sweep (§4.8) confirms the verdict survives a per-episode `DropNextActions(k)` at $k \in \{0, 1, 5\}$. The takeaway is methodological: a metric that separates closed-loop success from prediction quality reveals two distinct contributors that prediction-quality metrics alone would conflate — a coverage-or-capacity dynamics-quality bottleneck on the learned arms, and a planner-capacity contributor on the oracle arm — and an adapter-and-planner interface that lets a single `BenchmarkRunner` disentangle them by swapping callables. We argue this kind of calibrated honesty — a metric that refuses to claim more than the data supports, and that supports a precise attribution once the data is sufficient — is the right design target for a methodology paper that wants to sit usefully next to a fast-moving model literature.
 
 ## Acknowledgements
 
