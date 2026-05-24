@@ -796,6 +796,391 @@ def render_policy_comparison() -> str:
     return "\n".join(parts)
 
 
+# ============================================================================
+# Paper figures (HTML mirror of the LaTeX TikZ/pgfplots figures).
+#
+# The paper PDF compiles its own TikZ figures via texlive-latex-extra. The
+# HTML mirror at docs/paper.md needs the same content in SVG so a web reader
+# sees the same visual story. These four functions reproduce the LaTeX
+# figures in stdlib SVG, matching the numeric data cell-for-cell.
+# ============================================================================
+
+_FIG_PALETTE = {
+    "red": "#c45c3a",
+    "red_dark": "#8a3a1f",
+    "blue": "#5083c2",
+    "blue_dark": "#2f5a8a",
+    "orange": "#d68a3c",
+    "orange_dark": "#9a5e1f",
+    "axis": "#52606d",
+    "grid": "#d8e0e8",
+    "ink": "#1f2933",
+    "muted": "#52606d",
+    "bg": "#ffffff",
+    "zero": "#7b8794",
+}
+
+
+def _axis_line(x1: float, y1: float, x2: float, y2: float, stroke: str = None) -> str:
+    s = stroke or _FIG_PALETTE["axis"]
+    return f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{s}" stroke-width="1"/>'
+
+
+def _gridline(x1: float, y1: float, x2: float, y2: float) -> str:
+    return (
+        f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+        f'stroke="{_FIG_PALETTE["grid"]}" stroke-dasharray="2,3" stroke-width="0.8"/>'
+    )
+
+
+def _tick_text(x: float, y: float, text: str, anchor: str = "middle", size: int = 11) -> str:
+    return (
+        f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" '
+        f'fill="{_FIG_PALETTE["muted"]}" text-anchor="{anchor}">{text}</text>'
+    )
+
+
+def _error_bar_asym(x: float, y: float, y_top: float, y_bot: float, color: str, cap: float = 4.0) -> str:
+    """Asymmetric vertical error bar centered at (x, y), spanning (y_top, y_bot)."""
+    return (
+        f'<line x1="{x:.1f}" y1="{y_top:.1f}" x2="{x:.1f}" y2="{y_bot:.1f}" stroke="{color}" stroke-width="1.4"/>'
+        f'<line x1="{x - cap:.1f}" y1="{y_top:.1f}" x2="{x + cap:.1f}" y2="{y_top:.1f}" stroke="{color}" stroke-width="1.4"/>'
+        f'<line x1="{x - cap:.1f}" y1="{y_bot:.1f}" x2="{x + cap:.1f}" y2="{y_bot:.1f}" stroke="{color}" stroke-width="1.4"/>'
+    )
+
+
+def render_paper_fig1_cpg_vs_data() -> str:
+    """Figure 1: val MSE plummets 150x while CPG stays flat (n=150 pooled).
+
+    Twin-axis chart, log-scale val MSE on the left, CPG with asymmetric AC
+    error bars on the right. Three points across training-set size.
+    """
+    import math
+
+    W, H = 640, 420
+    L, R, T, B = 70, 70, 50, 60
+    plot_w = W - L - R
+    plot_h = H - T - B
+
+    # Data (matches paper/figures/cpg_vs_data.tex):
+    sizes = [200, 2000, 20000]
+    val_mse = [0.0651, 0.0233, 0.00042]
+    cpg = 0.267
+    eplus, eminus = 0.068, 0.076
+
+    # x in log-scale: 200=0, 2000=1, 20000=2
+    def x_of(size: int) -> float:
+        t = math.log10(size / 200) / math.log10(20000 / 200)
+        return L + t * plot_w
+
+    # Left y-axis: val_mse, log scale, 1e-4 to 1e-1
+    y_log_min, y_log_max = -4, -1
+
+    def y_left(v: float) -> float:
+        t = (math.log10(v) - y_log_min) / (y_log_max - y_log_min)
+        return T + (1 - t) * plot_h
+
+    # Right y-axis: CPG, linear, -0.1 to 0.6
+    cpg_min, cpg_max = -0.1, 0.6
+
+    def y_right(v: float) -> float:
+        t = (v - cpg_min) / (cpg_max - cpg_min)
+        return T + (1 - t) * plot_h
+
+    parts = [_svg_open(W, H, ' class="paper-fig paper-fig-1"')]
+    parts.append(f'<rect width="{W}" height="{H}" fill="{_FIG_PALETTE["bg"]}"/>')
+    # Title
+    parts.append(
+        f'<text x="{W // 2}" y="22" font-size="14" font-weight="600" '
+        f'fill="{_FIG_PALETTE["ink"]}" text-anchor="middle">'
+        f'Val MSE drops 150x; CPG stays flat at +0.267</text>'
+    )
+    parts.append(
+        f'<text x="{W // 2}" y="40" font-size="11" fill="{_FIG_PALETTE["muted"]}" '
+        f'text-anchor="middle">DMC Acrobot, MLP world model, n=150 pooled per arm. Source: results/dmc_acrobot/cpg_sweep.json</text>'
+    )
+    # Gridlines (left axis, log)
+    for exp in range(y_log_min, y_log_max + 1):
+        y = y_left(10 ** exp)
+        parts.append(_gridline(L, y, W - R, y))
+        parts.append(_tick_text(L - 8, y + 4, f"10^{{{exp}}}", anchor="end"))
+    # Axis frame
+    parts.append(_axis_line(L, T, L, T + plot_h))
+    parts.append(_axis_line(W - R, T, W - R, T + plot_h))
+    parts.append(_axis_line(L, T + plot_h, W - R, T + plot_h))
+    # Left y-axis label
+    parts.append(
+        f'<text x="20" y="{T + plot_h // 2}" font-size="11" fill="{_FIG_PALETTE["red_dark"]}" '
+        f'text-anchor="middle" transform="rotate(-90 20 {T + plot_h // 2})">Val MSE (log)</text>'
+    )
+    # Right y-axis label
+    parts.append(
+        f'<text x="{W - 20}" y="{T + plot_h // 2}" font-size="11" fill="{_FIG_PALETTE["blue_dark"]}" '
+        f'text-anchor="middle" transform="rotate(90 {W - 20} {T + plot_h // 2})">CPG (oracle - learned)</text>'
+    )
+    # Right y-axis ticks
+    for v in (0.0, 0.2, 0.4, 0.6):
+        y = y_right(v)
+        parts.append(_tick_text(W - R + 8, y + 4, f"{v:+.1f}", anchor="start"))
+    # x-axis ticks + labels
+    for s in sizes:
+        x = x_of(s)
+        parts.append(_axis_line(x, T + plot_h, x, T + plot_h + 5))
+        label = "200" if s == 200 else ("2 000" if s == 2000 else "20 000")
+        parts.append(_tick_text(x, T + plot_h + 20, label, anchor="middle"))
+    parts.append(
+        f'<text x="{L + plot_w // 2}" y="{H - 12}" font-size="11" '
+        f'fill="{_FIG_PALETTE["muted"]}" text-anchor="middle">Training-set size (transitions, log scale)</text>'
+    )
+    # Zero line on right axis
+    y_zero = y_right(0)
+    parts.append(
+        f'<line x1="{L}" y1="{y_zero:.1f}" x2="{W - R}" y2="{y_zero:.1f}" '
+        f'stroke="{_FIG_PALETTE["zero"]}" stroke-dasharray="3,3" stroke-width="0.8"/>'
+    )
+
+    # Val MSE series: red squares + line
+    pts_left = [(x_of(s), y_left(v)) for s, v in zip(sizes, val_mse)]
+    parts.append(
+        f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts_left)}" '
+        f'fill="none" stroke="{_FIG_PALETTE["red"]}" stroke-width="2"/>'
+    )
+    for (x, y), v in zip(pts_left, val_mse):
+        parts.append(
+            f'<rect x="{x - 4:.1f}" y="{y - 4:.1f}" width="8" height="8" '
+            f'fill="{_FIG_PALETTE["red"]}" stroke="{_FIG_PALETTE["red_dark"]}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{x + 8:.1f}" y="{y - 6:.1f}" font-size="10" '
+            f'fill="{_FIG_PALETTE["red_dark"]}">{v:.4f}</text>'
+        )
+
+    # CPG series: blue triangles + line + asymmetric error bars
+    pts_right = [(x_of(s), y_right(cpg)) for s in sizes]
+    parts.append(
+        f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts_right)}" '
+        f'fill="none" stroke="{_FIG_PALETTE["blue"]}" stroke-width="2"/>'
+    )
+    for x, y in pts_right:
+        y_top = y_right(cpg + eplus)
+        y_bot = y_right(cpg - eminus)
+        parts.append(_error_bar_asym(x, y, y_top, y_bot, _FIG_PALETTE["blue_dark"]))
+        # Triangle marker
+        parts.append(
+            f'<polygon points="{x:.1f},{y - 5:.1f} {x - 5:.1f},{y + 4:.1f} {x + 5:.1f},{y + 4:.1f}" '
+            f'fill="{_FIG_PALETTE["blue"]}" stroke="{_FIG_PALETTE["blue_dark"]}" stroke-width="1"/>'
+        )
+
+    # Legend
+    lx, ly = L + 16, T + 12
+    parts.append(
+        f'<rect x="{lx - 8}" y="{ly - 12}" width="200" height="44" rx="4" '
+        f'fill="white" stroke="{_FIG_PALETTE["grid"]}"/>'
+    )
+    parts.append(
+        f'<rect x="{lx}" y="{ly - 4}" width="10" height="10" fill="{_FIG_PALETTE["red"]}" stroke="{_FIG_PALETTE["red_dark"]}"/>'
+    )
+    parts.append(
+        f'<text x="{lx + 16}" y="{ly + 4}" font-size="10" fill="{_FIG_PALETTE["ink"]}">Val MSE (MLP, held-out)</text>'
+    )
+    parts.append(
+        f'<polygon points="{lx + 5},{ly + 14} {lx},{ly + 22} {lx + 10},{ly + 22}" '
+        f'fill="{_FIG_PALETTE["blue"]}" stroke="{_FIG_PALETTE["blue_dark"]}"/>'
+    )
+    parts.append(
+        f'<text x="{lx + 16}" y="{ly + 22}" font-size="10" fill="{_FIG_PALETTE["ink"]}">CPG (AC 95% CI)</text>'
+    )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def _grouped_bars(
+    *,
+    width: int,
+    height: int,
+    title: str,
+    subtitle: str,
+    xlabels: list[str],
+    ylabel: str,
+    y_min: float,
+    y_max: float,
+    y_ticks: list[float],
+    series: list[dict],  # each {"name": str, "color": str, "color_dark": str, "values": [...], "eplus": [...], "eminus": [...]}
+    legend_pos: str = "tr",  # tr / tl
+) -> str:
+    L, R, T, B = 70, 50, 60, 70
+    plot_w = width - L - R
+    plot_h = height - T - B
+
+    n_groups = len(xlabels)
+    n_series = len(series)
+    group_w = plot_w / n_groups
+    bar_w = group_w / (n_series + 1)
+
+    def y_of(v: float) -> float:
+        t = (v - y_min) / (y_max - y_min)
+        return T + (1 - t) * plot_h
+
+    parts = [_svg_open(width, height, ' class="paper-fig"')]
+    parts.append(f'<rect width="{width}" height="{height}" fill="{_FIG_PALETTE["bg"]}"/>')
+    parts.append(
+        f'<text x="{width // 2}" y="22" font-size="14" font-weight="600" '
+        f'fill="{_FIG_PALETTE["ink"]}" text-anchor="middle">{title}</text>'
+    )
+    if subtitle:
+        parts.append(
+            f'<text x="{width // 2}" y="40" font-size="11" fill="{_FIG_PALETTE["muted"]}" '
+            f'text-anchor="middle">{subtitle}</text>'
+        )
+
+    for t in y_ticks:
+        y = y_of(t)
+        parts.append(_gridline(L, y, width - R, y))
+        parts.append(_tick_text(L - 8, y + 4, f"{t:+.2f}" if t < 0 else f"{t:.2f}", anchor="end"))
+    parts.append(_axis_line(L, T, L, T + plot_h))
+    parts.append(_axis_line(L, T + plot_h, width - R, T + plot_h))
+    y_zero = y_of(0)
+    if y_min < 0 < y_max:
+        parts.append(
+            f'<line x1="{L}" y1="{y_zero:.1f}" x2="{width - R}" y2="{y_zero:.1f}" '
+            f'stroke="{_FIG_PALETTE["zero"]}" stroke-dasharray="3,3" stroke-width="0.8"/>'
+        )
+    parts.append(
+        f'<text x="20" y="{T + plot_h // 2}" font-size="11" fill="{_FIG_PALETTE["muted"]}" '
+        f'text-anchor="middle" transform="rotate(-90 20 {T + plot_h // 2})">{ylabel}</text>'
+    )
+
+    for i, label in enumerate(xlabels):
+        cx = L + (i + 0.5) * group_w
+        parts.append(_tick_text(cx, T + plot_h + 20, label, anchor="middle"))
+
+    for gi in range(n_groups):
+        for si, s in enumerate(series):
+            cx = L + gi * group_w + (si + 0.7) * bar_w
+            v = s["values"][gi]
+            y_top_bar = y_of(max(v, 0))
+            y_bot_bar = y_of(min(v, 0))
+            parts.append(
+                f'<rect x="{cx - bar_w / 2 + 1:.1f}" y="{y_top_bar:.1f}" '
+                f'width="{bar_w - 2:.1f}" height="{abs(y_bot_bar - y_top_bar):.1f}" '
+                f'fill="{s["color"]}" stroke="{s["color_dark"]}" stroke-width="1"/>'
+            )
+            eplus = s["eplus"][gi]
+            eminus = s["eminus"][gi]
+            if eplus > 0 or eminus > 0:
+                yp = y_of(v + eplus)
+                yn = y_of(v - eminus)
+                parts.append(_error_bar_asym(cx, y_of(v), yp, yn, s["color_dark"]))
+
+    if legend_pos == "tr":
+        lx, ly = width - R - 180, T + 12
+    else:
+        lx, ly = L + 16, T + 12
+    legend_h = 18 + 16 * n_series
+    parts.append(
+        f'<rect x="{lx - 8}" y="{ly - 12}" width="180" height="{legend_h}" rx="4" '
+        f'fill="white" stroke="{_FIG_PALETTE["grid"]}"/>'
+    )
+    for si, s in enumerate(series):
+        yoff = ly - 4 + si * 16
+        parts.append(
+            f'<rect x="{lx}" y="{yoff}" width="12" height="10" '
+            f'fill="{s["color"]}" stroke="{s["color_dark"]}"/>'
+        )
+        parts.append(
+            f'<text x="{lx + 18}" y="{yoff + 9}" font-size="10" fill="{_FIG_PALETTE["ink"]}">{s["name"]}</text>'
+        )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def render_paper_fig2_coverage_histogram() -> str:
+    """Figure 2: uprightness coverage histogram, random vs oracle planner."""
+    # buckets: 8 bins of width 0.5 from -2 to +2
+    labels = ["[-2,-1.5)", "[-1.5,-1)", "[-1,-0.5)", "[-0.5,0)",
+              "[0,0.5)", "[0.5,1)", "[1,1.5)", "[1.5,2)"]
+    random_pct = [13.6, 23.9, 13.8, 13.6, 17.1, 17.9, 0.0, 0.0]
+    oracle_pct = [8.3, 7.7, 13.6, 11.8, 14.8, 23.6, 8.0, 12.2]
+    return _grouped_bars(
+        width=720, height=420,
+        title="Coverage: random rollouts vs oracle planner",
+        subtitle="Uprightness u = cos(theta_1) + cos(theta_2). Upright pose at +2. Source: results/dmc_acrobot/coverage.json.",
+        xlabels=labels,
+        ylabel="Fraction of states (%)",
+        y_min=0, y_max=28,
+        y_ticks=[0, 5, 10, 15, 20, 25],
+        series=[
+            {"name": "Random rollouts (n=2000)",
+             "color": _FIG_PALETTE["red"], "color_dark": _FIG_PALETTE["red_dark"],
+             "values": random_pct, "eplus": [0] * 8, "eminus": [0] * 8},
+            {"name": "Oracle planner (n=846)",
+             "color": _FIG_PALETTE["blue"], "color_dark": _FIG_PALETTE["blue_dark"],
+             "values": oracle_pct, "eplus": [0] * 8, "eminus": [0] * 8},
+        ],
+        legend_pos="tl",
+    )
+
+
+def render_paper_fig3_cross_env() -> str:
+    """Figure 3: cross-env CPG, Acrobot vs Cartpole (size=5) on the same four arms."""
+    labels = ["RS x MLP", "RS x TD-MPC2", "CEM x MLP", "CEM x TD-MPC2"]
+    return _grouped_bars(
+        width=720, height=440,
+        title="Cross-env CPG: Acrobot vs Cartpole (model_size = 5)",
+        subtitle="Asymmetric Agresti-Caffo 95% CI per bar. Sources: results/dmc_acrobot/ + results/dmc_cartpole/*_size5_pooled.json.",
+        xlabels=labels,
+        ylabel="Counterfactual Planning Gap",
+        y_min=-0.15, y_max=1.05,
+        y_ticks=[0.0, 0.25, 0.5, 0.75, 1.0],
+        series=[
+            {"name": "Acrobot",
+             "color": _FIG_PALETTE["blue"], "color_dark": _FIG_PALETTE["blue_dark"],
+             "values": [0.300, 0.300, 0.880, 0.880],
+             "eplus":  [0.259, 0.259, 0.043, 0.043],
+             "eminus": [0.359, 0.359, 0.066, 0.066]},
+            {"name": "Cartpole (size=5)",
+             "color": _FIG_PALETTE["orange"], "color_dark": _FIG_PALETTE["orange_dark"],
+             "values": [0.900, 0.700, 0.500, 0.367],
+             "eplus":  [0.073, 0.140, 0.152, 0.191],
+             "eminus": [0.186, 0.227, 0.215, 0.237]},
+        ],
+        legend_pos="tr",
+    )
+
+
+def render_paper_fig4_cartpole_capacity() -> str:
+    """Figure 4: Cartpole capacity sweep (size=5 vs size=1), 4 arms each.
+
+    The rightmost orange bar (CEM x TD-MPC2 size=1) crosses zero, the visible
+    signal of the INCONCLUSIVE verdict.
+    """
+    labels = ["RS x MLP", "RS x TD-MPC2", "CEM x MLP", "CEM x TD-MPC2"]
+    return _grouped_bars(
+        width=720, height=440,
+        title="Cartpole capacity sweep: model_size = 5 vs model_size = 1",
+        subtitle="Same protocol, identical 10^6-step budget. INCONCLUSIVE on the rightmost orange bar. n=30 pooled.",
+        xlabels=labels,
+        ylabel="Counterfactual Planning Gap",
+        y_min=-0.35, y_max=1.05,
+        y_ticks=[-0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+        series=[
+            {"name": "model_size = 5",
+             "color": _FIG_PALETTE["blue"], "color_dark": _FIG_PALETTE["blue_dark"],
+             "values": [0.900, 0.700, 0.500, 0.367],
+             "eplus":  [0.073, 0.140, 0.152, 0.191],
+             "eminus": [0.186, 0.227, 0.215, 0.237]},
+            {"name": "model_size = 1",
+             "color": _FIG_PALETTE["orange"], "color_dark": _FIG_PALETTE["orange_dark"],
+             "values": [0.900, 0.400, 0.433, -0.033],
+             "eplus":  [0.073, 0.183, 0.174, 0.247],
+             "eminus": [0.186, 0.233, 0.227, 0.243]},
+        ],
+        legend_pos="tr",
+    )
+
+
 def render_favicon() -> str:
     """A 32x32 square favicon: blue rounded square with 'wm' lettering."""
     parts = [
@@ -845,6 +1230,16 @@ def main() -> None:
 
     (ASSETS / "favicon.svg").write_text(render_favicon() + "\n")
     print(f"wrote {ASSETS / 'favicon.svg'}")
+
+    # Paper figures (HTML mirror of paper/figures/*.tex):
+    (ASSETS / "paper_fig1_cpg_vs_data.svg").write_text(render_paper_fig1_cpg_vs_data() + "\n")
+    print(f"wrote {ASSETS / 'paper_fig1_cpg_vs_data.svg'}")
+    (ASSETS / "paper_fig2_coverage_histogram.svg").write_text(render_paper_fig2_coverage_histogram() + "\n")
+    print(f"wrote {ASSETS / 'paper_fig2_coverage_histogram.svg'}")
+    (ASSETS / "paper_fig3_cross_env.svg").write_text(render_paper_fig3_cross_env() + "\n")
+    print(f"wrote {ASSETS / 'paper_fig3_cross_env.svg'}")
+    (ASSETS / "paper_fig4_cartpole_capacity.svg").write_text(render_paper_fig4_cartpole_capacity() + "\n")
+    print(f"wrote {ASSETS / 'paper_fig4_cartpole_capacity.svg'}")
 
 
 if __name__ == "__main__":

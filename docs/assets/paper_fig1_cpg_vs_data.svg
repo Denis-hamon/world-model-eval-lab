@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" width="640" height="420" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" class="paper-fig paper-fig-1">
+<rect width="640" height="420" fill="#ffffff"/>
+<text x="320" y="22" font-size="14" font-weight="600" fill="#1f2933" text-anchor="middle">Val MSE drops 150x; CPG stays flat at +0.267</text>
+<text x="320" y="40" font-size="11" fill="#52606d" text-anchor="middle">DMC Acrobot, MLP world model, n=150 pooled per arm. Source: results/dmc_acrobot/cpg_sweep.json</text>
+<line x1="70.0" y1="360.0" x2="570.0" y2="360.0" stroke="#d8e0e8" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62.0" y="364.0" font-size="11" fill="#52606d" text-anchor="end">10^{-4}</text>
+<line x1="70.0" y1="256.7" x2="570.0" y2="256.7" stroke="#d8e0e8" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62.0" y="260.7" font-size="11" fill="#52606d" text-anchor="end">10^{-3}</text>
+<line x1="70.0" y1="153.3" x2="570.0" y2="153.3" stroke="#d8e0e8" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62.0" y="157.3" font-size="11" fill="#52606d" text-anchor="end">10^{-2}</text>
+<line x1="70.0" y1="50.0" x2="570.0" y2="50.0" stroke="#d8e0e8" stroke-dasharray="2,3" stroke-width="0.8"/>
+<text x="62.0" y="54.0" font-size="11" fill="#52606d" text-anchor="end">10^{-1}</text>
+<line x1="70.0" y1="50.0" x2="70.0" y2="360.0" stroke="#52606d" stroke-width="1"/>
+<line x1="570.0" y1="50.0" x2="570.0" y2="360.0" stroke="#52606d" stroke-width="1"/>
+<line x1="70.0" y1="360.0" x2="570.0" y2="360.0" stroke="#52606d" stroke-width="1"/>
+<text x="20" y="205" font-size="11" fill="#8a3a1f" text-anchor="middle" transform="rotate(-90 20 205)">Val MSE (log)</text>
+<text x="620" y="205" font-size="11" fill="#2f5a8a" text-anchor="middle" transform="rotate(90 620 205)">CPG (oracle - learned)</text>
+<text x="578.0" y="319.7" font-size="11" fill="#52606d" text-anchor="start">+0.0</text>
+<text x="578.0" y="231.1" font-size="11" fill="#52606d" text-anchor="start">+0.2</text>
+<text x="578.0" y="142.6" font-size="11" fill="#52606d" text-anchor="start">+0.4</text>
+<text x="578.0" y="54.0" font-size="11" fill="#52606d" text-anchor="start">+0.6</text>
+<line x1="70.0" y1="360.0" x2="70.0" y2="365.0" stroke="#52606d" stroke-width="1"/>
+<text x="70.0" y="380.0" font-size="11" fill="#52606d" text-anchor="middle">200</text>
+<line x1="320.0" y1="360.0" x2="320.0" y2="365.0" stroke="#52606d" stroke-width="1"/>
+<text x="320.0" y="380.0" font-size="11" fill="#52606d" text-anchor="middle">2 000</text>
+<line x1="570.0" y1="360.0" x2="570.0" y2="365.0" stroke="#52606d" stroke-width="1"/>
+<text x="570.0" y="380.0" font-size="11" fill="#52606d" text-anchor="middle">20 000</text>
+<text x="320" y="408" font-size="11" fill="#52606d" text-anchor="middle">Training-set size (transitions, log scale)</text>
+<line x1="70" y1="315.7" x2="570" y2="315.7" stroke="#7b8794" stroke-dasharray="3,3" stroke-width="0.8"/>
+<polyline points="70.0,69.3 320.0,115.4 570.0,295.6" fill="none" stroke="#c45c3a" stroke-width="2"/>
+<rect x="66.0" y="65.3" width="8" height="8" fill="#c45c3a" stroke="#8a3a1f" stroke-width="1"/>
+<text x="78.0" y="63.3" font-size="10" fill="#8a3a1f">0.0651</text>
+<rect x="316.0" y="111.4" width="8" height="8" fill="#c45c3a" stroke="#8a3a1f" stroke-width="1"/>
+<text x="328.0" y="109.4" font-size="10" fill="#8a3a1f">0.0233</text>
+<rect x="566.0" y="291.6" width="8" height="8" fill="#c45c3a" stroke="#8a3a1f" stroke-width="1"/>
+<text x="578.0" y="289.6" font-size="10" fill="#8a3a1f">0.0004</text>
+<polyline points="70.0,197.5 320.0,197.5 570.0,197.5" fill="none" stroke="#5083c2" stroke-width="2"/>
+<line x1="70.0" y1="167.4" x2="70.0" y2="231.1" stroke="#2f5a8a" stroke-width="1.4"/><line x1="66.0" y1="167.4" x2="74.0" y2="167.4" stroke="#2f5a8a" stroke-width="1.4"/><line x1="66.0" y1="231.1" x2="74.0" y2="231.1" stroke="#2f5a8a" stroke-width="1.4"/>
+<polygon points="70.0,192.5 65.0,201.5 75.0,201.5" fill="#5083c2" stroke="#2f5a8a" stroke-width="1"/>
+<line x1="320.0" y1="167.4" x2="320.0" y2="231.1" stroke="#2f5a8a" stroke-width="1.4"/><line x1="316.0" y1="167.4" x2="324.0" y2="167.4" stroke="#2f5a8a" stroke-width="1.4"/><line x1="316.0" y1="231.1" x2="324.0" y2="231.1" stroke="#2f5a8a" stroke-width="1.4"/>
+<polygon points="320.0,192.5 315.0,201.5 325.0,201.5" fill="#5083c2" stroke="#2f5a8a" stroke-width="1"/>
+<line x1="570.0" y1="167.4" x2="570.0" y2="231.1" stroke="#2f5a8a" stroke-width="1.4"/><line x1="566.0" y1="167.4" x2="574.0" y2="167.4" stroke="#2f5a8a" stroke-width="1.4"/><line x1="566.0" y1="231.1" x2="574.0" y2="231.1" stroke="#2f5a8a" stroke-width="1.4"/>
+<polygon points="570.0,192.5 565.0,201.5 575.0,201.5" fill="#5083c2" stroke="#2f5a8a" stroke-width="1"/>
+<rect x="78" y="50" width="200" height="44" rx="4" fill="white" stroke="#d8e0e8"/>
+<rect x="86" y="58" width="10" height="10" fill="#c45c3a" stroke="#8a3a1f"/>
+<text x="102" y="66" font-size="10" fill="#1f2933">Val MSE (MLP, held-out)</text>
+<polygon points="91,76 86,84 96,84" fill="#5083c2" stroke="#2f5a8a"/>
+<text x="102" y="84" font-size="10" fill="#1f2933">CPG (AC 95% CI)</text>
+</svg>

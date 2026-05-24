@@ -181,6 +181,11 @@ The result is striking. The MLP's held-out validation MSE drops by a factor of $
 
 The $n = 10$ reading admitted three explanations. The multi-seed result rules out the sample-size artifact (the CI no longer crosses zero) and is consistent with the score-function-mismatch hypothesis only as a contributor, not as the primary driver. The dominant story is *model bottleneck* — with a precise attribution that prediction quality alone obscures.
 
+<figure>
+  <img src="assets/paper_fig1_cpg_vs_data.svg" alt="Figure 1: validation MSE drops 150x while CPG stays flat at +0.267 across three training-set sizes, with asymmetric Agresti-Caffo 95% confidence intervals on the CPG points." />
+  <figcaption><strong>Figure 1.</strong> Validation MSE (red, log scale, left axis) drops by $\sim\!150\times$ across the training-set sweep while CPG (blue, right axis) stays exactly flat at $+0.267$ with the same AC 95% CI $[+0.191, +0.335]$ in every cell. Predicting better did not plan better.</figcaption>
+</figure>
+
 ### 4.6 What CPG separates: capacity vs. coverage
 
 A naive reading is that the MLP simply needs more capacity. The validation MSE refutes this directly: at $20\,000$ transitions the model fits the training distribution to within $4\times 10^{-4}$, indistinguishable from numerical noise. The model has *ample* capacity for what it has been asked to predict.
@@ -202,6 +207,11 @@ This is most parsimoniously read as a *coverage* bottleneck rather than a *capac
 </table>
 
 The upright regime that swing-up requires is **strictly absent** from the training distribution: $0/2000$ random-rollout states have $u > 1.0$. The oracle planner visits that regime in roughly one-fifth of its trajectory. The MLP has never been shown a state from which the planner needs to predict. Numbers from [`results/dmc_acrobot/coverage.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/coverage.json); the script is [`experiments/dmc_acrobot/coverage_analysis.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/dmc_acrobot/coverage_analysis.py).
+
+<figure>
+  <img src="assets/paper_fig2_coverage_histogram.svg" alt="Figure 2: histogram of uprightness u = cos(theta_1) + cos(theta_2) across 8 buckets, for random-rollout states (red) vs oracle-planner states (blue). The two rightmost buckets ([+1, +1.5) and [+1.5, +2)) are empty for random rollouts but populated for the oracle planner." />
+  <figcaption><strong>Figure 2.</strong> Empirical receipt for the coverage claim. The upright regime ($u > 1$) is strictly absent from the random-policy training data ($0/2000$ states); the oracle planner spends $20.2\%$ of its trajectory there.</figcaption>
+</figure>
 
 A second-axis sweep that varies the exploration policy under fixed data size would directly confirm coverage as the dominant driver. The natural remediation we recommend is to change the data-collection policy (energy-aware exploration, or relabelled trajectories that visit the swing-up regime), not to enlarge the network.
 
@@ -290,7 +300,15 @@ The same protocol at `model_size = 1` (smaller capacity, identical $10^6$-step b
 
 Four observations. **First**, the `MODEL BOTTLENECK` verdict reproduces at `model_size = 5` in all four cells, on a task whose oracle reaches the upright pose (0.500–0.900 depending on planner). The metric travels across the easy/hard axis at fixed family. **Second**, the TD-MPC2 dynamics arm reaches *non-zero* success on Cartpole at both capacities (0.200–0.533 depending on planner and `model_size`) — the first non-trivial learned-arm successes in the paper. **Third**, the random-shooting planner outperforms CEM on Cartpole's oracle (0.900 vs 0.500), inverting the Acrobot pattern; the planner-capacity contributor §4.7 surfaced on Acrobot is not a universal direction. **Fourth, and most striking: at `model_size = 1` the CEM × TD-MPC2 cell returns `INCONCLUSIVE`.** The learned arm matches the oracle (0.533 vs 0.500), CPG is slightly negative (−0.033), the AC CI crosses zero ([−0.276, +0.214]), and the five-branch verdict gate fires its `INCONCLUSIVE` branch for the first time at moderate $n$ in the paper. The smaller-capacity model converges better on Cartpole's simpler value-target landscape than its larger sibling did in the same $10^6$-step budget, and the metric correctly refuses to convict either side.
 
-The full cross-env picture (Acrobot vs Cartpole `size = 5`) is rendered as Figure 3 in the PDF; Figure 4 in the PDF shows the within-Cartpole capacity sweep that exposes the `INCONCLUSIVE` cell.
+<figure>
+  <img src="assets/paper_fig3_cross_env.svg" alt="Figure 3: cross-env CPG comparison, Acrobot vs Cartpole at model_size=5, on four planner-dynamics combinations. Acrobot bars show MODEL BOTTLENECK at all four cells; Cartpole bars show MODEL BOTTLENECK with smaller gaps." />
+  <figcaption><strong>Figure 3.</strong> Cross-env CPG with asymmetric Agresti-Caffo $95\%$ CI error bars. Acrobot (blue): random-shooting cells at $n=10$, CEM cells pooled at $n=150$. Cartpole (orange): all four cells pooled at $n=30$ at `model_size = 5`. The `MODEL BOTTLENECK` verdict reproduces in every cell.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/paper_fig4_cartpole_capacity.svg" alt="Figure 4: Cartpole capacity sweep, model_size=5 (blue) vs model_size=1 (orange), four planner-dynamics combinations. The rightmost orange bar (CEM x TD-MPC2 model_size=1) crosses zero, showing the INCONCLUSIVE verdict." />
+  <figcaption><strong>Figure 4.</strong> Cartpole capacity sweep at fixed $10^6$-step training budget. The CEM × TD-MPC2 cell at `model_size = 1` (rightmost orange bar) is the only cell where the CI crosses zero: CPG $= -0.033$, AC CI $= [-0.28, +0.21]$, verdict `INCONCLUSIVE`. Smaller-capacity TD-MPC2 closes the gap on Cartpole's CEM oracle that the larger-capacity model does not.</figcaption>
+</figure>
 
 Numbers from [`results/dmc_cartpole/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_cartpole) (`_size5_pooled.json` for capacity 5; the bare `_pooled.json` files for capacity 1).
 
