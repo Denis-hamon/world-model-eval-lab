@@ -9,7 +9,7 @@ next:
 <div class="release-banner">
   <span class="tag">v0.15.0</span>
   <span class="release-banner-text">
-    Cross-environment validation ships: same four-arm CPG matrix replayed on DMC Cartpole-swingup. <code>MODEL BOTTLENECK</code> verdict reproduces in every cell, with the paper's first <strong>non-zero learned-arm successes</strong> (TD-MPC2 reaches 0.200 under random-shooting, 0.133 under CEM). The metric tracks gap magnitude, not just gap presence.
+    Cross-environment validation ships: four-arm CPG matrix replayed on DMC Cartpole-swingup at two TD-MPC2 capacities. <code>MODEL BOTTLENECK</code> reproduces in all four cells at <code>model_size = 5</code>; at <code>model_size = 1</code>, the CEM&times;TD-MPC2 cell flips to <code>INCONCLUSIVE</code> &mdash; the first moderate-$n$ verdict the metric's gate refuses to commit on. First non-zero learned-arm successes in the paper.
   </span>
   <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.15.0">Release notes &rarr;</a>
 </div>
@@ -50,11 +50,12 @@ next:
 <aside class="whats-new">
   <h3>What's new in v0.15</h3>
   <ul>
-    <li><strong>Cross-environment</strong>: DMC Cartpole-swingup adapter (<code>src/wmel/envs/dmc_cartpole.py</code>) and a fresh four-arm CPG matrix pooled to $n = 30$ per arm at TD-MPC2 <code>model_size = 5</code>, $10^6$ env steps. <code>MODEL BOTTLENECK</code> reproduces in every cell on a task with a much higher oracle baseline.</li>
-    <li><strong>First non-zero learned-arm successes</strong>: TD-MPC2 dynamics reaches $0.200$ under random-shooting and $0.133$ under CEM on Cartpole. CPG still commits to <code>MODEL BOTTLENECK</code> because the gap is bounded above zero &mdash; the metric tracks gap magnitude, not just gap presence.</li>
+    <li><strong>Cross-environment, capacity 5</strong>: DMC Cartpole-swingup adapter (<code>src/wmel/envs/dmc_cartpole.py</code>) and a four-arm CPG matrix pooled to $n = 30$ at TD-MPC2 <code>model_size = 5</code>, $10^6$ env steps. <code>MODEL BOTTLENECK</code> reproduces in every cell on a task with a much higher oracle baseline.</li>
+    <li><strong>Cross-environment, capacity 1</strong>: same protocol at <code>model_size = 1</code>. Three of four cells stay at <code>MODEL BOTTLENECK</code>. The fourth (CEM&times;TD-MPC2) flips to <code>INCONCLUSIVE</code>: learned reaches $0.533$ vs oracle $0.500$, CPG $-0.033$, AC CI $[-0.28, +0.21]$ &mdash; the first moderate-$n$ <code>INCONCLUSIVE</code> verdict in the paper. Smaller capacity converges better on Cartpole's simpler value-target landscape, and the metric correctly refuses to commit.</li>
+    <li><strong>First non-zero learned-arm successes</strong>: TD-MPC2 reaches $0.200$ to $0.533$ on Cartpole depending on planner and capacity. CPG tracks gap magnitude rather than just gap presence.</li>
     <li><strong>Planner-capacity asymmetry across envs</strong>: random-shooting outperforms CEM on Cartpole's oracle ($0.900$ vs $0.500$), inverting the Acrobot pattern. The planner-capacity contributor §5.8 surfaced on Acrobot is not a universal direction.</li>
-    <li>Paper updated with <strong>Section 5.10</strong> (cross-env) plus a new <strong>Figure 3</strong> (Acrobot vs Cartpole CPG with AC error bars). Abstract and conclusion rewritten. <a href="paper.html">HTML paper</a> and <a href="07_cpg.html">CPG page</a> mirror the new table.</li>
-    <li><strong>GPU experiment queue</strong>: <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/GPU_ROADMAP.md"><code>experiments/GPU_ROADMAP.md</code></a> documents the next five GPU jobs (size=1 completion, horizon ablation, Reacher cross-env, pooled-150 Cartpole, observation-noise perturbation) so a remote agent can pick them up sequentially.</li>
+    <li>Paper updated with <strong>Section 5.10</strong> (cross-env, two capacities) plus <strong>Figure 3</strong> (Acrobot vs Cartpole size 5) and <strong>Figure 4</strong> (Cartpole capacity sweep, the INCONCLUSIVE cell visible). Abstract and conclusion rewritten.</li>
+    <li><strong>GPU experiment queue</strong> at <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/GPU_ROADMAP.md"><code>experiments/GPU_ROADMAP.md</code></a> &mdash; four remaining tasks (horizon ablation, Reacher cross-env, pooled-150 Cartpole, observation-noise perturbation). Task 1 (size=1 completion) marked done.</li>
   </ul>
 </aside>
 
@@ -329,8 +330,8 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
       <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.15.0">v0.15.0</a>
       <span class="release-meta">2026-05-23 &middot; current</span>
     </div>
-    <p class="release-title">Cross-environment: DMC Cartpole-swingup</p>
-    <p class="release-body">Same four-arm CPG matrix on a second environment, $n = 30$ pooled per arm at TD-MPC2 <code>model_size = 5</code>. <code>MODEL BOTTLENECK</code> reproduces in every cell. First non-zero learned-arm successes in the paper (TD-MPC2 reaches $0.200$ RS, $0.133$ CEM); the metric commits because the gap is bounded above zero, not because the learned arm is at zero. Paper Section 5.10 + Figure 3. GPU experiment queue added at <code>experiments/GPU_ROADMAP.md</code>.</p>
+    <p class="release-title">Cross-environment: DMC Cartpole-swingup, two capacities</p>
+    <p class="release-body">Four-arm CPG matrix on a second env at TD-MPC2 <code>model_size = 5</code> AND <code>model_size = 1</code>, $n = 30$ pooled each. All four cells at <code>size = 5</code> reproduce <code>MODEL BOTTLENECK</code>; the CEM&times;TD-MPC2 cell at <code>size = 1</code> flips to <code>INCONCLUSIVE</code> (learned $0.533$ vs oracle $0.500$, CPG $-0.033$, CI $[-0.28, +0.21]$) &mdash; first moderate-$n$ <code>INCONCLUSIVE</code> in the paper. Paper §5.10 + Figures 3 and 4. GPU queue added at <code>experiments/GPU_ROADMAP.md</code>.</p>
   </article>
 
   <article class="release-card">
