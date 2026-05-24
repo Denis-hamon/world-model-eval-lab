@@ -11,7 +11,7 @@ next:
 ---
 
 <div class="paper-header">
-  <p class="paper-eyebrow">Short paper &middot; v0.14.0</p>
+  <p class="paper-eyebrow">Short paper &middot; v0.15.0</p>
   <h1 class="paper-title">Counterfactual Planning Gap</h1>
   <p class="paper-subtitle">A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation</p>
   <p class="paper-author">Denis Hamon &nbsp;&middot;&nbsp; Independent &nbsp;&middot;&nbsp; <a href="mailto:denis.hamon1@gmail.com">denis.hamon1@gmail.com</a></p>
@@ -258,6 +258,28 @@ The `MODEL BOTTLENECK` verdict survives every cell. The experiment is structural
 
 Numbers from [`results/dmc_acrobot/perturbation_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/perturbation_cpg.json).
 
+### 4.9 Cross-environment: DMC Cartpole-swingup {#sec-crossenv}
+
+The robustness sweeps above hold the environment fixed. We now sweep the environment instead: the same four-arm setup as §4.7 is replayed on DMC Cartpole-swingup, an easier underactuated control task (one actuated DoF, simpler dynamics than Acrobot's two-arm chain). The oracle, the TD-MPC2 architecture, the random-shooting and CEM planners, the verdict gate are all unchanged; only the env adapter ([`src/wmel/envs/dmc_cartpole.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/src/wmel/envs/dmc_cartpole.py)) and a fresh TD-MPC2 training are swapped in. Three seeds pooled to $n = 30$ per arm, at TD-MPC2 `model_size = 5`, $10^6$ env steps.
+
+<table class="paper-table">
+  <thead>
+    <tr><th>Planner</th><th>Dynamics</th><th>Oracle</th><th>Learned</th><th>Raw CPG</th><th>AC 95% CI</th><th>Verdict</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Random-shooting</td><td>MLP on TD-MPC2 data</td><td>0.900</td><td>0.000</td><td>+0.900</td><td>[+0.714, +0.973]</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+    <tr><td>Random-shooting</td><td>TD-MPC2 (1M)</td><td>0.900</td><td><strong>0.200</strong></td><td>+0.700</td><td>[+0.473, +0.840]</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+    <tr><td>CEM</td><td>MLP on TD-MPC2 data</td><td>0.500</td><td>0.000</td><td>+0.500</td><td>[+0.285, +0.652]</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+    <tr><td>CEM</td><td>TD-MPC2 (1M)</td><td>0.500</td><td><strong>0.133</strong></td><td>+0.367</td><td>[+0.130, +0.558]</td><td><span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span></td></tr>
+  </tbody>
+</table>
+
+Three observations. **First**, the verdict reproduces: `MODEL BOTTLENECK` in all four cells, on a task whose oracle reaches the upright pose (0.500–0.900 depending on planner) rather than Acrobot's 0.30–0.90 band. The metric travels across the easy/hard axis at fixed family. **Second**, the TD-MPC2 dynamics arm reaches *non-zero* success on Cartpole (`0.200` under random-shooting, `0.133` under CEM) — the first non-trivial learned-arm success in the paper. CPG still commits to `MODEL BOTTLENECK` because the gap is positive and the AC lower bound is strictly above zero; the metric tracks gap magnitude, not just gap presence. **Third**, the random-shooting planner outperforms CEM on Cartpole's oracle (0.900 vs 0.500), inverting the Acrobot pattern; the planner-capacity contributor §4.7 surfaced on Acrobot is not a universal direction. CPG separates planner-capacity from dynamics-quality per-task.
+
+The full cross-env picture (Acrobot vs Cartpole on the same four arms with AC error bars) is rendered as Figure 3 in the PDF version of the paper.
+
+Numbers from [`results/dmc_cartpole/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_cartpole) (`{tdmpc2,cem,coverage_mlp_on_tdmpc2}_cpg_size5_pooled.json`).
+
 ## 5. Discussion and Limitations
 
 The empirical demonstration is intentionally narrow: one environment, one learned model, one planner, one seed family ($\{0, 1, 2\}$). The methodological contribution — a packaged CPG with an Agresti--Caffo CI and a gated verdict — is decoupled from any of those choices and applies wherever an oracle dynamics is available (so: simulated environments). On hardware-in-the-loop or physical environments the metric is undefined; surrogate CPG variants (a higher-fidelity model standing in for the oracle) are future work.
@@ -268,7 +290,7 @@ Other limitations worth flagging. The discrete-torque action space is a five-lev
 
 ## 6. Conclusion
 
-We have proposed the Counterfactual Planning Gap as a decision-grade metric for world-model evaluation, packaged it behind a minimal evaluation contract, and reported a worked example on DMC Acrobot-swingup. At $n = 10$ under random-shooting MPC the framework reports `INCONCLUSIVE`; pooled-150 tightens the CI off zero and returns `MODEL BOTTLENECK`; sweeping the training-set size across nearly three orders of magnitude leaves the verdict unchanged while the held-out prediction loss drops by $\sim\!150\times$. The robustness sweep in §4.7 adds a published-world-model arm (TD-MPC2) and a CEM planner: both learned arms remain at $0$ success, the oracle's success rate triples under CEM (`0.30` to `0.90`), and the gap opens to `+0.900` with a CI that no longer crosses zero at $n = 10$. A pooled-150 extension of the CEM rows tightens this to `+0.880`, CI `[+0.814, +0.923]`, with both learned arms still at `0/150`. An action-burst perturbation sweep (§4.8) confirms the verdict survives a per-episode `DropNextActions(k)` at $k \in \{0, 1, 5\}$. The takeaway is methodological: a metric that separates closed-loop success from prediction quality reveals two distinct contributors that prediction-quality metrics alone would conflate — a coverage-or-capacity dynamics-quality bottleneck on the learned arms, and a planner-capacity contributor on the oracle arm — and an adapter-and-planner interface that lets a single `BenchmarkRunner` disentangle them by swapping callables. We argue this kind of calibrated honesty — a metric that refuses to claim more than the data supports, and that supports a precise attribution once the data is sufficient — is the right design target for a methodology paper that wants to sit usefully next to a fast-moving model literature.
+We have proposed the Counterfactual Planning Gap as a decision-grade metric for world-model evaluation, packaged it behind a minimal evaluation contract, and reported a worked example on DMC Acrobot-swingup. At $n = 10$ under random-shooting MPC the framework reports `INCONCLUSIVE`; pooled-150 tightens the CI off zero and returns `MODEL BOTTLENECK`; sweeping the training-set size across nearly three orders of magnitude leaves the verdict unchanged while the held-out prediction loss drops by $\sim\!150\times$. The robustness sweep in §4.7 adds a published-world-model arm (TD-MPC2) and a CEM planner: both learned arms remain at $0$ success, the oracle's success rate triples under CEM (`0.30` to `0.90`), and the gap opens to `+0.900` with a CI that no longer crosses zero at $n = 10$. A pooled-150 extension of the CEM rows tightens this to `+0.880`, CI `[+0.814, +0.923]`, with both learned arms still at `0/150`. An action-burst perturbation sweep (§4.8) confirms the verdict survives a per-episode `DropNextActions(k)` at $k \in \{0, 1, 5\}$. A cross-environment replay on DMC Cartpole-swingup (§4.9) reproduces `MODEL BOTTLENECK` in every cell of the same four-arm grid, while producing the paper's first non-trivial learned-arm successes (TD-MPC2 dynamics reaches `0.200` and `0.133` under random-shooting and CEM respectively) — the verdict commits because the gap is bounded above zero, not because the learned arm is at zero. The takeaway is methodological: a metric that separates closed-loop success from prediction quality reveals two distinct contributors that prediction-quality metrics alone would conflate — a coverage-or-capacity dynamics-quality bottleneck on the learned arms, and a planner-capacity contributor on the oracle arm — and an adapter-and-planner interface that lets a single `BenchmarkRunner` disentangle them by swapping callables; the verdict travels across the easy/hard env axis at fixed family and tracks gap magnitude rather than only gap presence. We argue this kind of calibrated honesty — a metric that refuses to claim more than the data supports, and that supports a precise attribution once the data is sufficient — is the right design target for a methodology paper that wants to sit usefully next to a fast-moving model literature.
 
 ## Acknowledgements
 

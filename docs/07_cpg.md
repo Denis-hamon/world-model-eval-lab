@@ -148,6 +148,7 @@ Three further axes test how robust the `MODEL BOTTLENECK` verdict really is, all
 | Random-shooting $\rightarrow$ CEM, MLP retrained on TD-MPC2 collection data | oracle 0.90, learned 0.00, CPG $+0.900$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
 | CEM, both MLP-on-TD-MPC2-data and TD-MPC2 arms, pooled $n = 150$ | CPG $+0.880$, CI $[+0.814, +0.923]$, half-width $0.054$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> confirmed |
 | In-episode `DropNextActions(k)` for $k \in \{0, 1, 5\}$ | oracle drops $\sim 6$ pp at $k=5$, both learned arms stay at $0/50$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> at every cell |
+| Cross-env: DMC Cartpole-swingup, same 4 arms, $n = 30$ pooled | oracle $0.5$-$0.9$ depending on planner, TD-MPC2 learned reaches **non-zero** ($0.200$ RS, $0.133$ CEM) | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> in every cell |
 
 The verdict survives all four swaps. A stronger planner does not close the gap on the learned arms — it widens it, because the oracle is no longer the constraint. An in-episode action-burst only hurts the oracle further, so the gap holds. The decomposition CPG provides is robust to the four most obvious "is this just an artifact?" hypotheses a reviewer raises.
 
