@@ -7,11 +7,11 @@ next:
 ---
 
 <div class="release-banner">
-  <span class="tag">v0.14.0</span>
+  <span class="tag">v0.15.0</span>
   <span class="release-banner-text">
-    Robustness sweep ships: TD-MPC2 (2M env steps) as a published learned dynamics, CEM as a stronger planner, action-burst perturbation as a stress axis. The <code>MODEL BOTTLENECK</code> verdict survives all three swaps; pooled-150 under CEM tightens CI to half-width $0.054$.
+    Cross-environment validation ships: same four-arm CPG matrix replayed on DMC Cartpole-swingup. <code>MODEL BOTTLENECK</code> verdict reproduces in every cell, with the paper's first <strong>non-zero learned-arm successes</strong> (TD-MPC2 reaches 0.200 under random-shooting, 0.133 under CEM). The metric tracks gap magnitude, not just gap presence.
   </span>
-  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.0">Release notes &rarr;</a>
+  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.15.0">Release notes &rarr;</a>
 </div>
 
 <section class="hero">
@@ -48,12 +48,13 @@ next:
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
 <aside class="whats-new">
-  <h3>What's new in v0.14</h3>
+  <h3>What's new in v0.15</h3>
   <ul>
-    <li><strong>Published-world-model arm</strong>: TD-MPC2 (2M env steps) plugged in as a <code>dynamics=</code> callable behind the same planner. At $n = 10$ under random-shooting it fails as completely as the v0.11 MLP (0/10), validating the dynamics-adapter slot on a SOTA published model.</li>
-    <li><strong>Stronger planner (CEM)</strong>: oracle's success rate triples at $n = 10$ (0.30 to 0.90), both learned arms stay at <code>0/10</code>. Pooled across three seeds at $n = 150$ per arm, oracle 0.88, both learned arms at <code>0/150</code>: CPG <code>+0.880</code>, CI <code>[+0.814, +0.923]</code>, half-width <code>0.054</code>. The gap is a dynamics-quality bottleneck the planner cannot close.</li>
-    <li><strong>In-episode perturbation</strong>: <code>DropNextActions(k)</code> at $k \in \{0, 1, 5\}$. The <code>MODEL BOTTLENECK</code> verdict survives every cell &mdash; the oracle loses about 6 percentage points at $k=5$, both learned arms stay at <code>0/50</code>, the gap holds.</li>
-    <li>Paper updated with <strong>Sections 5.8</strong> (robustness) and <strong>5.9</strong> (perturbation). Abstract and conclusion rewritten. The HTML paper at <a href="paper.html">/paper.html</a> and the <a href="07_cpg.html">CPG page</a> mirror the new tables.</li>
+    <li><strong>Cross-environment</strong>: DMC Cartpole-swingup adapter (<code>src/wmel/envs/dmc_cartpole.py</code>) and a fresh four-arm CPG matrix pooled to $n = 30$ per arm at TD-MPC2 <code>model_size = 5</code>, $10^6$ env steps. <code>MODEL BOTTLENECK</code> reproduces in every cell on a task with a much higher oracle baseline.</li>
+    <li><strong>First non-zero learned-arm successes</strong>: TD-MPC2 dynamics reaches $0.200$ under random-shooting and $0.133$ under CEM on Cartpole. CPG still commits to <code>MODEL BOTTLENECK</code> because the gap is bounded above zero &mdash; the metric tracks gap magnitude, not just gap presence.</li>
+    <li><strong>Planner-capacity asymmetry across envs</strong>: random-shooting outperforms CEM on Cartpole's oracle ($0.900$ vs $0.500$), inverting the Acrobot pattern. The planner-capacity contributor §5.8 surfaced on Acrobot is not a universal direction.</li>
+    <li>Paper updated with <strong>Section 5.10</strong> (cross-env) plus a new <strong>Figure 3</strong> (Acrobot vs Cartpole CPG with AC error bars). Abstract and conclusion rewritten. <a href="paper.html">HTML paper</a> and <a href="07_cpg.html">CPG page</a> mirror the new table.</li>
+    <li><strong>GPU experiment queue</strong>: <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/GPU_ROADMAP.md"><code>experiments/GPU_ROADMAP.md</code></a> documents the next five GPU jobs (size=1 completion, horizon ablation, Reacher cross-env, pooled-150 Cartpole, observation-noise perturbation) so a remote agent can pick them up sequentially.</li>
   </ul>
 </aside>
 
@@ -325,8 +326,26 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 <section class="release-timeline">
   <article class="release-card release-current">
     <div class="release-head">
-      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.0">v0.14.0</a>
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.15.0">v0.15.0</a>
       <span class="release-meta">2026-05-23 &middot; current</span>
+    </div>
+    <p class="release-title">Cross-environment: DMC Cartpole-swingup</p>
+    <p class="release-body">Same four-arm CPG matrix on a second environment, $n = 30$ pooled per arm at TD-MPC2 <code>model_size = 5</code>. <code>MODEL BOTTLENECK</code> reproduces in every cell. First non-zero learned-arm successes in the paper (TD-MPC2 reaches $0.200$ RS, $0.133$ CEM); the metric commits because the gap is bounded above zero, not because the learned arm is at zero. Paper Section 5.10 + Figure 3. GPU experiment queue added at <code>experiments/GPU_ROADMAP.md</code>.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.1">v0.14.1</a>
+      <span class="release-meta">2026-05-23</span>
+    </div>
+    <p class="release-title">First two paper figures (CPG vs data, coverage histogram)</p>
+    <p class="release-body">PGF/TikZ Figure 1 (val MSE plummets $\sim 150\times$ while CPG stays flat at $+0.267$, asymmetric Agresti-Caffo CI) and Figure 2 (uprightness coverage: $0/2000$ random states reach upright vs $20.2\%$ for oracle). Two adversarial-review fixes addressed: sig-fig parity and asymmetric error bars.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.0">v0.14.0</a>
+      <span class="release-meta">2026-05-23</span>
     </div>
     <p class="release-title">Robustness sweep: published model, stronger planner, perturbation</p>
     <p class="release-body">Three new axes test the v0.11 <code>MODEL BOTTLENECK</code> verdict: TD-MPC2 (2M env steps) as <code>dynamics</code>, CEM as planner, <code>DropNextActions(k)</code> as in-episode perturbation. Verdict survives all three; pooled-150 under CEM tightens CI half-width to <code>0.054</code>. Paper Sections 5.8 + 5.9.</p>
