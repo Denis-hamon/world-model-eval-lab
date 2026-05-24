@@ -25,7 +25,7 @@ next:
 
 ## Abstract
 
-Action-conditioned world models are routinely evaluated by prediction quality (reconstruction loss, frame-level FID, held-out one-step accuracy). Such metrics describe how well a model fits its training distribution. They are silent on the question that an applied team must answer before integrating a model into a control loop: *does the model, when used by a planner, produce decisions that succeed at the cost the deployment will accept?* We propose the **Counterfactual Planning Gap (CPG)**: the success-rate difference between a fixed planner using oracle dynamics and the same planner using the learned model on the same benchmark. The point estimate is the raw difference of success rates; the $95\%$ interval uses the Agresti--Caffo plus-4 adjustment, which keeps the variance positive at the boundary proportions $p \in \\{0, 1\\}$ where the standard Wald approximation collapses. We further define a five-branch verdict (`MODEL BOTTLENECK`, `LEARNED OUTPERFORMS ORACLE`, `PLANNER BOTTLENECK`, `MODEL AS GOOD AS ORACLE`, `INCONCLUSIVE`) gated on the lower bound of the CI rather than the raw point estimate, so under-powered runs cannot over-claim a diagnosis. We package CPG as a ~160-line addition to a reusable framework (`wmel`) and report a worked example on DeepMind Control Suite Acrobot-swingup. On $10$ episodes per arm we observe raw $\mathrm{CPG} = +0.300$, AC $95\%$ CI $[-0.06, +0.56]$, verdict `INCONCLUSIVE`. A multi-seed extension to $n = 150$ pooled per arm hardens the result to $\mathrm{CPG} = +0.267$, CI $[+0.191, +0.335]$, `MODEL BOTTLENECK`. Sweeping the MLP's training-set size by a factor of $100$ drops held-out validation MSE by $\sim\!150\times$ but leaves the verdict and CI *unchanged*: prediction quality improves dramatically, planning success stays at zero, the gap stays open. The metric does its job: it separates a model-capacity bottleneck from a data-coverage bottleneck that a prediction-quality metric alone would mask.
+Action-conditioned world models are routinely evaluated by prediction quality (reconstruction loss, frame-level FID, held-out one-step accuracy). Such metrics describe how well a model fits its training distribution. They are silent on the question that an applied team must answer before integrating a model into a control loop: *does the model, when used by a planner, produce decisions that succeed at the cost the deployment will accept?* We propose the **Counterfactual Planning Gap (CPG)**: the success-rate difference between a fixed planner using oracle dynamics and the same planner using the learned model on the same benchmark. The point estimate is the raw difference of success rates; the $95\%$ interval uses the Agresti--Caffo plus-4 adjustment, which keeps the variance positive at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation collapses. We further define a five-branch verdict (`MODEL BOTTLENECK`, `LEARNED OUTPERFORMS ORACLE`, `PLANNER BOTTLENECK`, `MODEL AS GOOD AS ORACLE`, `INCONCLUSIVE`) gated on the lower bound of the CI rather than the raw point estimate, so under-powered runs cannot over-claim a diagnosis. We package CPG as a ~160-line addition to a reusable framework (`wmel`) and report a worked example on DeepMind Control Suite Acrobot-swingup. On $10$ episodes per arm we observe raw $\mathrm{CPG} = +0.300$, AC $95\%$ CI $[-0.06, +0.56]$, verdict `INCONCLUSIVE`. A multi-seed extension to $n = 150$ pooled per arm hardens the result to $\mathrm{CPG} = +0.267$, CI $[+0.191, +0.335]$, `MODEL BOTTLENECK`. Sweeping the MLP's training-set size by a factor of $100$ drops held-out validation MSE by $\sim\!150\times$ but leaves the verdict and CI *unchanged*: prediction quality improves dramatically, planning success stays at zero, the gap stays open. The metric does its job: it separates a model-capacity bottleneck from a data-coverage bottleneck that a prediction-quality metric alone would mask.
 
 ## 1. Introduction
 
@@ -68,10 +68,10 @@ A metric is *decision-grade* iff (i) its units translate directly to a deploymen
 
 ### 3.1 Definition
 
-Fix an environment $\mathcal{E}$, a planner $\pi$, a scoring function $\sigma$, a number of episodes $N$, a horizon $T$ and a seed. Let $\mathrm{success\\_rate}(D)$ denote the empirical success rate of $\pi$ on $N$ episodes of $\mathcal{E}$ when the planner queries dynamics $D$ during its internal rollouts. Let $D^{\star}$ be the *oracle* dynamics (the true env's transition function) and $D_\theta$ be a learned model. The Counterfactual Planning Gap is
+Fix an environment $\mathcal{E}$, a planner $\pi$, a scoring function $\sigma$, a number of episodes $N$, a horizon $T$ and a seed. Let $\mathrm{success\_rate}(D)$ denote the empirical success rate of $\pi$ on $N$ episodes of $\mathcal{E}$ when the planner queries dynamics $D$ during its internal rollouts. Let $D^{\star}$ be the *oracle* dynamics (the true env's transition function) and $D_\theta$ be a learned model. The Counterfactual Planning Gap is
 
 $$
-\mathrm{CPG} \;=\; \mathrm{success\\_rate}(D^{\star}) \;-\; \mathrm{success\\_rate}(D_\theta).
+\mathrm{CPG} \;=\; \mathrm{success\_rate}(D^{\star}) \;-\; \mathrm{success\_rate}(D_\theta).
 $$
 
 All free quantities on the right-hand side — env, planner, score, $N$, $T$, seed — are held fixed between the two runs. The only thing that changes is the `dynamics` callable. This identification is what licenses interpreting CPG as a property of the *model* rather than the planner or the env.
@@ -84,7 +84,7 @@ $$
 \hat{\Delta} \;=\; \frac{s_o}{n_o} - \frac{s_\ell}{n_\ell}.
 $$
 
-The standard Wald $95\%$ CI on $\hat\Delta$ has variance $p_o(1-p_o)/n_o + p_\ell(1-p_\ell)/n_\ell$, which collapses to zero whenever *either* arm sits at $p \in \\{0, 1\\}$. With $n_\ell = 10$ episodes and a learned planner that fails on every episode, this is precisely the regime the framework lands in. A degenerate-variance CI in this regime falsely produces a tight interval and over-claims significance.
+The standard Wald $95\%$ CI on $\hat\Delta$ has variance $p_o(1-p_o)/n_o + p_\ell(1-p_\ell)/n_\ell$, which collapses to zero whenever *either* arm sits at $p \in \{0, 1\}$. With $n_\ell = 10$ episodes and a learned planner that fails on every episode, this is precisely the regime the framework lands in. A degenerate-variance CI in this regime falsely produces a tight interval and over-claims significance.
 
 We instead use the Agresti--Caffo plus-4 adjustment [Agresti & Caffo, 2000], adding one pseudo-success and one pseudo-failure to each arm:
 
@@ -121,7 +121,7 @@ CPG is bounded in $[-1, 1]$, antisymmetric in the role of the two dynamics, and 
 
 ### 4.1 Setup
 
-We use DMC Acrobot-swingup [Tassa et al., 2018; Tunyasuvunakool et al., 2020]: a two-link underactuated pendulum with a continuous torque action in $[-1, +1]$ that must build energy and balance the tip upright. We discretise the action to a five-level torque set $\\{-1, -0.5, 0, +0.5, +1\\}$ to fit the framework's hashable-action contract. The observation is a six-dimensional vector $(\sin\theta_1, \sin\theta_2, \cos\theta_1, \cos\theta_2, \dot\theta_1, \dot\theta_2)$ in the layout returned by `dm_control.suite.acrobot.Physics.orientations`. Success at step $t$ is $r_t \geq 0.6$ where $r_t$ is the DMC dense reward.
+We use DMC Acrobot-swingup [Tassa et al., 2018; Tunyasuvunakool et al., 2020]: a two-link underactuated pendulum with a continuous torque action in $[-1, +1]$ that must build energy and balance the tip upright. We discretise the action to a five-level torque set $\{-1, -0.5, 0, +0.5, +1\}$ to fit the framework's hashable-action contract. The observation is a six-dimensional vector $(\sin\theta_1, \sin\theta_2, \cos\theta_1, \cos\theta_2, \dot\theta_1, \dot\theta_2)$ in the layout returned by `dm_control.suite.acrobot.Physics.orientations`. Success at step $t$ is $r_t \geq 0.6$ where $r_t$ is the DMC dense reward.
 
 The scoring function is $\sigma(\mathbf{o}, \cdot) = -(\cos\theta_1 + \cos\theta_2)$, a unit-length approximation of the negative tip height. The planner is random-shooting MPC with $N_\mathrm{cand} = 50$ candidate sequences of length $H_\mathrm{plan} = 15$, executed at every replanning step. Episodes run for at most $T = 500$ env steps. Seed $0$ throughout.
 
@@ -164,7 +164,7 @@ Three readings are consistent with the data, and the framework declines to choos
 
 ### 4.5 Multi-seed extension across training-set sizes {#sec-sweep}
 
-We extend along two axes. *Episodes per arm* grows from $10$ to $50$ per seed (pooled across three seeds, $n = 150$ per arm), pushing the AC half-width below $0.10$. *Training-set size* sweeps the MLP's data budget across nearly three orders of magnitude: $\\{200, 2\,000, 20\,000\\}$ random-policy transitions. Every other quantity is held fixed.
+We extend along two axes. *Episodes per arm* grows from $10$ to $50$ per seed (pooled across three seeds, $n = 150$ per arm), pushing the AC half-width below $0.10$. *Training-set size* sweeps the MLP's data budget across nearly three orders of magnitude: $\{200, 2\,000, 20\,000\}$ random-policy transitions. Every other quantity is held fixed.
 
 The result is striking. The MLP's held-out validation MSE drops by a factor of $\sim\!150$; the learned planner's success rate stays at *exactly zero* in all $450$ benchmark episodes; the oracle planner's success rate is identical across cells; CPG returns the same point estimate, the same AC CI, and the same verdict `MODEL BOTTLENECK` in every cell.
 

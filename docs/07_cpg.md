@@ -33,7 +33,7 @@ This identification &mdash; same planner, same scoring, same env, same seed, onl
 <section class="chapter" id="why-ac" markdown="1">
   <p class="chapter-eyebrow">Step 02</p>
   <h2 class="chapter-title">Why Agresti--Caffo, not Wald</h2>
-  <p class="chapter-lead">The standard Wald confidence interval collapses to a point at the boundary proportions $p \in \\{0, 1\\}$ &mdash; exactly the regime this framework lands in at small $n$. The Agresti--Caffo plus-4 adjustment fixes that.</p>
+  <p class="chapter-lead">The standard Wald confidence interval collapses to a point at the boundary proportions $p \in \{0, 1\}$ &mdash; exactly the regime this framework lands in at small $n$. The Agresti--Caffo plus-4 adjustment fixes that.</p>
 
 The standard Wald $95\%$ CI on a difference of two binomial proportions uses
 
@@ -41,7 +41,7 @@ $$
 \mathrm{SE}_{\mathrm{Wald}} \;=\; \sqrt{\frac{p_o(1-p_o)}{n_o} + \frac{p_\ell(1-p_\ell)}{n_\ell}}.
 $$
 
-When either arm sits at $p \in \\{0, 1\\}$, the Wald variance collapses to zero, the interval shrinks to a point, and a meaningless "significant" result drops out. A learned planner that fails on every episode is precisely this regime.
+When either arm sits at $p \in \{0, 1\}$, the Wald variance collapses to zero, the interval shrinks to a point, and a meaningless "significant" result drops out. A learned planner that fails on every episode is precisely this regime.
 
 The **Agresti--Caffo plus-4** adjustment fixes this by adding one pseudo-success and one pseudo-failure to each arm before computing the standard-normal CI:
 
@@ -102,7 +102,7 @@ python -m experiments.dmc_acrobot.cpg
 
   <h3 class="chapter-sub">Multi-seed extension (n = 150 pooled per arm)</h3>
 
-We pooled three seeds at $50$ episodes per arm per seed ($n = 150$ pooled) and swept the MLP's training-set size by a factor of $100$ across $\\{200,\, 2{,}000,\, 20{,}000\\}$ random-policy transitions. Every other quantity is held fixed.
+We pooled three seeds at $50$ episodes per arm per seed ($n = 150$ pooled) and swept the MLP's training-set size by a factor of $100$ across $\{200,\, 2{,}000,\, 20{,}000\}$ random-policy transitions. Every other quantity is held fixed.
 
 | Train size | Val MSE | Oracle | Learned | Raw CPG | AC 95% CI | Verdict |
 |---:|---:|---:|---:|---:|---:|---|
@@ -110,7 +110,7 @@ We pooled three seeds at $50$ episodes per arm per seed ($n = 150$ pooled) and s
 | $2{,}000$ | $0.0233$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
 | $20{,}000$ | $0.0004$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
 
-Validation MSE drops by **~150 times** across the three cells; learned-arm planning success stays at **exactly zero**; CPG returns the same point estimate, the same CI, and the same verdict in every cell. The most parsimonious read separates *model-capacity* (refuted: the MLP is fitting the training distribution to $4\\!\\cdot\\!10^{-4}$ at $20\\,000$ transitions) from *data coverage* (consistent: random rollouts in Acrobot never reach the upright regime; the model is extrapolating during planning and its predictions are unreliable off the training manifold). Planner-side limitations (random-shooting MPC is not exhaustive search) and score-function approximation are not ruled out by this experiment; a second-axis sweep that varies the exploration policy under fixed data size would confirm coverage as the dominant driver.
+Validation MSE drops by **~150 times** across the three cells; learned-arm planning success stays at **exactly zero**; CPG returns the same point estimate, the same CI, and the same verdict in every cell. The most parsimonious read separates *model-capacity* (refuted: the MLP is fitting the training distribution to $4\!\cdot\!10^{-4}$ at $20\,000$ transitions) from *data coverage* (consistent: random rollouts in Acrobot never reach the upright regime; the model is extrapolating during planning and its predictions are unreliable off the training manifold). Planner-side limitations (random-shooting MPC is not exhaustive search) and score-function approximation are not ruled out by this experiment; a second-axis sweep that varies the exploration policy under fixed data size would confirm coverage as the dominant driver.
 
 The recommended remediation is to change the **data-collection policy** (energy-aware exploration, relabelled trajectories) -- and to consider a stronger planner -- not to grow the model.
 
