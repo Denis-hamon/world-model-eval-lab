@@ -181,17 +181,16 @@ world-model-eval-lab/
 - **v0.12**: **first published-world-model adapter shipped** (TD-MPC2). `src/wmel/adapters/tdmpc2_adapter.py` pairs TD-MPC2's encoder + latent dynamics with a small post-hoc obs decoder to expose a `(state, action) -> next_state` callable compatible with `TabularWorldModelPlanner`. *Result at n = 10, seed 0*: oracle 0.30, TD-MPC2 dynamics 0.00, MLP-on-TD-MPC2-data 0.00, CPG = +0.300 with AC CI `[-0.06, +0.56]` and verdict `INCONCLUSIVE` in all three arms - *despite* the coverage axis moving (random 0% upright → TD-MPC2 10.6%) and MLP val MSE dropping 5x. The framework correctly refused to convict "coverage alone" as the diagnosis.
 - **v0.13**: **stronger planner + pooled-150** test of the v0.12 result. `src/wmel/adapters/cem_planner.py` plugs a Cross-Entropy Method MPC into the same dynamics contract. Under CEM, the oracle's success rate triples (`0.30 → 0.90`), *both* learned arms stay at `0/10`, and CPG opens to `+0.900` (CI `[+0.49, +1.01]`, `MODEL BOTTLENECK`). Pooled across three seeds at n = 150 per arm tightens this to CPG `+0.880`, CI `[+0.814, +0.923]`, half-width `0.054`. The gap is a dynamics-quality bottleneck the planner cannot close. Paper Section 5.8 "Robustness".
 - **v0.14**: **in-episode perturbation robustness**. `experiments/dmc_acrobot/perturbation_cpg.py` sweeps `DropNextActions(k)` at $k \in \{0, 1, 5\}$ on the same three CEM arms. The `MODEL BOTTLENECK` verdict survives every cell. v0.14.1 adds the paper's first two figures (CPG-vs-data twin axis and uprightness coverage histogram). Paper Section 5.9.
-- **v0.15** (current): **cross-environment validation**. `src/wmel/envs/dmc_cartpole.py` + a four-arm CPG matrix on DMC Cartpole-swingup, three seeds pooled to n=30 per arm at TD-MPC2 `model_size = 5`, 10⁶ env steps. `MODEL BOTTLENECK` verdict reproduces in every cell on a task with a much higher oracle baseline (0.5-0.9 depending on planner). First non-trivial learned-arm successes in the paper: TD-MPC2 dynamics reaches `0.200` under random-shooting and `0.133` under CEM. The metric tracks gap magnitude, not just gap presence. Planner-capacity asymmetry across envs: random-shooting outperforms CEM on Cartpole's oracle, inverting the Acrobot pattern. Paper Section 5.10 + Figure 3.
+- **v0.15** (current): **cross-environment validation**. `src/wmel/envs/dmc_cartpole.py` + a four-arm CPG matrix on DMC Cartpole-swingup at TD-MPC2 `model_size = 5` AND `model_size = 1`, three seeds pooled to n=30 per arm, 10⁶ env steps each. At `size = 5`, `MODEL BOTTLENECK` reproduces in all four cells; at `size = 1`, three of four cells stay at `MODEL BOTTLENECK` but the CEM × TD-MPC2 cell flips to **`INCONCLUSIVE`** (learned `0.533` vs oracle `0.500`, CPG `-0.033`, AC CI `[-0.28, +0.21]`) — first moderate-n `INCONCLUSIVE` verdict in the paper. First non-trivial learned-arm successes in the paper (`0.200`-`0.533` depending on planner/capacity). Planner-capacity asymmetry across envs: random-shooting outperforms CEM on Cartpole's oracle, inverting the Acrobot pattern. Paper Section 5.10 + Figures 3 and 4.
 
 ## What's next
 
-The GPU experiment queue lives in [`experiments/GPU_ROADMAP.md`](experiments/GPU_ROADMAP.md). Five tasks queued in priority order:
+The GPU experiment queue lives in [`experiments/GPU_ROADMAP.md`](experiments/GPU_ROADMAP.md). Task 1 (Cartpole size=1) is done and incorporated in v0.15. Four tasks remain:
 
-1. **Cartpole size=1 seed 0 + pooled n=30** — finishes the half-shipped v0.15 size=1 cell.
-2. **Horizon-of-planning ablation under CEM** — attributes the dynamics bottleneck to compounding error vs. distribution mismatch.
-3. **Cross-env to DMC Reacher-easy** — third env after Acrobot + Cartpole.
-4. **Cartpole size=5 pooled-150** — CI tightening (cosmetic).
-5. **Observation-noise perturbation** — closes the §5.9 flagged limitation.
+1. **Horizon-of-planning ablation under CEM** — attributes the dynamics bottleneck to compounding error vs. distribution mismatch.
+2. **Cross-env to DMC Reacher-easy** — third env after Acrobot + Cartpole.
+3. **Cartpole size=5 pooled-150** — CI tightening (cosmetic).
+4. **Observation-noise perturbation** — closes the §5.9 flagged limitation.
 
 ## Paper
 

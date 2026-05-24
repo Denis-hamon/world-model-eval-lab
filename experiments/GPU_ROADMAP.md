@@ -17,38 +17,15 @@ When you pick up a task, change its `Status:` from `queued` to `in_flight` in th
 
 ---
 
-## Task 1 — Cartpole size=1 seed 0 + pooled n=30
+## Task 1 — Cartpole size=1 seed 0 + pooled n=30 [DONE before v0.15]
 
-**Why**: v0.15 §5.10 reports Cartpole at size=5 fully pooled (n=30) but size=1 only has seeds 1+2 landed (n=20, no pooled JSON). Completing seed 0 plus producing the size=1 pooled-30 JSONs closes the capacity symmetry the table currently lacks.
+**Status**: **done**. The size=1 pooled-30 cells landed on `main` between v0.14.1 and v0.15. Result JSONs:
 
-**Branch**: `phase-5n-cartpole-size1-seed0`
-**Effort**: ~6-10 h GPU
-**Priority**: HIGH (smallest delta, finishes a half-shipped story)
-**Status**: queued
+- `results/dmc_cartpole/tdmpc2_cpg_pooled.json`
+- `results/dmc_cartpole/cem_cpg_pooled.json`
+- `results/dmc_cartpole/coverage_mlp_on_tdmpc2_cpg_pooled.json`
 
-**Steps**:
-
-1. On the VM, `git pull` so you have the v0.15 baseline.
-2. Reuse `experiments/dmc_cartpole/tdmpc2_cpg.py` to train TD-MPC2 with `model_size=1`, seed `0`, `1_000_000` env steps. The script's existing `--seed` and `--model-size` flags should already cover this.
-3. Run the per-seed CPG arms for seed 0 at size=1:
-   - `python -m experiments.dmc_cartpole.tdmpc2_cpg --seed 0 --model-size 1 ...`
-   - `python -m experiments.dmc_cartpole.cem_cpg --seed 0 --model-size 1 ...`
-   - `python -m experiments.dmc_cartpole.coverage_mlp_on_tdmpc2 --seed 0 --model-size 1 ...`
-4. Pool to n=30 with `experiments/dmc_cartpole/pool_cpg.py` across seeds 0+1+2.
-
-**Expected outputs** (committed to main via PR):
-
-- `results/dmc_cartpole/tdmpc2_cpg_seed0.json`
-- `results/dmc_cartpole/cem_cpg_seed0.json`
-- `results/dmc_cartpole/coverage_mlp_on_tdmpc2_cpg_seed0.json`
-- `results/dmc_cartpole/tdmpc2_cpg_pooled.json` (size=1, no `size5_` suffix)
-- `results/dmc_cartpole/cem_cpg_pooled.json` (size=1)
-- `results/dmc_cartpole/coverage_mlp_on_tdmpc2_cpg_pooled.json` (size=1)
-
-**Paper update**:
-
-- Extend §5.10's table or add a paragraph noting the size=1 cell with the same four-arm structure at n=30.
-- The expected qualitative result is the same `MODEL BOTTLENECK` verdict at lower model capacity, with possibly larger gaps (size=1 should fit the dynamics worse).
+The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:crossenv_size1}) as part of the v0.15 release. **Headline finding**: the CEM~$\times$~TD-MPC2 cell flips to `INCONCLUSIVE` -- learned arm reaches $0.533$ vs an oracle at $0.500$, raw CPG $-0.033$, AC CI $[-0.28, +0.21]$. First moderate-$n$ `INCONCLUSIVE` verdict in the paper; smaller-capacity TD-MPC2 closes the gap on Cartpole's CEM oracle that the larger-capacity model does not. Do not re-run.
 
 ---
 
@@ -64,7 +41,7 @@ When you pick up a task, change its `Status:` from `queued` to `in_flight` in th
 **Steps**:
 
 1. Extend `experiments/dmc_acrobot/cem_cpg.py` to accept `--horizon` (default 15). Or write a new `cem_cpg_horizon_sweep.py` that loops over horizons.
-2. For each `H ∈ {1, 5, 10, 15, 20, 30}`, run the same setup as the v0.13 pooled-150 cell on the two CEM arms (`mlp_on_tdmpc2_data` and `tdmpc2`). Reuse the existing TD-MPC2 checkpoint at `model_size=5` on Acrobot, do not retrain.
+2. For each `H ∈ {1, 5, 10, 15, 20, 30}`, run the same setup as the v0.13 pooled-150 cell on the two CEM arms (`mlp_on_tdmpc2_data` and `tdmpc2`). Reuse the existing TD-MPC2 checkpoint at `model_size=1` on Acrobot (the v0.12 / v0.13 checkpoint, see `experiments/dmc_acrobot/tdmpc2_cpg.py:137`), do not retrain.
 3. Pool to n=150 per cell (3 seeds × 50 episodes).
 4. Compute CPG per cell with the existing `wmel.metrics.counterfactual_planning_gap`.
 
@@ -155,9 +132,8 @@ When you pick up a task, change its `Status:` from `queued` to `in_flight` in th
 
 ## Picking the next task
 
-If the GPU is free right now, the order is **Task 1 → Task 2 → Task 5 → Task 3 → Task 4**.
+If the GPU is free right now, the order is **Task 2 → Task 5 → Task 3 → Task 4** (Task 1 is done).
 
-- Task 1 finishes a half-shipped story (v0.15) and is cheap.
 - Task 2 closes the largest open methodological hole in the paper.
 - Task 5 closes a self-flagged limitation cheaply.
 - Task 3 extends generality (needs new env adapter, real work).
