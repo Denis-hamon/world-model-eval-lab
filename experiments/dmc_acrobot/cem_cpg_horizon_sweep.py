@@ -51,14 +51,11 @@ for _entry in (_REPO_ROOT, _REPO_ROOT / "src", _TDMPC2_PKG):
     if _entry.is_dir() and s not in sys.path:
         sys.path.insert(0, s)
 
-from wmel.adapters.cem_planner import CEMPlanner
 from wmel.adapters.mlp_world_model import (
     acrobot_upright_score,
     collect_random_rollouts,
-    learned_dynamics,
     train_world_model,
 )
-from wmel.adapters.tdmpc2_adapter import make_tdmpc2_dynamics
 from wmel.benchmark_runner import BenchmarkRunner
 from wmel.envs.dmc_acrobot import DEFAULT_DISCRETE_LEVELS, DMCAcrobotEnv, make_acrobot_oracle_dynamics
 from wmel.metrics import compute_scorecard, counterfactual_planning_gap, cpg_verdict
@@ -68,6 +65,12 @@ from experiments.dmc_acrobot.coverage_mlp_on_tdmpc2 import (
     _collect_tdmpc2_rollouts,
     _coverage_stats,
     _load_tdmpc2_agent,
+)
+from experiments.dmc_acrobot._batched_cem import (
+    BatchedCEMPlanner,
+    make_mlp_batched_dynamics,
+    make_oracle_batched_dynamics,
+    make_tdmpc2_batched_dynamics,
 )
 
 
@@ -86,6 +89,7 @@ def _parse_args() -> argparse.Namespace:
                    help="Comma-separated list of plan_horizon values (default 1,5,10,15,20,30).")
     p.add_argument("--episodes", type=int, default=50, help="Episodes per (seed, H, arm) cell. Default 50 -> pooled 150 across 3 seeds.")
     p.add_argument("--n-mlp-transitions", type=int, default=20_000)
+    p.add_argument("--output", default=None, help="Output JSON path (default results/dmc_acrobot/cem_cpg_horizon_sweep.json). Use a unique value when running parallel partial sweeps; merge via experiments.dmc_acrobot.pool_horizon_sweep.")
     return p.parse_args()
 
 
@@ -117,7 +121,7 @@ def _full_cfg(n_mlp_transitions: int, episodes: int) -> dict:
 
 def _run_cem_arm(*, name: str, dynamics, cfg: dict, plan_horizon: int, seed: int, levels):
     env_template = DMCAcrobotEnv(discrete_levels=levels)
-    planner = CEMPlanner(
+    planner = BatchedCEMPlanner(
         dynamics=dynamics,
         action_space=env_template.action_space,
         num_iterations=cfg["cem_iters"],
@@ -236,23 +240,32 @@ def main() -> None:
             seed=s, cfg=cfg, levels=levels, use_tdmpc2_data=use_tdmpc2_data, agent_loaded=agent_loaded,
         )
 
+        # Batched dynamics: build once per seed, reuse across all H values.
+        # The TD-MPC2 model is loaded once into the batched adapter.
+        oracle_dyn_batched = make_oracle_batched_dynamics(make_acrobot_oracle_dynamics())
+        mlp_dyn_batched = make_mlp_batched_dynamics(mlp_model, action_space)
+        if use_tdmpc2_data:
+            tdmpc2_dyn_batched = make_tdmpc2_batched_dynamics(TDMPC2_DYNAMICS_PATH, device="cpu")
+        else:
+            tdmpc2_dyn_batched = None
+
         per_H: dict[int, dict] = {}
         for H in horizons:
             print(f"\n--- SEED {s}, H={H} ---")
             t0 = time.time()
             oracle_results, oracle_card = _run_cem_arm(
-                name="oracle dynamics", dynamics=make_acrobot_oracle_dynamics(),
+                name="oracle dynamics", dynamics=oracle_dyn_batched,
                 cfg=cfg, plan_horizon=H, seed=s, levels=levels,
             )
             mlp_results, mlp_card = _run_cem_arm(
                 name=f"MLP on {'tdmpc2' if use_tdmpc2_data else 'random'} data",
-                dynamics=learned_dynamics(mlp_model, action_space),
+                dynamics=mlp_dyn_batched,
                 cfg=cfg, plan_horizon=H, seed=s, levels=levels,
             )
-            if use_tdmpc2_data:
+            if tdmpc2_dyn_batched is not None:
                 tdmpc2_results, tdmpc2_card = _run_cem_arm(
                     name="TD-MPC2 dynamics",
-                    dynamics=make_tdmpc2_dynamics(TDMPC2_DYNAMICS_PATH, device="cpu"),
+                    dynamics=tdmpc2_dyn_batched,
                     cfg=cfg, plan_horizon=H, seed=s, levels=levels,
                 )
             else:
@@ -359,9 +372,10 @@ def main() -> None:
         ],
         "cells": cells,
     }
-    JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
-    JSON_PATH.write_text(json.dumps(report, indent=2) + "\n")
-    print(f"\nWrote {JSON_PATH.relative_to(_REPO_ROOT)}")
+    out_path = Path(args.output) if args.output else JSON_PATH
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(report, indent=2) + "\n")
+    print(f"\nWrote {out_path}")
 
 
 if __name__ == "__main__":
