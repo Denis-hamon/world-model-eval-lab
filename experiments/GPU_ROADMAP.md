@@ -36,7 +36,7 @@ The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:cros
 **Branch**: `phase-5o-horizon-cem`
 **Effort**: ~12-24 h GPU
 **Priority**: HIGH (highest scientific payoff per GPU-hour)
-**Status**: queued
+**Status**: done (PR pending)
 
 **Steps**:
 
