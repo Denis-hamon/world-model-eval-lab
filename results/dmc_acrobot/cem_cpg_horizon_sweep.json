@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.15.0",
+  "generated_at": "2026-05-28T06:34:09+00:00",
+  "environment": "dmc_acrobot_swingup",
+  "metric": "counterfactual_planning_gap",
+  "planner": "cem",
+  "sweep_axis": "plan_horizon",
+  "mlp_data_source": "tdmpc2",
+  "tdmpc2_agent_seed_held_fixed": true,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "horizons": [
+    1,
+    5,
+    10,
+    15,
+    20,
+    30
+  ],
+  "episodes_per_cell": 50,
+  "merged_from": [
+    "results/dmc_acrobot/cem_cpg_horizon_sweep_seed0.json",
+    "results/dmc_acrobot/cem_cpg_horizon_sweep_seed1.json",
+    "results/dmc_acrobot/cem_cpg_horizon_sweep_seed2.json"
+  ],
+  "cells": [
+    {
+      "plan_horizon": 1,
+      "pooled_n_per_arm": 150,
+      "cpgs": {
+        "mlp_on_data": {
+          "oracle_success_rate": 1.0,
+          "learned_success_rate": 0.013333333333333334,
+          "gap": 0.9866666666666667,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.9481077006336744,
+          "gap_ci_high": 0.9992607204189572,
+          "verdict": "MODEL BOTTLENECK"
+        },
+        "tdmpc2": {
+          "oracle_success_rate": 1.0,
+          "learned_success_rate": 0.8866666666666667,
+          "gap": 0.11333333333333329,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.058892223760372134,
+          "gap_ci_high": 0.1647919867659438,
+          "verdict": "MODEL BOTTLENECK"
+        }
+      }
+    },
+    {
+      "plan_horizon": 5,
+      "pooled_n_per_arm": 150,
+      "cpgs": {
+        "mlp_on_data": {
+          "oracle_success_rate": 1.0,
+          "learned_success_rate": 0.03333333333333333,
+          "gap": 0.9666666666666667,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.9204295370846541,
+          "gap_ci_high": 0.9874651997574512,
+          "verdict": "MODEL BOTTLENECK"
+        },
+        "tdmpc2": {
+          "oracle_success_rate": 1.0,
+          "learned_success_rate": 0.0,
+          "gap": 1.0,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.9686662790775274,
+          "gap_ci_high": 1.0050179314487884,
+          "verdict": "MODEL BOTTLENECK"
+        }
+      }
+    },
+    {
+      "plan_horizon": 10,
+      "pooled_n_per_arm": 150,
+      "cpgs": {
+        "mlp_on_data": {
+          "oracle_success_rate": 1.0,
+          "learned_success_rate": 0.0,
+          "gap": 1.0,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.9686662790775274,
+          "gap_ci_high": 1.0050179314487884,
+          "verdict": "MODEL BOTTLENECK"
+        },
+        "tdmpc2": {
+          "oracle_success_rate": 1.0,
+          "learned_success_rate": 0.0,
+          "gap": 1.0,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.9686662790775274,
+          "gap_ci_high": 1.0050179314487884,
+          "verdict": "MODEL BOTTLENECK"
+        }
+      }
+    },
+    {
+      "plan_horizon": 15,
+      "pooled_n_per_arm": 150,
+      "cpgs": {
+        "mlp_on_data": {
+          "oracle_success_rate": 0.88,
+          "learned_success_rate": 0.0,
+          "gap": 0.88,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.8142962936086379,
+          "gap_ci_high": 0.9225458116545201,
+          "verdict": "MODEL BOTTLENECK"
+        },
+        "tdmpc2": {
+          "oracle_success_rate": 0.88,
+          "learned_success_rate": 0.0,
+          "gap": 0.88,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.8142962936086379,
+          "gap_ci_high": 0.9225458116545201,
+          "verdict": "MODEL BOTTLENECK"
+        }
+      }
+    },
+    {
+      "plan_horizon": 20,
+      "pooled_n_per_arm": 150,
+      "cpgs": {
+        "mlp_on_data": {
+          "oracle_success_rate": 0.8933333333333333,
+          "learned_success_rate": 0.0,
+          "gap": 0.8933333333333333,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.8298517539001626,
+          "gap_ci_high": 0.9333061408366796,
+          "verdict": "MODEL BOTTLENECK"
+        },
+        "tdmpc2": {
+          "oracle_success_rate": 0.8933333333333333,
+          "learned_success_rate": 0.0,
+          "gap": 0.8933333333333333,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.8298517539001626,
+          "gap_ci_high": 0.9333061408366796,
+          "verdict": "MODEL BOTTLENECK"
+        }
+      }
+    },
+    {
+      "plan_horizon": 30,
+      "pooled_n_per_arm": 150,
+      "cpgs": {
+        "mlp_on_data": {
+          "oracle_success_rate": 0.2,
+          "learned_success_rate": 0.0,
+          "gap": 0.2,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.13203516213495028,
+          "gap_ci_high": 0.2627016799703129,
+          "verdict": "MODEL BOTTLENECK"
+        },
+        "tdmpc2": {
+          "oracle_success_rate": 0.2,
+          "learned_success_rate": 0.0,
+          "gap": 0.2,
+          "n_episodes_oracle": 150,
+          "n_episodes_learned": 150,
+          "gap_ci_low": 0.13203516213495028,
+          "gap_ci_high": 0.2627016799703129,
+          "verdict": "MODEL BOTTLENECK"
+        }
+      }
+    }
+  ]
+}

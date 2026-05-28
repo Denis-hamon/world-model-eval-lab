@@ -48,11 +48,17 @@ Score = Callable[[Observation, Observation], float]
 class BatchedCEMPlanner(LeWMAdapterStub):
     """Cross-Entropy Method MPC with batched dynamics steps.
 
-    Drop-in replacement for `wmel.adapters.cem_planner.CEMPlanner` whose
-    `dynamics` callable has the batched signature `(states, actions) ->
-    next_states`. Given a deterministic dynamics, the per-state outputs
-    are identical to the unbatched CEMPlanner at the same `seed`,
-    num_iterations, num_samples, plan_horizon and smoothing.
+    `plan()`-compatible analogue of `wmel.adapters.cem_planner.CEMPlanner`
+    whose `dynamics` callable has the batched signature
+    `(states, actions) -> next_states`. Given a deterministic dynamics,
+    the planned action sequence is identical to the unbatched CEMPlanner
+    at the same `seed`, num_iterations, num_samples, plan_horizon and
+    smoothing (sample-major, time-major RNG order; same scoring and
+    elite-refit rules).
+
+    `rollout()` is intentionally not implemented — this class is only used
+    by `cem_cpg_horizon_sweep.py` via `plan()`, and the BenchmarkRunner
+    never calls `rollout()` on the planner.
     """
 
     def __init__(
