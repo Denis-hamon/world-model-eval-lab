@@ -114,7 +114,7 @@ The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:cros
 **Branch**: `phase-5r-obs-noise-perturbation`
 **Effort**: ~6-12 h GPU + adapter work
 **Priority**: NICE TO HAVE (closes a flagged limitation)
-**Status**: queued
+**Status**: in_flight
 
 **Steps**:
 
