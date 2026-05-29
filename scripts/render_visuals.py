@@ -1181,6 +1181,107 @@ def render_paper_fig4_cartpole_capacity() -> str:
     )
 
 
+def render_paper_fig5_power_detectability() -> str:
+    """Figure 5: CPG verdict detectability map (HTML mirror of the TikZ fig).
+
+    Log-x curve = smallest oracle-minus-learned success-rate gap whose AC CI
+    clears zero at a given per-arm n (oracle fixed at 0.94). Region below the
+    curve is INCONCLUSIVE (shaded); above is DECIDABLE. Two annotated points
+    at n=100: the 0.94-vs-0.92 near-tie (in the grey zone) and the 0.94-vs-0.78
+    gap (decidable). Boundary baked from wmel.metrics.detectable_gap_at_n.
+    """
+    import math
+
+    W, H = 640, 400
+    L, R, T, B = 70, 30, 30, 56
+    plot_w = W - L - R
+    plot_h = H - T - B
+
+    # (n, min detectable gap) boundary, from detectable_gap_at_n(0.94, 0.94-g, n).
+    boundary = [
+        (10, 0.415), (20, 0.260), (30, 0.195), (50, 0.140), (75, 0.110),
+        (100, 0.090), (150, 0.070), (200, 0.060), (300, 0.045), (500, 0.035),
+        (1000, 0.025),
+    ]
+    n_min, n_max = 10, 1000
+    y_max = 0.45
+
+    def x_of(n: float) -> float:
+        t = math.log10(n / n_min) / math.log10(n_max / n_min)
+        return L + t * plot_w
+
+    def y_of(g: float) -> float:
+        return T + (1 - g / y_max) * plot_h
+
+    parts = [_svg_open(W, H, ' class="paper-fig paper-fig-5"')]
+    parts.append(f'<rect width="{W}" height="{H}" fill="{_FIG_PALETTE["bg"]}"/>')
+    parts.append(
+        f'<text x="{W // 2}" y="20" font-size="14" font-weight="600" '
+        f'fill="{_FIG_PALETTE["ink"]}" text-anchor="middle">'
+        f'Verdict detectability map (oracle rate 0.94)</text>'
+    )
+    # y gridlines + ticks
+    for g in (0.0, 0.1, 0.2, 0.3, 0.4):
+        y = y_of(g)
+        parts.append(_gridline(L, y, W - R, y))
+        parts.append(_tick_text(L - 8, y + 4, f"{g:.1f}", anchor="end"))
+    # x ticks (log)
+    for n in (10, 30, 100, 300, 1000):
+        x = x_of(n)
+        parts.append(_axis_line(x, T + plot_h, x, T + plot_h + 5))
+        parts.append(_tick_text(x, T + plot_h + 19, str(n), anchor="middle"))
+    parts.append(_axis_line(L, T, L, T + plot_h))
+    parts.append(_axis_line(L, T + plot_h, W - R, T + plot_h))
+    parts.append(
+        f'<text x="{L + plot_w // 2}" y="{H - 10}" font-size="11" '
+        f'fill="{_FIG_PALETTE["muted"]}" text-anchor="middle">Episodes per arm n (log scale)</text>'
+    )
+    parts.append(
+        f'<text x="16" y="{T + plot_h // 2}" font-size="11" fill="{_FIG_PALETTE["muted"]}" '
+        f'text-anchor="middle" transform="rotate(-90 16 {T + plot_h // 2})">Success-rate gap (oracle - learned)</text>'
+    )
+    # INCONCLUSIVE region: polygon under the boundary down to y=0 (axis).
+    pts = [(x_of(n), y_of(g)) for n, g in boundary]
+    y_axis = y_of(0.0)
+    poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    poly += f" {pts[-1][0]:.1f},{y_axis:.1f} {pts[0][0]:.1f},{y_axis:.1f}"
+    parts.append(f'<polygon points="{poly}" fill="#9aa3ad" fill-opacity="0.18"/>')
+    # Boundary curve.
+    parts.append(
+        f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" '
+        f'fill="none" stroke="{_FIG_PALETTE["blue"]}" stroke-width="2"/>'
+    )
+    # Region labels.
+    parts.append(
+        f'<text x="{x_of(320):.1f}" y="{y_of(0.05):.1f}" font-size="11" '
+        f'fill="{_FIG_PALETTE["muted"]}" text-anchor="middle">INCONCLUSIVE</text>'
+    )
+    parts.append(
+        f'<text x="{x_of(45):.1f}" y="{y_of(0.34):.1f}" font-size="11" '
+        f'fill="{_FIG_PALETTE["blue_dark"]}">DECIDABLE</text>'
+    )
+    # Annotated leaderboard points at n=100.
+    xp = x_of(100)
+    parts.append(
+        f'<polygon points="{xp:.1f},{y_of(0.02) - 5:.1f} {xp - 5:.1f},{y_of(0.02) + 4:.1f} '
+        f'{xp + 5:.1f},{y_of(0.02) + 4:.1f}" fill="{_FIG_PALETTE["red"]}" stroke="{_FIG_PALETTE["red_dark"]}"/>'
+    )
+    parts.append(
+        f'<text x="{xp + 9:.1f}" y="{y_of(0.02) + 4:.1f}" font-size="10" '
+        f'fill="{_FIG_PALETTE["red_dark"]}">near-tie 0.94 vs 0.92</text>'
+    )
+    parts.append(
+        f'<rect x="{xp - 4:.1f}" y="{y_of(0.16) - 4:.1f}" width="8" height="8" '
+        f'fill="#3a8a4f" stroke="#256634"/>'
+    )
+    parts.append(
+        f'<text x="{xp + 9:.1f}" y="{y_of(0.16) + 4:.1f}" font-size="10" '
+        f'fill="#256634">gap 0.94 vs 0.78</text>'
+    )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def render_favicon() -> str:
     """A 32x32 square favicon: blue rounded square with 'wm' lettering."""
     parts = [
@@ -1240,6 +1341,8 @@ def main() -> None:
     print(f"wrote {ASSETS / 'paper_fig3_cross_env.svg'}")
     (ASSETS / "paper_fig4_cartpole_capacity.svg").write_text(render_paper_fig4_cartpole_capacity() + "\n")
     print(f"wrote {ASSETS / 'paper_fig4_cartpole_capacity.svg'}")
+    (ASSETS / "paper_fig5_power_detectability.svg").write_text(render_paper_fig5_power_detectability() + "\n")
+    print(f"wrote {ASSETS / 'paper_fig5_power_detectability.svg'}")
 
 
 if __name__ == "__main__":

@@ -379,6 +379,10 @@ The same arithmetic audits a point-estimate leaderboard. Consider two systems re
 
 A traced decision closes the loop. The Cartpole \texttt{model\_size = 1}, CEM, TD-MPC2 cell returned \textsc{inconclusive} at $n = 30$ (half-width $0.245$). The table prescribes the per-arm count that would shrink the interval to a target precision and let the gate commit; reporting that number, rather than silently presenting an under-powered verdict as if it were decisive, is what \emph{decision-grade} is meant to denote.
 
+\input{figures/power_detectability.tex}
+
+Figure~\ref{fig:power_detectability} draws the same fact as a decision boundary: at a fixed oracle rate, the smallest success-rate gap the verdict can commit on shrinks with $n$, and a reported ranking sits on one side of that boundary or the other. The near-tie at $n = 100$ falls inside the \textsc{inconclusive} region; only a wider gap, or a larger $n$, crosses into the decidable region.
+
 \section{Discussion and Limitations}
 
 The empirical demonstration is intentionally narrow: one environment, one learned model, one planner, one seed, ten episodes per arm. The methodological contribution -- a packaged CPG with an Agresti--Caffo CI and a gated verdict -- is decoupled from any of those choices and applies wherever an oracle dynamics is available (so: simulated environments). On hardware-in-the-loop or physical environments the metric is undefined; surrogate CPG variants (e.g.\ a higher-fidelity model standing in for the oracle) are future work.

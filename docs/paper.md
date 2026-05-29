@@ -11,7 +11,7 @@ next:
 ---
 
 <div class="paper-header">
-  <p class="paper-eyebrow">Short paper &middot; v0.16.1</p>
+  <p class="paper-eyebrow">Short paper &middot; v0.16.2</p>
   <h1 class="paper-title">Counterfactual Planning Gap</h1>
   <p class="paper-subtitle">A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation</p>
   <p class="paper-author">Denis Hamon &nbsp;&middot;&nbsp; Independent &nbsp;&middot;&nbsp; <a href="mailto:denis.hamon1@gmail.com">denis.hamon1@gmail.com</a></p>
@@ -329,6 +329,11 @@ The verdict gate turns from a post-hoc label into a planning tool once read forw
 </table>
 
 The same arithmetic audits a point-estimate leaderboard. Two systems reported at $0.94$ and $0.92$ over $n = 100$ per arm with no interval — a plausible top-of-table near-tie — yield an AC interval on the difference with half-width $0.074$ that **straddles zero**: the ranking gap is statistically indistinguishable from noise at the sample size used, and separating them to half-width $0.05$ needs $n = 209$ per arm. A wider gap ($0.94$ vs $0.78$) is decidable at $n = 100$; a mid-table near-tie ($0.78$ vs $0.75$) is not. This is what a leaderboard cannot carry: not which number is larger, but whether the ordering survives its own sample size. Reproduced by `python -m experiments.power_analysis`; numbers from [`results/power_analysis.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/power_analysis.json).
+
+<figure>
+  <img src="assets/paper_fig5_power_detectability.svg" alt="Figure 5: verdict detectability map. A log-x curve of the smallest oracle-minus-learned success-rate gap whose Agresti-Caffo CI clears zero at a given per-arm n, for oracle rate 0.94. Below the curve is an INCONCLUSIVE region; above is DECIDABLE. A 0.94-vs-0.92 near-tie at n=100 sits in the INCONCLUSIVE region; a 0.94-vs-0.78 gap is decidable at the same n." />
+  <figcaption><strong>Figure 5.</strong> The same fact as a decision boundary. At a fixed oracle rate (0.94), the smallest gap the verdict can commit on shrinks with $n$. A leaderboard near-tie ($0.94$ vs $0.92$) reported at $n = 100$ falls inside the `INCONCLUSIVE` region; a wider gap ($0.94$ vs $0.78$) is decidable at the same $n$. A point estimate cannot show which side of this boundary a reported ranking sits on.</figcaption>
+</figure>
 
 ## 5. Discussion and Limitations
 

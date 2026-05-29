@@ -40,7 +40,7 @@ from wmel.metrics import (
     required_n_for_half_width,
 )
 
-__version__ = "0.16.1"
+__version__ = "0.16.2"
 
 __all__ = [
     "BenchmarkEnvironment",
