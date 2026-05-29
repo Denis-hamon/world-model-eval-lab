@@ -67,7 +67,7 @@ The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:cros
 **Branch**: `phase-5t-reacher-training`
 **Effort**: ~3-4 wall-days on 2x L40S (6 TD-MPC2 trainings dominate)
 **Priority**: HIGH (the multi-env claim)
-**Status**: queued
+**Status**: in_flight
 
 **ALREADY DONE on main (do NOT redo):**
 
