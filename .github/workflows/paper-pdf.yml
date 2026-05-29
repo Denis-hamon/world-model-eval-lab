@@ -79,7 +79,12 @@ jobs:
           retention-days: 90
 
       - name: Commit PDF and .bbl back to paper/
-        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        # Only commit-back when the built ref IS main. A workflow_dispatch on a
+        # feature branch must NOT push that branch's PDF to main (it would
+        # either be rejected, as happened, or silently fast-forward main to the
+        # branch tip). On a manual dispatch on main, github.ref is still
+        # refs/heads/main, so the intended case keeps working.
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name  "paper-pdf-bot"
           git config user.email "noreply@github.com"
