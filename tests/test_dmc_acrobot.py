@@ -195,3 +195,54 @@ def test_acrobot_upright_score_layout_locked_in() -> None:
     assert acrobot_upright_score(upright) < acrobot_upright_score(hanging)
     assert acrobot_upright_score(upright) == pytest.approx(-2.0)
     assert acrobot_upright_score(hanging) == pytest.approx(2.0)
+
+
+def test_obs_noise_std_zero_is_no_op() -> None:
+    """obs_noise_std=0 (default) must produce bit-identical observations
+    to the unhooked path. Locks in backwards compatibility for every
+    pre-v0.16 caller."""
+    env_clean = DMCAcrobotEnv()
+    env_noised = DMCAcrobotEnv(obs_noise_std=0.0, obs_noise_seed=42)
+    obs_clean = env_clean.reset()
+    obs_noised = env_noised.reset()
+    assert obs_clean == obs_noised
+    # Same action sequence must produce same observations.
+    a = env_clean.action_space[0]
+    for _ in range(5):
+        next_clean = env_clean.step(a)
+        next_noised = env_noised.step(a)
+        assert next_clean == next_noised
+
+
+def test_obs_noise_std_nonzero_perturbs_observations() -> None:
+    """With obs_noise_std>0, observed states drift from the clean
+    physics state by approximately Gaussian noise. Verifies the noise
+    is actually applied (not silently dropped) and that the seed makes
+    runs reproducible."""
+    sigma = 0.05
+    env_clean = DMCAcrobotEnv()
+    env_noised = DMCAcrobotEnv(obs_noise_std=sigma, obs_noise_seed=0)
+    env_noised_same_seed = DMCAcrobotEnv(obs_noise_std=sigma, obs_noise_seed=0)
+    env_noised_other_seed = DMCAcrobotEnv(obs_noise_std=sigma, obs_noise_seed=1)
+    obs_clean = env_clean.reset()
+    obs_a = env_noised.reset()
+    obs_b = env_noised_same_seed.reset()
+    obs_c = env_noised_other_seed.reset()
+    # Same seed -> bit-identical noise.
+    assert obs_a == obs_b
+    # Different seed -> different noise.
+    assert obs_a != obs_c
+    # Noise actually changes the observation.
+    assert obs_a != obs_clean
+    # Per-component drift is on the order of sigma (a 6-dim obs gives a
+    # very wide tolerance; we just check the noise is not silently zero).
+    drift = max(abs(a - c) for a, c in zip(obs_a, obs_clean))
+    assert drift > 1e-6
+    assert drift < 10 * sigma  # very generous, just to catch a runaway scale
+
+
+def test_obs_noise_std_negative_rejected() -> None:
+    """Negative noise stdev is nonsensical; constructor must reject it."""
+    import pytest as _pytest
+    with _pytest.raises(ValueError, match="obs_noise_std"):
+        DMCAcrobotEnv(obs_noise_std=-0.1)
