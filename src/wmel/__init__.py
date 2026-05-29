@@ -30,14 +30,17 @@ from wmel.report import (
 from wmel.metrics import (
     EpisodeResult,
     Scorecard,
+    ac_ci_half_width,
     action_success_rate,
     average_planning_latency_ms,
     average_steps_to_success,
     compute_scorecard,
+    detectable_gap_at_n,
     perturbation_recovery_rate,
+    required_n_for_half_width,
 )
 
-__version__ = "0.16.0"
+__version__ = "0.16.1"
 
 __all__ = [
     "BenchmarkEnvironment",
@@ -51,12 +54,15 @@ __all__ = [
     "Perturbation",
     "PlannerPolicy",
     "Scorecard",
+    "ac_ci_half_width",
     "action_success_rate",
     "average_planning_latency_ms",
     "average_steps_to_success",
     "compute_scorecard",
+    "detectable_gap_at_n",
     "horizon_sweep",
     "perturbation_recovery_rate",
+    "required_n_for_half_width",
     "print_horizon_sweep",
     "print_scorecard",
     "to_json_report",

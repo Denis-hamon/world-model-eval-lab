@@ -60,28 +60,34 @@ The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:cros
 
 ---
 
-## Task 3 — Cross-env to DMC Reacher-easy
+## Task 3 — Cross-env to DMC Reacher-easy [ADAPTER SHIPPED; TRAINING IS THE GPU WORK]
 
-**Why**: third env after Acrobot + Cartpole. Solidifies the "verdict generalizes across DMC tasks" claim. Reacher-easy is the obvious next pick because it shares the underactuated-control family but with a different actuator topology.
+**Why**: third env after Acrobot + Cartpole. This is the highest-value generality win for the paper: it tests whether the INCONCLUSIVE-to-MODEL-BOTTLENECK transition (the power-analysis thesis) reproduces on a structurally different task -- a 2-DOF reaching arm, not an underactuated swing-up, and the first 2-D-action env in the repo.
 
-**Branch**: `phase-5p-reacher`
-**Effort**: ~1-2 days GPU
-**Priority**: MEDIUM
+**Branch**: `phase-5t-reacher-training`
+**Effort**: ~3-4 wall-days on 2x L40S (6 TD-MPC2 trainings dominate)
+**Priority**: HIGH (the multi-env claim)
 **Status**: queued
 
-**Steps**:
+**ALREADY DONE on main (do NOT redo):**
 
-1. Write `src/wmel/envs/dmc_reacher.py` mirroring `dmc_cartpole.py`'s structure. Use `dm_control.suite.load('reacher', 'easy')`.
-2. Write `experiments/dmc_reacher/{tdmpc2,cem,coverage_mlp_on_tdmpc2,pool}_cpg.py` mirroring `dmc_cartpole/` exactly.
-3. Train TD-MPC2 with `model_size=5`, `1_000_000` env steps, seeds 0-2.
-4. Run the 4-arm CPG matrix, pool to n=30.
+- `src/wmel/envs/dmc_reacher.py` is shipped: `DMCReacherEnv` (6-D obs, 9-action discrete grid = 3 levels x 2 joints), `make_reacher_oracle_dynamics()` (oracle VERIFIED to reproduce `env.step` to 5.6e-17 over a 50-step rollout -- exact reconstruction, no atan2 loss; target recovered from `to_target`), and `reacher_reach_score` (negative finger-to-target distance, the exact quantity the DMC reward thresholds). Regression test in `tests/test_dmc_reacher.py`.
+- The oracle and env adapter need NO further work. Trust the regression test.
 
-**Expected outputs**: same structure as `results/dmc_cartpole/`, replacing `cartpole` with `reacher`.
+**Remaining GPU work (this task):**
 
-**Paper update**:
+1. Train TD-MPC2 on `reacher`/`easy`, `model_size=1`, `1_000_000` env steps, seeds {0,1,2} = 3 runs. (Drop `model_size=5` unless time permits -- size=1 is the atlas-relevant regime, per the plan's cut order. Run 2 seeds in parallel across the 2 L40S.)
+2. Write `experiments/dmc_reacher/{tdmpc2_cpg,cem_cpg,pool_cpg}.py` by copying the `experiments/dmc_cartpole/` scripts and changing the env import to `dmc_reacher` + the score to `reacher_reach_score`. NOTE the action is 2-D: the random-shooting / CEM planners must sample from the 9-action grid (`DMCReacherEnv().action_space`), not a 5-level 1-D set. Verify the planner handles 2-tuples (it should -- it treats actions as opaque hashables).
+3. Run the standard 4-arm matrix (random-shoot + CEM) x {TD-MPC2 dynamics, MLP-on-TD-MPC2-data} x seeds {0,1,2}, 10 ep/arm/seed, pool to n=30.
+4. Smoke-test first: `... --smoke` (1 seed, few episodes, few hundred train steps) must pass end-to-end before the full run. Long runs in `tmux`/`nohup`.
 
-- Either §5.10 becomes a multi-env table with Cartpole + Reacher columns, or a new §5.12 "Second cross-env: Reacher".
-- The cross-env figure (`paper/figures/cross_env_cpg.tex`) becomes a 3-env grouped bar chart.
+**Expected outputs**: `results/dmc_reacher/*` mirroring `results/dmc_cartpole/`.
+
+**Paper update** (after results land):
+
+- New subsection (next free, likely §5.12) "Third environment: Reacher". Report HONESTLY whether the INCONCLUSIVE ridge / MODEL BOTTLENECK plateau reproduces. Yes = the verdict generalizes across DMC tasks; No = the pattern was env-specific, still a finding.
+- Extend `paper/figures/cross_env_cpg.tex` to a 3-env grouped bar chart.
+- Do NOT introduce swm baselines (DINO-WM/LeWorldModel/PLDM) or pixel/FoV axes -- non-affiliation guardrail.
 
 ---
 
@@ -132,7 +138,7 @@ The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:cros
 
 ## Picking the next task
 
-If the GPU is free right now, the order is **Task 2 → Task 5 → Task 3 → Task 4** (Task 1 is done).
+If the GPU is free right now, the order is **Task 3 (Reacher training) → Task 4** (Tasks 1, 2, 5 are done; Task 3's adapter+oracle are shipped and only the training remains). Task 3 is now top priority: it is the multi-env generality claim and the power-analysis thesis's cross-env test, and the hard part (the verified oracle) is already on main.
 
 - Task 2 closes the largest open methodological hole in the paper.
 - Task 5 closes a self-flagged limitation cheaply.

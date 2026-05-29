@@ -322,3 +322,90 @@ def cpg_verdict(cpg: CPGResult, both_extreme_tol: float = 0.05) -> str:
     ):
         return CPG_VERDICT_MODEL_AS_GOOD_AS_ORACLE
     return CPG_VERDICT_INCONCLUSIVE
+
+
+def ac_ci_half_width(
+    oracle_success_rate: float,
+    learned_success_rate: float,
+    n_per_arm: int,
+    z: float = 1.96,
+) -> float:
+    """Agresti-Caffo plus-4 half-width of the CPG CI at a given per-arm n.
+
+    This is the same standard error the CPG CI uses (see
+    ``counterfactual_planning_gap``), evaluated at hypothetical success rates
+    and an equal per-arm episode count. It answers "how tight would the
+    interval be if I ran ``n_per_arm`` episodes per arm and observed these
+    rates?" without running anything.
+
+    The plus-4 adjustment uses the rates to form pseudo-counts, so the inputs
+    are the *expected* proportions, not integer successes. Equal n per arm is
+    assumed because that is the design a practitioner controls.
+    """
+    if n_per_arm < 1:
+        raise ValueError("n_per_arm must be >= 1")
+    tilde_p_o = (oracle_success_rate * n_per_arm + 1.0) / (n_per_arm + 2.0)
+    tilde_p_l = (learned_success_rate * n_per_arm + 1.0) / (n_per_arm + 2.0)
+    se = math.sqrt(
+        tilde_p_o * (1.0 - tilde_p_o) / (n_per_arm + 2.0)
+        + tilde_p_l * (1.0 - tilde_p_l) / (n_per_arm + 2.0)
+    )
+    return z * se
+
+
+def required_n_for_half_width(
+    oracle_success_rate: float,
+    learned_success_rate: float,
+    target_half_width: float,
+    z: float = 1.96,
+    n_max: int = 100_000,
+) -> int | None:
+    """Smallest equal per-arm n whose AC CI half-width is <= target.
+
+    Power-analysis companion to the CPG verdict: given a hypothesised pair of
+    success rates and a target precision (e.g. a half-width of 0.05 so the
+    interval is +/-5 percentage points), return the per-arm episode count
+    needed. Monotone in n, so a simple search suffices. Returns None if even
+    ``n_max`` is insufficient (only possible for absurdly small targets).
+
+    This is the quantity that turns CPG from a verdict into a planning tool:
+    before running a comparison, a practitioner reads off how many episodes
+    are needed to make the verdict gate able to fire at the precision they
+    care about. A point-estimate leaderboard cannot answer this.
+    """
+    if target_half_width <= 0:
+        raise ValueError("target_half_width must be > 0")
+    lo, hi = 1, n_max
+    if ac_ci_half_width(oracle_success_rate, learned_success_rate, hi, z) > target_half_width:
+        return None
+    # Binary search for the smallest n meeting the target (half-width is
+    # monotone decreasing in n for fixed rates).
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if ac_ci_half_width(oracle_success_rate, learned_success_rate, mid, z) <= target_half_width:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+
+
+def detectable_gap_at_n(
+    oracle_success_rate: float,
+    learned_success_rate: float,
+    n_per_arm: int,
+    z: float = 1.96,
+) -> bool:
+    """Whether the CPG verdict gate would clear zero at this n and these rates.
+
+    Returns True iff the AC CI on the gap does not straddle zero, i.e. the
+    five-branch verdict would commit (MODEL BOTTLENECK or LEARNED OUTPERFORMS)
+    rather than return INCONCLUSIVE, under the hypothesised rates at this
+    sample size. The companion check to ``required_n_for_half_width`` when the
+    question is "is this n enough to *decide*?" rather than "to reach this
+    precision?".
+    """
+    tilde_p_o = (oracle_success_rate * n_per_arm + 1.0) / (n_per_arm + 2.0)
+    tilde_p_l = (learned_success_rate * n_per_arm + 1.0) / (n_per_arm + 2.0)
+    tilde_gap = tilde_p_o - tilde_p_l
+    hw = ac_ci_half_width(oracle_success_rate, learned_success_rate, n_per_arm, z)
+    return (tilde_gap - hw) > 0 or (tilde_gap + hw) < 0

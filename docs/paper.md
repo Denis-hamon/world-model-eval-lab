@@ -11,7 +11,7 @@ next:
 ---
 
 <div class="paper-header">
-  <p class="paper-eyebrow">Short paper &middot; v0.16.0</p>
+  <p class="paper-eyebrow">Short paper &middot; v0.16.1</p>
   <h1 class="paper-title">Counterfactual Planning Gap</h1>
   <p class="paper-subtitle">A Decision-Grade Metric for Decoupling Model Error from Planner Capacity in World Model Evaluation</p>
   <p class="paper-author">Denis Hamon &nbsp;&middot;&nbsp; Independent &nbsp;&middot;&nbsp; <a href="mailto:denis.hamon1@gmail.com">denis.hamon1@gmail.com</a></p>
@@ -311,6 +311,24 @@ Four observations. **First**, the `MODEL BOTTLENECK` verdict reproduces at `mode
 </figure>
 
 Numbers from [`results/dmc_cartpole/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_cartpole) (`_size5_pooled.json` for capacity 5; the bare `_pooled.json` files for capacity 1).
+
+### 4.10 Power analysis: how many episodes before a ranking is trustworthy {#sec-power}
+
+The verdict gate turns from a post-hoc label into a planning tool once read forward: given hypothesised success rates and a target precision, how many episodes per arm does the AC interval need? The half-width depends only on the rates and $n$, so this is pure arithmetic, computable before any rollout.
+
+<table class="paper-table">
+  <thead>
+    <tr><th>Oracle rate</th><th>$n$ for hw &le; 0.10</th><th>$n$ for hw &le; 0.05</th><th>$n$ for hw &le; 0.02</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0.30</td><td>84</td><td>327</td><td>2021</td></tr>
+    <tr><td>0.50</td><td>98</td><td>387</td><td>2403</td></tr>
+    <tr><td>0.70</td><td>84</td><td>327</td><td>2021</td></tr>
+    <tr><td>0.90</td><td>46</td><td>153</td><td>881</td></tr>
+  </tbody>
+</table>
+
+The same arithmetic audits a point-estimate leaderboard. Two systems reported at $0.94$ and $0.92$ over $n = 100$ per arm with no interval — a plausible top-of-table near-tie — yield an AC interval on the difference with half-width $0.074$ that **straddles zero**: the ranking gap is statistically indistinguishable from noise at the sample size used, and separating them to half-width $0.05$ needs $n = 209$ per arm. A wider gap ($0.94$ vs $0.78$) is decidable at $n = 100$; a mid-table near-tie ($0.78$ vs $0.75$) is not. This is what a leaderboard cannot carry: not which number is larger, but whether the ordering survives its own sample size. Reproduced by `python -m experiments.power_analysis`; numbers from [`results/power_analysis.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/power_analysis.json).
 
 ## 5. Discussion and Limitations
 

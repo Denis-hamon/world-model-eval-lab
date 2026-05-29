@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.16.0",
+  "generated_at": "2026-05-29T10:24:59+00:00",
+  "metric": "cpg_power_analysis",
+  "half_width_table": {
+    "n_grid": [
+      10,
+      30,
+      50,
+      100,
+      150,
+      300,
+      500
+    ],
+    "rows": [
+      {
+        "oracle_rate": 0.3,
+        "learned_rate": 0.0,
+        "half_width_by_n": {
+          "10": 0.3092,
+          "30": 0.1715,
+          "50": 0.1309,
+          "100": 0.0913,
+          "150": 0.0742,
+          "300": 0.0522,
+          "500": 0.0403
+        }
+      },
+      {
+        "oracle_rate": 0.5,
+        "learned_rate": 0.0,
+        "half_width_by_n": {
+          "10": 0.3232,
+          "30": 0.1834,
+          "50": 0.1409,
+          "100": 0.0989,
+          "150": 0.0805,
+          "300": 0.0568,
+          "500": 0.0439
+        }
+      },
+      {
+        "oracle_rate": 0.7,
+        "learned_rate": 0.0,
+        "half_width_by_n": {
+          "10": 0.3092,
+          "30": 0.1715,
+          "50": 0.1309,
+          "100": 0.0913,
+          "150": 0.0742,
+          "300": 0.0522,
+          "500": 0.0403
+        }
+      },
+      {
+        "oracle_rate": 0.9,
+        "learned_rate": 0.0,
+        "half_width_by_n": {
+          "10": 0.2625,
+          "30": 0.1295,
+          "50": 0.0945,
+          "100": 0.0632,
+          "150": 0.0505,
+          "300": 0.0348,
+          "500": 0.0267
+        }
+      }
+    ]
+  },
+  "required_n_table": {
+    "targets": [
+      0.1,
+      0.05,
+      0.02
+    ],
+    "rows": [
+      {
+        "oracle_rate": 0.3,
+        "learned_rate": 0.0,
+        "required_n": {
+          "0.1": 84,
+          "0.05": 327,
+          "0.02": 2021
+        }
+      },
+      {
+        "oracle_rate": 0.5,
+        "learned_rate": 0.0,
+        "required_n": {
+          "0.1": 98,
+          "0.05": 387,
+          "0.02": 2403
+        }
+      },
+      {
+        "oracle_rate": 0.7,
+        "learned_rate": 0.0,
+        "required_n": {
+          "0.1": 84,
+          "0.05": 327,
+          "0.02": 2021
+        }
+      },
+      {
+        "oracle_rate": 0.9,
+        "learned_rate": 0.0,
+        "required_n": {
+          "0.1": 46,
+          "0.05": 153,
+          "0.02": 881
+        }
+      }
+    ]
+  },
+  "leaderboard_gap_audit": [
+    {
+      "label": "top-2 near-tie (0.94 vs 0.92)",
+      "rate_a": 0.94,
+      "rate_b": 0.92,
+      "n_reported": 100,
+      "detectable_at_n_reported": false,
+      "half_width_at_n_reported": 0.0737,
+      "n_for_half_width_0_05": 209
+    },
+    {
+      "label": "moderate gap (0.94 vs 0.78)",
+      "rate_a": 0.94,
+      "rate_b": 0.78,
+      "n_reported": 100,
+      "detectable_at_n_reported": true,
+      "half_width_at_n_reported": 0.0948,
+      "n_for_half_width_0_05": 354
+    },
+    {
+      "label": "wide gap (0.86 vs 0.62)",
+      "rate_a": 0.86,
+      "rate_b": 0.62,
+      "n_reported": 100,
+      "detectable_at_n_reported": true,
+      "half_width_at_n_reported": 0.1167,
+      "n_for_half_width_0_05": 547
+    },
+    {
+      "label": "mid-table tie (0.78 vs 0.75)",
+      "rate_a": 0.78,
+      "rate_b": 0.75,
+      "n_reported": 100,
+      "detectable_at_n_reported": false,
+      "half_width_at_n_reported": 0.1172,
+      "n_for_half_width_0_05": 552
+    }
+  ],
+  "traced_decision": {
+    "cell": "dmc_cartpole model_size=1 CEM TD-MPC2",
+    "observed": {
+      "oracle_rate": 0.5,
+      "learned_rate": 0.533,
+      "n_per_arm": 30,
+      "half_width": 0.2448,
+      "verdict": "INCONCLUSIVE"
+    },
+    "prescription": {
+      "target_half_width": 0.05,
+      "n_per_arm_needed": 765,
+      "note": "Episodes per arm to shrink the AC interval to +/-0.05; whether the verdict then commits depends on the true rates the larger sample reveals."
+    }
+  }
+}
