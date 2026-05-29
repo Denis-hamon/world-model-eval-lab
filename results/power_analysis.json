@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "wmel_version": "0.16.0",
-  "generated_at": "2026-05-29T10:24:59+00:00",
+  "wmel_version": "0.16.1",
+  "generated_at": "2026-05-29T10:34:35+00:00",
   "metric": "cpg_power_analysis",
   "half_width_table": {
     "n_grid": [
