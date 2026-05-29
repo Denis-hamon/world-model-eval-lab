@@ -95,9 +95,13 @@ class DMCAcrobotEnv(BenchmarkEnvironment):
         discrete_levels: tuple[float, ...] = DEFAULT_DISCRETE_LEVELS,
         upright_threshold: float = DEFAULT_UPRIGHT_THRESHOLD,
         task_kwargs: dict | None = None,
+        obs_noise_std: float = 0.0,
+        obs_noise_seed: int | None = None,
     ) -> None:
         if not discrete_levels:
             raise ValueError("discrete_levels must contain at least one torque")
+        if obs_noise_std < 0.0:
+            raise ValueError(f"obs_noise_std must be >= 0; got {obs_noise_std}")
         self._levels = discrete_levels
         self._actions: tuple[Action, ...] = tuple((float(t),) for t in discrete_levels)
         self._upright_threshold = float(upright_threshold)
@@ -107,6 +111,13 @@ class DMCAcrobotEnv(BenchmarkEnvironment):
             task_name="swingup",
             task_kwargs=self._task_kwargs,
         )
+        # Observation-noise hook. obs_noise_std=0 (default) is a no-op and
+        # preserves bit-equality with the pre-hook behaviour. When non-zero,
+        # additive Gaussian noise of stdev `obs_noise_std` is added to every
+        # observation returned by reset() / step(). A seeded numpy Generator
+        # gives reproducible noise per (env instance, episode sequence).
+        self._obs_noise_std = float(obs_noise_std)
+        self._obs_noise_rng = np.random.default_rng(obs_noise_seed)
         # Always-fixed "goal" representation for the contract. The contract
         # callers do not use the value (Acrobot has no spatial goal); we
         # provide a stable placeholder.
@@ -114,9 +125,17 @@ class DMCAcrobotEnv(BenchmarkEnvironment):
         self._last_obs: Observation = tuple()
         self._last_reward: float = 0.0
 
+    def _apply_obs_noise(self, obs: Observation) -> Observation:
+        if self._obs_noise_std == 0.0:
+            return obs
+        arr = np.asarray(obs, dtype=np.float64)
+        noise = self._obs_noise_rng.normal(0.0, self._obs_noise_std, size=arr.shape)
+        return tuple(float(x) for x in (arr + noise))
+
     def reset(self) -> Observation:
         ts = self._env.reset()
-        self._last_obs = _flatten_observation(ts.observation)
+        clean_obs = _flatten_observation(ts.observation)
+        self._last_obs = self._apply_obs_noise(clean_obs)
         self._last_reward = 0.0
         return self._last_obs
 
@@ -127,7 +146,8 @@ class DMCAcrobotEnv(BenchmarkEnvironment):
             )
         torque = np.asarray(action, dtype=np.float32)
         ts = self._env.step(torque)
-        self._last_obs = _flatten_observation(ts.observation)
+        clean_obs = _flatten_observation(ts.observation)
+        self._last_obs = self._apply_obs_noise(clean_obs)
         self._last_reward = float(ts.reward) if ts.reward is not None else 0.0
         return self._last_obs
 
