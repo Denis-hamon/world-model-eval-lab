@@ -65,12 +65,13 @@ def test_required_n_rejects_nonpositive_target():
         required_n_for_half_width(0.5, 0.5, 0.0)
 
 
-def test_swm_top_two_gap_is_not_detectable_at_their_n():
-    # swm reports LeWorldModel 94% vs DINO-WM 92% on Push-T at n=100, seed=0,
-    # with no CI. At that n the AC interval on the difference straddles zero:
-    # the reported ranking gap is within noise.
+def test_illustrative_top_two_near_tie_is_not_detectable_at_n100():
+    # An illustrative point-estimate leaderboard near-tie: two systems
+    # reported at 0.94 and 0.92 over n=100 per arm with no interval. At that
+    # n the AC interval on the difference straddles zero, so the ranking gap
+    # is statistically indistinguishable from noise.
     assert detectable_gap_at_n(0.94, 0.92, 100) is False
-    # A wider, genuine gap (94% vs 78%) does clear zero at the same n.
+    # A wider, genuine gap (0.94 vs 0.78) does clear zero at the same n.
     assert detectable_gap_at_n(0.94, 0.78, 100) is True
 
 

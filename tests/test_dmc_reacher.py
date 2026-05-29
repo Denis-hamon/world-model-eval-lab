@@ -67,6 +67,24 @@ def test_oracle_dynamics_matches_env_step() -> None:
         obs = observed
 
 
+def test_oracle_dynamics_matches_env_step_on_a_different_target() -> None:
+    """Same oracle regression on a different episode target (random=7), so the
+    target-recovery path (target_xy = finger_xy + to_target) is exercised on a
+    target the oracle's own reset never saw. Guards against the oracle silently
+    reusing a stale target geom position.
+    """
+    env = DMCReacherEnv(task_kwargs={"random": 7})
+    obs = env.reset()
+    oracle = make_reacher_oracle_dynamics(task_kwargs={"random": 0})
+    actions = [(1.0, 1.0), (-1.0, 0.0), (0.0, -1.0), (1.0, -1.0), (-1.0, 1.0)]
+    for action in actions:
+        predicted = oracle(obs, action)
+        observed = env.step(action)
+        diffs = [abs(a - b) for a, b in zip(predicted, observed)]
+        assert max(diffs) < 1e-5, f"oracle/env mismatch on random=7 target: diffs={diffs}"
+        obs = observed
+
+
 def test_score_is_finger_to_target_distance() -> None:
     """state = (pos0, pos1, to_target0, to_target1, vel0, vel1).
     Score is the Euclidean norm of to_target = sqrt(state[2]^2 + state[3]^2).

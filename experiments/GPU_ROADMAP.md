@@ -71,7 +71,7 @@ The pooled-30 size=1 cells are integrated into paper §5.10 (Table~\ref{tab:cros
 
 **ALREADY DONE on main (do NOT redo):**
 
-- `src/wmel/envs/dmc_reacher.py` is shipped: `DMCReacherEnv` (6-D obs, 9-action discrete grid = 3 levels x 2 joints), `make_reacher_oracle_dynamics()` (oracle VERIFIED to reproduce `env.step` to 5.6e-17 over a 50-step rollout -- exact reconstruction, no atan2 loss; target recovered from `to_target`), and `reacher_reach_score` (negative finger-to-target distance, the exact quantity the DMC reward thresholds). Regression test in `tests/test_dmc_reacher.py`.
+- `src/wmel/envs/dmc_reacher.py` is shipped: `DMCReacherEnv` (6-D obs, 9-action discrete grid = 3 levels x 2 joints), `make_reacher_oracle_dynamics()` (oracle VERIFIED to reproduce `env.step` to 5.6e-17 over a 50-step rollout -- exact reconstruction, no atan2 loss; target recovered from `to_target`), and `reacher_reach_score` (finger-to-target distance; lower is better, the exact quantity the DMC reward thresholds, same minimizing convention as the swing-up scores). Regression test in `tests/test_dmc_reacher.py`.
 - The oracle and env adapter need NO further work. Trust the regression test.
 
 **Remaining GPU work (this task):**
