@@ -1,4 +1,4 @@
-\begin{thebibliography}{25}
+\begin{thebibliography}{26}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -111,6 +111,14 @@ Bo~Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter
   learning.
 \newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)
   Datasets and Benchmarks Track}, 2023.
+
+\bibitem[Maes et~al.(2026)Maes, Lidec, Facury, Massaudi, Chaurasia, Capuano,
+  Gao, Gillin, Haramati, Scieur, LeCun, and Balestriero]{maes2026swm}
+Lucas Maes, Quentin~Le Lidec, Luiz Facury, Nassim Massaudi, Ayush Chaurasia,
+  Francesco Capuano, Richard Gao, Taj Gillin, Dan Haramati, Damien Scieur, Yann
+  LeCun, and Randall Balestriero.
+\newblock stable-worldmodel: A platform for reproducible world modeling
+  research and evaluation, 2026.
 
 \bibitem[Micheli et~al.(2023)Micheli, Alonso, and Fleuret]{micheli2023iris}
 Vincent Micheli, Eloi Alonso, and Fran{\c{c}}ois Fleuret.
