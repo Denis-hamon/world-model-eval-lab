@@ -156,9 +156,12 @@ def make_tdmpc2_dynamics(
 
       - `model_state`: state_dict of `TDMPC2Dynamics`
       - `arch`: dict of `TDMPC2Dynamics.__init__` kwargs
-      - `action_levels`: ordered tuple of float torques used as the
-        discrete action set during training. Each wmel action is the
-        1-tuple `(level,)`.
+      - one of:
+        - `action_levels`: ordered tuple of float torques for a 1-D action
+          space. Each wmel action is the 1-tuple `(level,)`. (Acrobot,
+          Cartpole.)
+        - `action_set`: explicit list of action tuples for a multi-D action
+          space, e.g. Reacher's 9 `(t0, t1)` pairs. Used verbatim.
 
     The returned callable is pure: it allocates fresh tensors on every
     call and never mutates the model state. Throughput is dominated by
@@ -169,8 +172,11 @@ def make_tdmpc2_dynamics(
     """
     ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
     arch = ckpt["arch"]
-    levels: Tuple[float, ...] = tuple(float(t) for t in ckpt["action_levels"])
-    action_set = {(t,) for t in levels}
+    if "action_set" in ckpt:
+        action_set = {tuple(float(x) for x in a) for a in ckpt["action_set"]}
+    else:
+        levels: Tuple[float, ...] = tuple(float(t) for t in ckpt["action_levels"])
+        action_set = {(t,) for t in levels}
 
     model = TDMPC2Dynamics(**arch).to(device).eval()
     model.load_state_dict(ckpt["model_state"])
