@@ -91,6 +91,8 @@ from wmel.envs.dmc_acrobot import DMCAcrobotEnv, make_acrobot_oracle_dynamics
 from wmel.metrics import compute_scorecard, counterfactual_planning_gap, cpg_verdict
 from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
+from experiments._seeding import eval_varied_factory
+
 
 CHECKPOINT_PATH = _REPO_ROOT / "results" / "dmc_acrobot" / "tdmpc2_acrobot.pt"
 JSON_PATH = _REPO_ROOT / "results" / "dmc_acrobot" / "tdmpc2_cpg.json"
@@ -103,6 +105,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--steps", type=int, default=None, help="Override training steps (default: 500_000, smoke: 5_000).")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default="cuda")
+    p.add_argument(
+        "--varied-init",
+        action="store_true",
+        help=(
+            "Vary the initial state per episode (seed shared across arms, "
+            "training drawn from a disjoint block) so success rates sample the "
+            "task distribution. Off by default to reproduce committed results."
+        ),
+    )
     return p.parse_args()
 
 
@@ -401,9 +412,16 @@ def main() -> None:
             seed=seed,
         )
 
+    # Both CPG arms must see identical per-episode initial states to stay
+    # paired, so each arm builds its own factory from the SAME base seed.
+    def make_eval_factory():
+        if args.varied_init:
+            return eval_varied_factory(DMCAcrobotEnv, seed, discrete_levels=action_levels)
+        return lambda: DMCAcrobotEnv(discrete_levels=action_levels)
+
     oracle_planner = make_planner(make_acrobot_oracle_dynamics())
     oracle_results = BenchmarkRunner(
-        env_factory=lambda: DMCAcrobotEnv(discrete_levels=action_levels),
+        env_factory=make_eval_factory(),
         policy=oracle_planner,
         episodes=cfg_dict["benchmark_episodes"],
         horizon=cfg_dict["benchmark_horizon"],
@@ -421,7 +439,7 @@ def main() -> None:
     tdmpc2_dyn = make_tdmpc2_dynamics(CHECKPOINT_PATH, device="cpu")
     tdmpc2_planner = make_planner(tdmpc2_dyn)
     tdmpc2_results = BenchmarkRunner(
-        env_factory=lambda: DMCAcrobotEnv(discrete_levels=action_levels),
+        env_factory=make_eval_factory(),
         policy=tdmpc2_planner,
         episodes=cfg_dict["benchmark_episodes"],
         horizon=cfg_dict["benchmark_horizon"],
@@ -462,6 +480,7 @@ def main() -> None:
         },
         "seed": seed,
         "smoke_mode": args.smoke,
+        "varied_init": args.varied_init,
         "oracle_scorecard": {
             "policy_name": oracle_card.policy_name,
             "success_rate": oracle_card.success_rate,

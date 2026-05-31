@@ -69,6 +69,8 @@ from wmel.envs.dmc_acrobot import DEFAULT_DISCRETE_LEVELS, DMCAcrobotEnv, make_a
 from wmel.metrics import compute_scorecard, counterfactual_planning_gap, cpg_verdict
 from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
+from experiments._seeding import eval_varied_factory, train_varied_factory
+
 # Reuse the TD-MPC2 agent loader and rollout collector from the v0.12
 # coverage experiment to avoid duplicating ~50 lines of cfg / monkey-patch
 # boilerplate. These are not part of the wmel public API; treat as
@@ -92,6 +94,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--mlp-data-source", choices=["tdmpc2", "random"], default="tdmpc2",
                    help="Where to source MLP training data (mirrors coverage_mlp_on_tdmpc2).")
     p.add_argument("--n-mlp-transitions", type=int, default=20_000)
+    p.add_argument(
+        "--varied-init",
+        action="store_true",
+        help=(
+            "Vary the initial state per episode (seed shared across arms, "
+            "training drawn from a disjoint block) so success rates sample the "
+            "task distribution. Off by default to reproduce committed results."
+        ),
+    )
     return p.parse_args()
 
 
@@ -128,6 +139,7 @@ def _run_arm(
     cfg: dict,
     seed: int,
     levels: tuple[float, ...],
+    varied_init: bool = False,
 ):
     env_template = DMCAcrobotEnv(discrete_levels=levels)
     planner = CEMPlanner(
@@ -141,8 +153,15 @@ def _run_arm(
         score=acrobot_upright_score,
         seed=seed,
     )
+    # Both arms share base_seed=seed, so episode k starts from the same state
+    # in every arm (paired). Off by default to reproduce committed results.
+    env_factory = (
+        eval_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+        if varied_init
+        else (lambda: DMCAcrobotEnv(discrete_levels=levels))
+    )
     results = BenchmarkRunner(
-        env_factory=lambda: DMCAcrobotEnv(discrete_levels=levels),
+        env_factory=env_factory,
         policy=planner,
         episodes=cfg["benchmark_episodes"],
         horizon=cfg["benchmark_horizon"],
@@ -182,7 +201,11 @@ def main() -> None:
         print(f"[data] Collecting {cfg['n_mlp_transitions']} transitions from TD-MPC2 eval policy...")
         transitions = _collect_tdmpc2_rollouts(
             agent=agent,
-            env_factory=lambda: DMCAcrobotEnv(discrete_levels=levels),
+            env_factory=(
+                train_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+                if args.varied_init
+                else (lambda: DMCAcrobotEnv(discrete_levels=levels))
+            ),
             n_transitions=cfg["n_mlp_transitions"],
             levels=levels,
             seed=seed,
@@ -191,7 +214,9 @@ def main() -> None:
         n_eps = max(1, cfg["n_mlp_transitions"] // 200)
         print(f"[data] Collecting {cfg['n_mlp_transitions']} random-policy transitions ({n_eps} eps x 200 steps)...")
         transitions = collect_random_rollouts(
-            lambda: DMCAcrobotEnv(discrete_levels=levels),
+            train_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+            if args.varied_init
+            else (lambda: DMCAcrobotEnv(discrete_levels=levels)),
             n_episodes=n_eps,
             max_steps_per_episode=200,
             seed=seed,
@@ -230,19 +255,19 @@ def main() -> None:
     # 3. Run all available arms with the SAME CEM config and the same seed.
     print("\n[1/3] CEM with ORACLE dynamics...")
     oracle_results, oracle_card = _run_arm(
-        name="oracle dynamics", dynamics_factory=make_oracle, cfg=cfg, seed=seed, levels=levels,
+        name="oracle dynamics", dynamics_factory=make_oracle, cfg=cfg, seed=seed, levels=levels, varied_init=args.varied_init,
     )
 
     print(f"\n[2/3] CEM with MLP-on-{'tdmpc2' if use_tdmpc2 else 'random'} dynamics...")
     mlp_results, mlp_card = _run_arm(
         name=f"MLP on {'tdmpc2' if use_tdmpc2 else 'random'} data",
-        dynamics_factory=make_mlp, cfg=cfg, seed=seed, levels=levels,
+        dynamics_factory=make_mlp, cfg=cfg, seed=seed, levels=levels, varied_init=args.varied_init,
     )
 
     if tdmpc2_available:
         print("\n[3/3] CEM with TD-MPC2 dynamics...")
         tdmpc2_results, tdmpc2_card = _run_arm(
-            name="TD-MPC2 dynamics", dynamics_factory=make_tdmpc2, cfg=cfg, seed=seed, levels=levels,
+            name="TD-MPC2 dynamics", dynamics_factory=make_tdmpc2, cfg=cfg, seed=seed, levels=levels, varied_init=args.varied_init,
         )
     else:
         tdmpc2_results, tdmpc2_card = None, None
@@ -276,6 +301,7 @@ def main() -> None:
         "coverage": coverage,
         "seed": seed,
         "smoke_mode": args.smoke,
+        "varied_init": args.varied_init,
         "oracle_scorecard": _card_to_dict(oracle_card),
         "mlp_scorecard": _card_to_dict(mlp_card),
         "tdmpc2_scorecard": _card_to_dict(tdmpc2_card) if tdmpc2_card else None,

@@ -74,6 +74,8 @@ from wmel.envs.dmc_reacher import (
 from wmel.metrics import compute_scorecard, counterfactual_planning_gap, cpg_verdict
 from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
+from experiments._seeding import eval_varied_factory, train_varied_factory
+
 
 AGENT_PATH = _REPO_ROOT / "results" / "dmc_reacher" / "tdmpc2_agent.pt"
 JSON_PATH = _REPO_ROOT / "results" / "dmc_reacher" / "coverage_mlp_on_tdmpc2_cpg.json"
@@ -87,6 +89,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--model-size", type=int, default=1, help="TD-MPC2 size preset used by the loaded agent.")
     p.add_argument("--agent-ckpt", default=str(AGENT_PATH), help="Path to a tdmpc2 agent checkpoint (used iff --data-source=tdmpc2).")
+    p.add_argument(
+        "--varied-init",
+        action="store_true",
+        help=(
+            "Vary the initial state per episode (seed shared across arms, "
+            "training drawn from a disjoint block) so success rates sample the "
+            "task distribution. Off by default to reproduce committed results."
+        ),
+    )
     return p.parse_args()
 
 
@@ -249,7 +260,11 @@ def main() -> None:
         print(f"[1/5] Collecting {cfg_dict['n_transitions']} transitions from TD-MPC2 eval-mode policy...")
         transitions = _collect_tdmpc2_rollouts(
             agent=agent,
-            env_factory=lambda: DMCReacherEnv(),
+            env_factory=(
+                train_varied_factory(DMCReacherEnv, seed)
+                if args.varied_init
+                else (lambda: DMCReacherEnv())
+            ),
             n_transitions=cfg_dict["n_transitions"],
             actions=actions,
             seed=seed,
@@ -259,7 +274,9 @@ def main() -> None:
         n_eps = max(1, cfg_dict["n_transitions"] // 200)
         print(f"[1/5] Collecting {cfg_dict['n_transitions']} transitions from random policy ({n_eps} episodes x 200 steps)...")
         transitions = collect_random_rollouts(
-            lambda: DMCReacherEnv(),
+            train_varied_factory(DMCReacherEnv, seed)
+            if args.varied_init
+            else (lambda: DMCReacherEnv()),
             n_episodes=n_eps,
             max_steps_per_episode=200,
             seed=seed,
@@ -291,10 +308,18 @@ def main() -> None:
             seed=seed,
         )
 
+    # Both CPG arms must see identical per-episode initial states (and the
+    # same target geom) to stay paired, so each arm builds its own factory
+    # from the SAME base seed.
+    def make_eval_factory():
+        if args.varied_init:
+            return eval_varied_factory(DMCReacherEnv, seed)
+        return lambda: DMCReacherEnv()
+
     print("[3/5] Benchmarking with ORACLE dynamics...")
     oracle_planner = make_planner(make_reacher_oracle_dynamics())
     oracle_results = BenchmarkRunner(
-        env_factory=lambda: DMCReacherEnv(),
+        env_factory=make_eval_factory(),
         policy=oracle_planner,
         episodes=cfg_dict["benchmark_episodes"],
         horizon=cfg_dict["benchmark_horizon"],
@@ -312,7 +337,7 @@ def main() -> None:
     print("[4/5] Benchmarking with LEARNED MLP dynamics...")
     learned_planner = make_planner(learned_dynamics(model, env_template.action_space))
     learned_results = BenchmarkRunner(
-        env_factory=lambda: DMCReacherEnv(),
+        env_factory=make_eval_factory(),
         policy=learned_planner,
         episodes=cfg_dict["benchmark_episodes"],
         horizon=cfg_dict["benchmark_horizon"],
@@ -351,6 +376,7 @@ def main() -> None:
         "coverage": coverage,
         "seed": seed,
         "smoke_mode": args.smoke,
+        "varied_init": args.varied_init,
         "oracle_scorecard": {
             "policy_name": oracle_card.policy_name,
             "success_rate": oracle_card.success_rate,
