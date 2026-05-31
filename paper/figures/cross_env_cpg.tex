@@ -1,5 +1,6 @@
-% Figure: CPG comparison across two environments (Acrobot vs Cartpole),
-% same four arm configurations (random-shooting / CEM x MLP / TD-MPC2).
+% Figure: CPG comparison across THREE environments (Acrobot, Cartpole,
+% Reacher), same four arm configurations (random-shooting / CEM x MLP /
+% TD-MPC2).
 %
 % Data sources:
 %   Acrobot:
@@ -20,15 +21,24 @@
 %       CPG = +0.500, AC CI [+0.285, +0.652]
 %     - CEM x TD-MPC2                      : same JSON
 %       CPG = +0.367, AC CI [+0.130, +0.558]
+%   Reacher-easy (all four cells at n=30 pooled, model_size=1):
+%     - RS x MLP-on-TDMPC2-data            : results/dmc_reacher/coverage_mlp_on_tdmpc2_cpg_pooled.json
+%       CPG = +0.700, AC CI [+0.485, +0.828]   (eplus 0.128, eminus 0.215)
+%     - RS x TD-MPC2 (1M)                  : results/dmc_reacher/tdmpc2_cpg_pooled.json
+%       CPG = +0.433, AC CI [+0.224, +0.588]   (eplus 0.155, eminus 0.209)
+%     - CEM x MLP-on-TDMPC2-data           : results/dmc_reacher/cem_cpg_pooled.json
+%       CPG = +0.667, AC CI [+0.450, +0.800]   (eplus 0.134, eminus 0.217)
+%     - CEM x TD-MPC2                      : same JSON
+%       CPG = +0.367, AC CI [+0.166, +0.522]   (eplus 0.155, eminus 0.201)
 %
 % AC error bars are asymmetric around the raw point estimate; we provide
 % (eplus, eminus) per row.
 %
 % Note on sample-size asymmetry: the Acrobot random-shooting rows are at
 % n=10 (not pooled to n=150) and inherit the wider CI of the v0.10/v0.11
-% headline; the Acrobot CEM rows are pooled-150; all Cartpole rows are
-% pooled-n=30. We label this in the caption rather than overlay sample-size
-% glyphs in the figure.
+% headline; the Acrobot CEM rows are pooled-150; all Cartpole and Reacher
+% rows are pooled-n=30. We label this in the caption rather than overlay
+% sample-size glyphs in the figure.
 \begin{figure}[t]
   \centering
   \begin{tikzpicture}
@@ -83,9 +93,21 @@
           4 0.367 0.191 0.237  \\
         };
       \addlegendentry{Cartpole}
+      \addplot+[
+          fill=green!45!black!60, draw=green!45!black,
+          error bars/.cd, y dir=both, y explicit,
+        ]
+        table[x=x, y=y, y error plus=eplus, y error minus=eminus, row sep=\\] {
+          x y     eplus eminus \\
+          1 0.700 0.128 0.215  \\
+          2 0.433 0.155 0.209  \\
+          3 0.667 0.134 0.217  \\
+          4 0.367 0.155 0.201  \\
+        };
+      \addlegendentry{Reacher}
       \draw[densely dashed, gray!50] (axis cs:0.5, 0) -- (axis cs:4.5, 0);
     \end{axis}
   \end{tikzpicture}
-  \caption{Cross-environment CPG with Agresti--Caffo $95\%$ CI error bars. Same four planner-dynamics combinations on two envs. Sample sizes: Acrobot random-shooting cells at $n = 10$, Acrobot CEM cells pooled at $n = 150$, Cartpole all four cells pooled at $n = 30$ (TD-MPC2 \texttt{model\_size}~$= 5$). The \textsc{model bottleneck} verdict reproduces in every cell; the gap magnitude differs and ranks the four arm configurations consistently within each env. The TD-MPC2 arm on Cartpole reaches non-zero learned-arm success ($0.200$ random-shooting, $0.133$ CEM), so the gap shrinks but stays bounded above zero -- the metric tracks gap magnitude, not just gap presence.}
+  \caption{Cross-environment CPG with Agresti--Caffo $95\%$ CI error bars, three environments on the same four planner-dynamics combinations. Sample sizes: Acrobot random-shooting cells at $n = 10$, Acrobot CEM cells pooled at $n = 150$, Cartpole and Reacher all cells pooled at $n = 30$ (Cartpole TD-MPC2 \texttt{model\_size}~$= 5$, Reacher \texttt{model\_size}~$= 1$). The \textsc{model bottleneck} verdict reproduces in every cell shown; the gap magnitude differs and ranks the arm configurations consistently within each env. On Reacher the oracle solves the reach perfectly ($1.000$) and both learned arms are clearly non-zero ($0.300$--$0.633$), so every Reacher gap is genuine and non-degenerate -- the cleanest evidence that the metric tracks gap magnitude rather than gap presence. (The Cartpole capacity sweep produced one \textsc{inconclusive} cell not shown here; see Figure~\ref{fig:cartpole_capacity}.)}
   \label{fig:cross_env_cpg}
 \end{figure}

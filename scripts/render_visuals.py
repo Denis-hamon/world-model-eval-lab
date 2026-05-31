@@ -1124,12 +1124,13 @@ def render_paper_fig2_coverage_histogram() -> str:
 
 
 def render_paper_fig3_cross_env() -> str:
-    """Figure 3: cross-env CPG, Acrobot vs Cartpole (size=5) on the same four arms."""
+    """Figure 3: cross-env CPG across three envs (Acrobot, Cartpole, Reacher)
+    on the same four planner-dynamics arms."""
     labels = ["RS x MLP", "RS x TD-MPC2", "CEM x MLP", "CEM x TD-MPC2"]
     return _grouped_bars(
-        width=720, height=440,
-        title="Cross-env CPG: Acrobot vs Cartpole (model_size = 5)",
-        subtitle="Asymmetric Agresti-Caffo 95% CI per bar. Sources: results/dmc_acrobot/ + results/dmc_cartpole/*_size5_pooled.json.",
+        width=760, height=460,
+        title="Cross-env CPG: Acrobot vs Cartpole vs Reacher",
+        subtitle="Asymmetric Agresti-Caffo 95% CI per bar. Sources: results/dmc_{acrobot,cartpole,reacher}/.",
         xlabels=labels,
         ylabel="Counterfactual Planning Gap",
         y_min=-0.15, y_max=1.05,
@@ -1145,6 +1146,11 @@ def render_paper_fig3_cross_env() -> str:
              "values": [0.900, 0.700, 0.500, 0.367],
              "eplus":  [0.073, 0.140, 0.152, 0.191],
              "eminus": [0.186, 0.227, 0.215, 0.237]},
+            {"name": "Reacher (size=1)",
+             "color": "#5aa46f", "color_dark": "#256634",
+             "values": [0.700, 0.433, 0.667, 0.367],
+             "eplus":  [0.128, 0.155, 0.134, 0.155],
+             "eminus": [0.215, 0.209, 0.217, 0.201]},
         ],
         legend_pos="tr",
     )
