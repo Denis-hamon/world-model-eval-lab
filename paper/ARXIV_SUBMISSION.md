@@ -69,6 +69,51 @@ papers ou plus dans `cs.LG` sur les 5 dernières années.
 Réalisme : si tu n'as pas de contact endorser sous la main, prévois **~3 à
 7 jours** entre la création du compte et la première soumission acceptée.
 
+**Démarre cette étape maintenant, en parallèle des dernières expériences :**
+l'endorsement est asynchrone et indépendant du contenu du papier, donc c'est
+le goulot à lancer en premier pour qu'il soit résolu quand le papier est prêt.
+
+### Message d'endorsement prêt à envoyer (neutre, sur les mérites)
+
+Si tu sollicites une personne qui peut endorser en `cs.LG` (un contact
+ayant >= 3 papers cs.LG sur 5 ans), envoie ceci -- factuel, indépendant,
+aucune name-drop d'aucun labo, le travail parle de lui-même :
+
+```
+Objet : Demande d'endorsement arXiv (cs.LG) -- note de méthodologie, single-author
+
+Bonjour [Prénom],
+
+Je finalise une courte note de méthodologie sur l'évaluation des world
+models action-conditionnés et je sollicite un endorsement arXiv pour la
+catégorie cs.LG (première soumission sous mon nom). Le travail est
+indépendant et open-source.
+
+En une phrase : je propose une métrique decision-grade (Counterfactual
+Planning Gap) avec un intervalle de confiance Agresti-Caffo et une règle
+de verdict gatée, plus une analyse de puissance montrant combien
+d'épisodes une comparaison de world models nécessite avant que son
+classement soit statistiquement fiable -- une question que les
+leaderboards en point-estimate ne tranchent pas.
+
+Code, résultats et le PDF reproductibles :
+https://github.com/Denis-hamon/world-model-eval-lab
+PDF direct :
+https://github.com/Denis-hamon/world-model-eval-lab/raw/main/paper/main.pdf
+
+Si tu es d'accord, arXiv te demandera de saisir un code d'endorsement à
+6 chiffres (~5 min de ton côté). Le code et le lien apparaîtront sur ma
+page de soumission une fois que j'aurai initié la demande ; je te les
+transmettrai. Aucune obligation, et merci d'avance quoi qu'il en soit.
+
+[Nom]
+```
+
+Note de cadrage : le message reste sur les mérites du travail et ne
+mentionne aucun laboratoire, modèle ni programme tiers. C'est cohérent
+avec la posture d'indépendance du repo -- le travail est découvrable et
+défendable seul.
+
 ## 4. Métadonnées à coller dans le formulaire de soumission
 
 Une fois endorsé, tu vas sur https://arxiv.org/submit et tu remplis :
@@ -97,13 +142,15 @@ Denis Hamon
 ### Abstract (à coller en tant que plain text — arXiv accepte $...$ pour les maths inline mais pas les \emph, \textbf, \citep)
 
 ```
-Action-conditioned world models are routinely evaluated by prediction quality (reconstruction loss, frame-level FID, held-out one-step accuracy). Such metrics describe how well a model fits its training distribution. They are silent on the question that an applied team must answer before integrating a model into a control loop: does the model, when used by a planner, produce decisions that succeed at the cost the deployment will accept? We propose the Counterfactual Planning Gap (CPG): the success-rate difference between a fixed planner using oracle dynamics and the same planner using the learned model on the same benchmark. The point estimate is the raw difference of success rates; the 95% interval uses the Agresti-Caffo plus-4 adjustment, which keeps the variance positive at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation collapses. We further define a five-branch verdict (MODEL BOTTLENECK, LEARNED OUTPERFORMS ORACLE, PLANNER BOTTLENECK, MODEL AS GOOD AS ORACLE, INCONCLUSIVE) that is gated on the lower bound of the CI rather than on the raw point estimate, so that under-powered runs cannot over-claim a diagnosis. We package CPG as a ~160-line addition to a reusable framework (wmel) that exposes a minimal evaluation contract and ships a worked example on DeepMind Control Suite Acrobot-swingup. On 10 episodes per arm with a random-shooting MPC, we observe raw CPG = +0.300 with Agresti-Caffo 95% CI [-0.06, +0.56], which yields the verdict INCONCLUSIVE. A multi-seed extension to n = 150 pooled per arm hardens the result to CPG = +0.267, CI [+0.191, +0.335], MODEL BOTTLENECK. Sweeping the MLP's training-set size by a factor of 100 drops the held-out validation MSE by ~150x but leaves the verdict and the CI unchanged. A robustness sweep replaces the bespoke MLP with TD-MPC2 trained for 2 million env steps and the random-shooting planner with a Cross-Entropy Method planner of comparable compute. Both learned arms remain at 0/10 across both planners; the oracle's success rate triples under CEM (0.30 to 0.90), so the gap opens to CPG = +0.900, CI [+0.49, +1.01], MODEL BOTTLENECK at n = 10. Pooling three seeds at 50 episodes per seed under CEM tightens this to CPG = +0.880, CI [+0.814, +0.923] - a half-width below 0.06 with both learned arms still at 0/150. We argue this is the metric doing its job: it separates a dynamics-quality bottleneck on the learned arms from a planner-capacity contributor on the oracle arm, a decomposition prediction-quality metrics alone could not surface.
+Action-conditioned world models are routinely evaluated by prediction quality (reconstruction loss, frame-level FID, held-out one-step accuracy). Such metrics describe how well a model fits its training distribution. They are silent on the question that an applied team must answer before integrating a model into a control loop: does the model, when used by a planner, produce decisions that succeed at the cost the deployment will accept? We propose the Counterfactual Planning Gap (CPG): the success-rate difference between a fixed planner using oracle dynamics and the same planner using the learned model on the same benchmark. The point estimate is the raw difference of success rates; the $95\%$ interval uses the Agresti-Caffo plus-4 adjustment, which keeps the variance positive at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation collapses. We further define a five-branch verdict (MODEL BOTTLENECK, LEARNED OUTPERFORMS ORACLE, PLANNER BOTTLENECK, MODEL AS GOOD AS ORACLE, INCONCLUSIVE) that is gated on the lower bound of the CI rather than on the raw point estimate, so that under-powered runs cannot over-claim a diagnosis. The headline property is a decision rule that changes its verdict on the strength of the evidence - it returns INCONCLUSIVE both at small $n$ and at moderate $n$ on the one cell where a smaller-capacity learned model matches the oracle, and commits to MODEL BOTTLENECK only once the interval clears zero - behaviour a point-estimate leaderboard cannot reproduce. We package CPG as a ~160-line addition to a reusable framework (wmel) that exposes a minimal evaluation contract and ships a worked example on DeepMind Control Suite Acrobot-swingup. On $10$ episodes per arm with a random-shooting MPC, we observe raw CPG = +0.300 with Agresti-Caffo $95\%$ CI [-0.06, +0.56], which yields the verdict INCONCLUSIVE. A multi-seed extension to $n = 150$ pooled per arm (three seeds, $50$ episodes per seed) hardens the result to CPG = +0.267, CI [+0.191, +0.335], MODEL BOTTLENECK. As a supporting ablation that prediction and decision quality dissociate, sweeping the MLP's training-set size by a factor of $100$ drops the held-out validation MSE by ~150x but leaves the verdict and the CI unchanged: prediction quality improves dramatically, planning success stays at zero, the gap stays open. A robustness sweep replaces the bespoke MLP with TD-MPC2 (Hansen et al., 2024) trained for $2 \times 10^{6}$ env steps and the random-shooting planner with a Cross-Entropy Method planner of comparable compute. Both learned arms remain at $0/10$ across both planners; the oracle's success rate triples under CEM ($0.30$ to $0.90$), so the gap opens to CPG = +0.900, CI [+0.49, +1.01], MODEL BOTTLENECK at $n = 10$. Pooling three seeds at $50$ episodes per seed under CEM tightens this to CPG = +0.880, CI [+0.814, +0.923] - a half-width below $0.06$ with both learned arms still at $0/150$. A second robustness axis sweeps an in-episode action-burst perturbation (DropNextActions at k in {0, 1, 5}): the oracle loses about 6 percentage points at k = 5, both learned arms remain at $0/50$, and the MODEL BOTTLENECK verdict survives every cell. A cross-environment replay on DMC Cartpole-swingup (the same four-arm setup, three seeds pooled to $n = 30$ per arm) reproduces MODEL BOTTLENECK in every cell at TD-MPC2 model_size 5 and in three of four cells at model_size 1; the fourth (CEM x TD-MPC2 at model_size 1) returns INCONCLUSIVE at $n = 30$ because the learned arm reaches $0.533$ vs an oracle at $0.500$ and the AC CI crosses zero ([-0.28, +0.21]) - the five-branch verdict gate fires its INCONCLUSIVE branch at moderate $n$ for the first time. Smaller-capacity TD-MPC2 thus closes the gap on the easier env where larger-capacity does not, and the metric correctly refuses to convict either side. Finally, because the verdict gate is a function of the confidence interval, it doubles as a power-analysis tool: we give the per-arm episode count a comparison needs before its interval clears zero, and show that a plausible point-estimate leaderboard near-tie ($0.94$ vs $0.92$ at $n = 100$) is statistically indistinguishable from noise - a question a bare ranking cannot answer.
 ```
+
+(Source of truth: the abstract in `paper/main.tex`. If the paper changes again -- e.g. when the Reacher third environment lands -- regenerate this block from `main.tex` before submitting.)
 
 ### Comments (optional one-liner)
 
 ```
-7 pages, 2 tables. Code and reproducibility scripts at https://github.com/Denis-hamon/world-model-eval-lab
+~10 pages, 5 figures, multiple tables. Code, results, and reproducibility scripts at https://github.com/Denis-hamon/world-model-eval-lab
 ```
 
 ### License
