@@ -53,6 +53,7 @@ for _entry in (_REPO_ROOT, _REPO_ROOT / "src"):
 
 from dataclasses import asdict
 
+from experiments._seeding import eval_varied_factory, train_varied_factory
 from wmel.adapters.mlp_world_model import (
     acrobot_upright_score,
     collect_random_rollouts,
@@ -72,6 +73,15 @@ def _parse_args() -> argparse.Namespace:
         "--smoke",
         action="store_true",
         help="Smaller config for CI (~20 s wall-clock).",
+    )
+    p.add_argument(
+        "--varied-init",
+        action="store_true",
+        help=(
+            "Vary the initial state per episode (seed shared across arms) so "
+            "success rates sample the task distribution rather than a single "
+            "fixed start state. Off by default to reproduce committed results."
+        ),
     )
     return p.parse_args()
 
@@ -105,9 +115,22 @@ def main() -> None:
 
     env_template = DMCAcrobotEnv()
 
+    # Both CPG arms must see identical per-episode initial states to stay
+    # paired, so each arm builds its own factory from the SAME base seed.
+    def make_eval_factory():
+        if args.varied_init:
+            return eval_varied_factory(DMCAcrobotEnv, seed)
+        return DMCAcrobotEnv
+
+    # Training data is collected from a disjoint block of initial states so the
+    # MLP is never trained on the start states it is scored on.
+    train_factory = (
+        train_varied_factory(DMCAcrobotEnv, seed) if args.varied_init else DMCAcrobotEnv
+    )
+
     print(f"[1/5] Collecting {cfg['train_episodes']} random rollouts for training...")
     transitions = collect_random_rollouts(
-        DMCAcrobotEnv,
+        train_factory,
         n_episodes=cfg["train_episodes"],
         max_steps_per_episode=cfg["train_steps_per_episode"],
         seed=seed,
@@ -140,7 +163,7 @@ def main() -> None:
     print("[3/5] Benchmarking with ORACLE dynamics...")
     oracle_planner = make_planner(make_acrobot_oracle_dynamics())
     oracle_results = BenchmarkRunner(
-        env_factory=DMCAcrobotEnv,
+        env_factory=make_eval_factory(),
         policy=oracle_planner,
         episodes=cfg["benchmark_episodes"],
         horizon=cfg["benchmark_horizon"],
@@ -158,7 +181,7 @@ def main() -> None:
     print("[4/5] Benchmarking with LEARNED MLP dynamics...")
     learned_planner = make_planner(learned_dynamics(model, env_template.action_space))
     learned_results = BenchmarkRunner(
-        env_factory=DMCAcrobotEnv,
+        env_factory=make_eval_factory(),
         policy=learned_planner,
         episodes=cfg["benchmark_episodes"],
         horizon=cfg["benchmark_horizon"],
@@ -207,6 +230,7 @@ def main() -> None:
         "training": train_log,
         "seed": seed,
         "smoke_mode": args.smoke,
+        "varied_init": args.varied_init,
         "oracle_scorecard": {
             "policy_name": oracle_card.policy_name,
             "success_rate": oracle_card.success_rate,

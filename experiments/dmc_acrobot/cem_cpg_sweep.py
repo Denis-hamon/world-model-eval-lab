@@ -65,6 +65,8 @@ from wmel.envs.dmc_acrobot import DEFAULT_DISCRETE_LEVELS, DMCAcrobotEnv, make_a
 from wmel.metrics import compute_scorecard, counterfactual_planning_gap, cpg_verdict
 from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
+from experiments._seeding import eval_varied_factory, train_varied_factory
+
 from experiments.dmc_acrobot.coverage_mlp_on_tdmpc2 import (
     _collect_tdmpc2_rollouts,
     _coverage_stats,
@@ -82,6 +84,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--smoke", action="store_true", help="2 seeds, 2 eps per arm, random data; validates wiring.")
     p.add_argument("--seeds", default="0,1,2", help="Comma-separated list of seeds (default 0,1,2).")
     p.add_argument("--n-mlp-transitions", type=int, default=20_000)
+    p.add_argument(
+        "--varied-init",
+        action="store_true",
+        help=(
+            "Vary the initial state per episode (seed shared across arms, "
+            "training drawn from a disjoint block) so success rates sample the "
+            "task distribution. Off by default to reproduce committed results."
+        ),
+    )
     return p.parse_args()
 
 
@@ -111,7 +122,7 @@ def _config(smoke: bool, n_mlp_transitions: int) -> dict:
     }
 
 
-def _run_cem_arm(*, name: str, dynamics, cfg: dict, seed: int, levels):
+def _run_cem_arm(*, name: str, dynamics, cfg: dict, seed: int, levels, varied_init: bool = False):
     env_template = DMCAcrobotEnv(discrete_levels=levels)
     planner = CEMPlanner(
         dynamics=dynamics,
@@ -124,8 +135,16 @@ def _run_cem_arm(*, name: str, dynamics, cfg: dict, seed: int, levels):
         score=acrobot_upright_score,
         seed=seed,
     )
+    # All arms at this seed share base_seed=seed, so episode k starts from the
+    # same state in every arm (paired). Off by default to reproduce committed
+    # results.
+    env_factory = (
+        eval_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+        if varied_init
+        else (lambda: DMCAcrobotEnv(discrete_levels=levels))
+    )
     results = BenchmarkRunner(
-        env_factory=lambda: DMCAcrobotEnv(discrete_levels=levels),
+        env_factory=env_factory,
         policy=planner,
         episodes=cfg["benchmark_episodes"],
         horizon=cfg["benchmark_horizon"],
@@ -142,7 +161,7 @@ def _run_cem_arm(*, name: str, dynamics, cfg: dict, seed: int, levels):
     return results, card
 
 
-def _run_one_seed(*, seed: int, cfg: dict, levels, use_tdmpc2_data: bool, agent_loaded):
+def _run_one_seed(*, seed: int, cfg: dict, levels, use_tdmpc2_data: bool, agent_loaded, varied_init: bool = False):
     """Run all three CEM arms for a single seed and return the per-arm results.
 
     `agent_loaded` is a callable that, when called, returns a TDMPC2 agent
@@ -157,7 +176,11 @@ def _run_one_seed(*, seed: int, cfg: dict, levels, use_tdmpc2_data: bool, agent_
         print(f"[seed {seed}] Collecting {cfg['n_mlp_transitions']} transitions from TD-MPC2 eval policy...")
         transitions = _collect_tdmpc2_rollouts(
             agent=agent,
-            env_factory=lambda: DMCAcrobotEnv(discrete_levels=levels),
+            env_factory=(
+                train_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+                if varied_init
+                else (lambda: DMCAcrobotEnv(discrete_levels=levels))
+            ),
             n_transitions=cfg["n_mlp_transitions"],
             levels=levels,
             seed=seed,
@@ -166,7 +189,9 @@ def _run_one_seed(*, seed: int, cfg: dict, levels, use_tdmpc2_data: bool, agent_
         n_eps = max(1, cfg["n_mlp_transitions"] // 200)
         print(f"[seed {seed}] Collecting {cfg['n_mlp_transitions']} random transitions ({n_eps} eps)...")
         transitions = collect_random_rollouts(
-            lambda: DMCAcrobotEnv(discrete_levels=levels),
+            train_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+            if varied_init
+            else (lambda: DMCAcrobotEnv(discrete_levels=levels)),
             n_episodes=n_eps,
             max_steps_per_episode=200,
             seed=seed,
@@ -189,13 +214,13 @@ def _run_one_seed(*, seed: int, cfg: dict, levels, use_tdmpc2_data: bool, agent_
 
     print(f"\n[seed {seed}, arm 1/3] CEM on ORACLE dynamics")
     oracle_results, oracle_card = _run_cem_arm(
-        name="oracle dynamics", dynamics=make_acrobot_oracle_dynamics(), cfg=cfg, seed=seed, levels=levels,
+        name="oracle dynamics", dynamics=make_acrobot_oracle_dynamics(), cfg=cfg, seed=seed, levels=levels, varied_init=varied_init,
     )
     print(f"\n[seed {seed}, arm 2/3] CEM on MLP-on-{'tdmpc2' if use_tdmpc2_data else 'random'} dynamics")
     mlp_results, mlp_card = _run_cem_arm(
         name=f"MLP on {'tdmpc2' if use_tdmpc2_data else 'random'} data",
         dynamics=learned_dynamics(mlp_model, env_template.action_space),
-        cfg=cfg, seed=seed, levels=levels,
+        cfg=cfg, seed=seed, levels=levels, varied_init=varied_init,
     )
 
     if TDMPC2_DYNAMICS_PATH.exists():
@@ -203,7 +228,7 @@ def _run_one_seed(*, seed: int, cfg: dict, levels, use_tdmpc2_data: bool, agent_
         tdmpc2_results, tdmpc2_card = _run_cem_arm(
             name="TD-MPC2 dynamics",
             dynamics=make_tdmpc2_dynamics(TDMPC2_DYNAMICS_PATH, device="cpu"),
-            cfg=cfg, seed=seed, levels=levels,
+            cfg=cfg, seed=seed, levels=levels, varied_init=varied_init,
         )
     else:
         tdmpc2_results, tdmpc2_card = None, None
@@ -274,7 +299,7 @@ def main() -> None:
     per_seed: list = []
     for s in seeds:
         print(f"\n========== SEED {s} ==========")
-        out = _run_one_seed(seed=s, cfg=cfg, levels=levels, use_tdmpc2_data=use_tdmpc2_data, agent_loaded=agent_loaded)
+        out = _run_one_seed(seed=s, cfg=cfg, levels=levels, use_tdmpc2_data=use_tdmpc2_data, agent_loaded=agent_loaded, varied_init=args.varied_init)
         per_seed.append(out)
 
     # Pool episodes across seeds, recompute the scorecards on the pool,
@@ -337,6 +362,7 @@ def main() -> None:
         "cpgs": cpgs,
         "config": cfg,
         "smoke_mode": args.smoke,
+        "varied_init": args.varied_init,
         "per_seed": [
             {
                 "seed": out["seed"],

@@ -74,6 +74,8 @@ from wmel.metrics import compute_scorecard, counterfactual_planning_gap, cpg_ver
 from wmel.perturbations import DropNextActions
 from wmel.report import print_scorecard, report_envelope_metadata, to_json_report
 
+from experiments._seeding import eval_varied_factory, train_varied_factory
+
 from experiments.dmc_acrobot.coverage_mlp_on_tdmpc2 import (
     _collect_tdmpc2_rollouts,
     _coverage_stats,
@@ -92,6 +94,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--ks", default="0,1,5", help="Comma-separated DropNextActions k values to sweep.")
     p.add_argument("--n-mlp-transitions", type=int, default=20_000)
+    p.add_argument(
+        "--varied-init",
+        action="store_true",
+        help=(
+            "Vary the initial state per episode (seed shared across arms, "
+            "training drawn from a disjoint block) so success rates sample the "
+            "task distribution. Off by default to reproduce committed results."
+        ),
+    )
     return p.parse_args()
 
 
@@ -123,7 +134,7 @@ def _config(smoke: bool, n_mlp_transitions: int) -> dict:
     }
 
 
-def _run_cell(*, name: str, dynamics, cfg: dict, seed: int, levels, k: int):
+def _run_cell(*, name: str, dynamics, cfg: dict, seed: int, levels, k: int, varied_init: bool = False):
     env_template = DMCAcrobotEnv(discrete_levels=levels)
     planner = CEMPlanner(
         dynamics=dynamics,
@@ -139,8 +150,15 @@ def _run_cell(*, name: str, dynamics, cfg: dict, seed: int, levels, k: int):
     # k=0 means no DropNextActions perturbation; pass None so the runner
     # falls back to EnvPerturbation (which is a no-op for Acrobot).
     perturbation = DropNextActions(k=k) if k > 0 else None
+    # All arms share base_seed=seed, so episode k starts from the same state
+    # in every arm (paired). Off by default to reproduce committed results.
+    env_factory = (
+        eval_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+        if varied_init
+        else (lambda: DMCAcrobotEnv(discrete_levels=levels))
+    )
     results = BenchmarkRunner(
-        env_factory=lambda: DMCAcrobotEnv(discrete_levels=levels),
+        env_factory=env_factory,
         policy=planner,
         episodes=cfg["benchmark_episodes"],
         horizon=cfg["benchmark_horizon"],
@@ -192,7 +210,11 @@ def main() -> None:
         agent = _load_tdmpc2_agent(TDMPC2_AGENT_PATH, seed=seed)
         transitions = _collect_tdmpc2_rollouts(
             agent=agent,
-            env_factory=lambda: DMCAcrobotEnv(discrete_levels=levels),
+            env_factory=(
+                train_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+                if args.varied_init
+                else (lambda: DMCAcrobotEnv(discrete_levels=levels))
+            ),
             n_transitions=cfg["n_mlp_transitions"],
             levels=levels,
             seed=seed,
@@ -201,7 +223,9 @@ def main() -> None:
         n_eps = max(1, cfg["n_mlp_transitions"] // 200)
         print(f"[data] Collecting {cfg['n_mlp_transitions']} random-policy transitions ({n_eps} eps)...")
         transitions = collect_random_rollouts(
-            lambda: DMCAcrobotEnv(discrete_levels=levels),
+            train_varied_factory(DMCAcrobotEnv, seed, discrete_levels=levels)
+            if args.varied_init
+            else (lambda: DMCAcrobotEnv(discrete_levels=levels)),
             n_episodes=n_eps,
             max_steps_per_episode=200,
             seed=seed,
@@ -227,14 +251,14 @@ def main() -> None:
         print(f"[k={k}, arm 1/3] CEM on ORACLE dynamics")
         oracle_results, oracle_card = _run_cell(
             name="oracle dynamics", dynamics=make_acrobot_oracle_dynamics(),
-            cfg=cfg, seed=seed, levels=levels, k=k,
+            cfg=cfg, seed=seed, levels=levels, k=k, varied_init=args.varied_init,
         )
 
         print(f"[k={k}, arm 2/3] CEM on MLP-on-{'tdmpc2' if use_tdmpc2_data else 'random'} dynamics")
         mlp_results, mlp_card = _run_cell(
             name=f"MLP on {'tdmpc2' if use_tdmpc2_data else 'random'} data",
             dynamics=learned_dynamics(mlp_model, env_template.action_space),
-            cfg=cfg, seed=seed, levels=levels, k=k,
+            cfg=cfg, seed=seed, levels=levels, k=k, varied_init=args.varied_init,
         )
 
         if TDMPC2_DYNAMICS_PATH.exists():
@@ -242,7 +266,7 @@ def main() -> None:
             tdmpc2_results, tdmpc2_card = _run_cell(
                 name="TD-MPC2 dynamics",
                 dynamics=make_tdmpc2_dynamics(TDMPC2_DYNAMICS_PATH, device="cpu"),
-                cfg=cfg, seed=seed, levels=levels, k=k,
+                cfg=cfg, seed=seed, levels=levels, k=k, varied_init=args.varied_init,
             )
         else:
             tdmpc2_results, tdmpc2_card = None, None
@@ -297,6 +321,7 @@ def main() -> None:
         "coverage": coverage,
         "seed": seed,
         "smoke_mode": args.smoke,
+        "varied_init": args.varied_init,
         "cells": cells,
     }
     JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
