@@ -9,8 +9,8 @@ authors:
 url: "https://github.com/Denis-hamon/world-model-eval-lab"
 repository-code: "https://github.com/Denis-hamon/world-model-eval-lab"
 license: MIT
-version: "0.16.2"
-date-released: 2026-05-29
+version: "0.17.0"
+date-released: 2026-05-31
 keywords:
   - world-models
   - benchmark

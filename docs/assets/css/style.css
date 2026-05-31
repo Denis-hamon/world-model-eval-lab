@@ -1580,6 +1580,13 @@ img.figure-architecture-img.is-visible {
 /* =============================================================
  * Release timeline (replaces the flat bulleted releases list).
  * ============================================================= */
+.timeline-note {
+  color: var(--muted, #52606d);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 70ch;
+  margin: 0.75rem 0 0;
+}
 .release-timeline {
   display: grid;
   gap: 0.85rem;

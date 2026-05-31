@@ -7,11 +7,11 @@ next:
 ---
 
 <div class="release-banner">
-  <span class="tag">v0.15.0</span>
+  <span class="tag">v0.17.0</span>
   <span class="release-banner-text">
-    Cross-environment validation ships: four-arm CPG matrix replayed on DMC Cartpole-swingup at two TD-MPC2 capacities. <code>MODEL BOTTLENECK</code> reproduces in all four cells at <code>model_size = 5</code>; at <code>model_size = 1</code>, the CEM&times;TD-MPC2 cell flips to <code>INCONCLUSIVE</code> &mdash; the first moderate-$n$ verdict the metric's gate refuses to commit on. First non-zero learned-arm successes in the paper.
+    A third environment ships: the four-arm CPG matrix is replayed on DMC Reacher-easy, the first task with a two-dimensional action and an exactly-reconstructed oracle. It is the cleanest case in the paper &mdash; the oracle solves the reach perfectly (<code>1.000</code>) and both learned arms are clearly non-zero (the published TD-MPC2 dynamics reaches <code>0.567</code>&ndash;<code>0.633</code>; the MLP arm <code>0.300</code>&ndash;<code>0.333</code>), so all four cells are <code>MODEL BOTTLENECK</code> on genuine, non-degenerate gaps. Evidence the metric tracks gap <em>magnitude</em>, not just presence.
   </span>
-  <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.15.0">Release notes &rarr;</a>
+  <a href="paper.html#sec-reacher">Read the section &rarr;</a>
 </div>
 
 <section class="hero">
@@ -36,9 +36,9 @@ next:
 </section>
 
 <ul class="stat-strip">
-  <li><span class="stat-value">10</span><span class="stat-label">tagged releases</span></li>
-  <li><span class="stat-value">114</span><span class="stat-label">passing tests</span></li>
-  <li><span class="stat-value">2 envs</span><span class="stat-label">maze toy + DMC Acrobot</span></li>
+  <li><span class="stat-value">v0.17.0</span><span class="stat-label">current version</span></li>
+  <li><span class="stat-value">148</span><span class="stat-label">passing tests</span></li>
+  <li><span class="stat-value">4 envs</span><span class="stat-label">maze toy + 3 DMC tasks</span></li>
   <li><span class="stat-value">CPU-only</span><span class="stat-label">no GPU required</span></li>
   <li><span class="stat-value">0</span><span class="stat-label">ML dependencies at runtime</span></li>
 </ul>
@@ -48,14 +48,12 @@ next:
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
 <aside class="whats-new">
-  <h3>What's new in v0.15</h3>
+  <h3>What's new in v0.17</h3>
   <ul>
-    <li><strong>Cross-environment, capacity 5</strong>: DMC Cartpole-swingup adapter (<code>src/wmel/envs/dmc_cartpole.py</code>) and a four-arm CPG matrix pooled to $n = 30$ at TD-MPC2 <code>model_size = 5</code>, $10^6$ env steps. <code>MODEL BOTTLENECK</code> reproduces in every cell on a task with a much higher oracle baseline.</li>
-    <li><strong>Cross-environment, capacity 1</strong>: same protocol at <code>model_size = 1</code>. Three of four cells stay at <code>MODEL BOTTLENECK</code>. The fourth (CEM&times;TD-MPC2) flips to <code>INCONCLUSIVE</code>: learned reaches $0.533$ vs oracle $0.500$, CPG $-0.033$, AC CI $[-0.28, +0.21]$ &mdash; the first moderate-$n$ <code>INCONCLUSIVE</code> verdict in the paper. Smaller capacity converges better on Cartpole's simpler value-target landscape, and the metric correctly refuses to commit.</li>
-    <li><strong>First non-zero learned-arm successes</strong>: TD-MPC2 reaches $0.200$ to $0.533$ on Cartpole depending on planner and capacity. CPG tracks gap magnitude rather than just gap presence.</li>
-    <li><strong>Planner-capacity asymmetry across envs</strong>: random-shooting outperforms CEM on Cartpole's oracle ($0.900$ vs $0.500$), inverting the Acrobot pattern. The planner-capacity contributor §5.8 surfaced on Acrobot is not a universal direction.</li>
-    <li>Paper updated with <strong>Section 5.10</strong> (cross-env, two capacities) plus <strong>Figure 3</strong> (Acrobot vs Cartpole size 5) and <strong>Figure 4</strong> (Cartpole capacity sweep, the INCONCLUSIVE cell visible). Abstract and conclusion rewritten.</li>
-    <li><strong>GPU experiment queue</strong> at <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/GPU_ROADMAP.md"><code>experiments/GPU_ROADMAP.md</code></a> &mdash; four remaining tasks (horizon ablation, Reacher cross-env, pooled-150 Cartpole, observation-noise perturbation). Task 1 (size=1 completion) marked done.</li>
+    <li><strong>Third environment: DMC Reacher-easy</strong> (<code>src/wmel/envs/dmc_reacher.py</code>). The first task with a two-dimensional action (a $3\times3 = 9$ torque grid) and an oracle reconstructed exactly (reproduces <code>env.step</code> to $&lt;10^{-16}$). Four-arm CPG matrix pooled to $n = 30$ at TD-MPC2 <code>model_size = 1</code>.</li>
+    <li><strong>The cleanest gap-magnitude case in the paper</strong>: the oracle solves the reach in every cell ($1.000$) and both learned arms are clearly non-zero (TD-MPC2 $0.567$ random-shooting / $0.633$ CEM, the paper's highest learned-arm successes). All four cells are <code>MODEL BOTTLENECK</code> on genuine, non-degenerate gaps ($+0.367$ to $+0.700$), and the verdict ranks the two learned dynamics by how much planning success they forfeit.</li>
+    <li><strong>Three environments, one verdict</strong>: across Acrobot, Cartpole, and Reacher &mdash; underactuated swing-up to actuated reaching, 1-D to 2-D actions, oracle rates from $0.30$ to $1.00$ &mdash; the gated verdict reproduces <code>MODEL BOTTLENECK</code> wherever a real gap exists and abstains where it does not. The paper's Reacher section, abstract, intro, and conclusion are updated; Figure 3 extended to three series.</li>
+    <li><strong>From v0.16: a power-analysis tool</strong>. Because the verdict gate is a function of the confidence interval, it doubles as a power calculator: the per-arm episode count a comparison needs before its interval clears zero. A plausible leaderboard near-tie ($0.94$ vs $0.92$ at $n = 100$) is shown to be statistically indistinguishable from noise (it needs $n = 209$). See the paper's power-analysis section and Figure 5.</li>
   </ul>
 </aside>
 
@@ -248,6 +246,14 @@ At $n = 10$ the framework refused to commit. We then pooled three seeds at $n = 
 Held-out validation MSE drops by **~150 times** across the three cells. Planning success stays at **exactly zero**. The gap does not close. A prediction-quality metric alone would have declared the largest-data cell solved; CPG points to a *data-coverage* bottleneck (random rollouts in Acrobot never visit the upright-balancing regime) as the most parsimonious read, with planner-side and score-function residuals as plausible second-order contributors. The recommended remediation is to change the data-collection policy, not to grow the model.
 
 [Read the full page on CPG &rarr;](07_cpg.html) &nbsp;&middot;&nbsp; [Read the paper &rarr;](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex)
+
+  <h3 class="chapter-sub">Across three environments, and a power-analysis tool</h3>
+
+The same four-arm matrix (random-shooting / CEM, against a learned MLP and against published TD-MPC2 dynamics) was then replayed on two further DeepMind Control Suite tasks. On **Cartpole-swingup** the verdict reproduces in every cell at TD-MPC2 `model_size = 5`; at `model_size = 1` the CEM x TD-MPC2 cell flips to `INCONCLUSIVE` (learned $0.533$ vs oracle $0.500$, CI $[-0.28, +0.21]$) -- the first moderate-$n$ cell where the gate refuses to commit. On **Reacher-easy** the oracle solves the reach perfectly ($1.000$) and both learned arms are clearly non-zero ($0.300$ to $0.633$), so all four cells are `MODEL BOTTLENECK` on genuine, non-degenerate gaps ($+0.367$ to $+0.700$) -- the cleanest evidence the metric tracks gap *magnitude* rather than gap presence.
+
+Because the verdict gate is a function of the confidence interval, it also answers a question a bare leaderboard cannot: **how many episodes a comparison needs before its ranking is trustworthy.** A plausible $0.94$-vs-$0.92$ near-tie at $n = 100$ is statistically indistinguishable from noise; the gate shows it needs $n = 209$ per arm before the interval clears zero.
+
+[Cross-env (Cartpole) &rarr;](paper.html#sec-crossenv) &nbsp;&middot;&nbsp; [Third env (Reacher) &rarr;](paper.html#sec-reacher) &nbsp;&middot;&nbsp; [Power analysis &rarr;](paper.html#sec-power)
 </section>
 
 <section class="chapter" id="reproduce" markdown="1">
@@ -322,21 +328,41 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
   </article>
 </section>
 
-## Releases
+## Milestones
+
+<p class="timeline-note">Tagged GitHub releases run through <a href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.11.0">v0.11.0</a> (the framework and the first paper draft). The research milestones since then are tracked in the paper and the version number; a consolidated <code>v1</code> release will be tagged when the paper is submitted. Version labels below link to their release tag where one exists, otherwise to the paper section that documents the milestone.</p>
 
 <section class="release-timeline">
   <article class="release-card release-current">
     <div class="release-head">
-      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.15.0">v0.15.0</a>
-      <span class="release-meta">2026-05-23 &middot; current</span>
+      <a class="release-version" href="paper.html#sec-reacher">v0.17.0</a>
+      <span class="release-meta">2026-05-31 &middot; current</span>
     </div>
-    <p class="release-title">Cross-environment: DMC Cartpole-swingup, two capacities</p>
-    <p class="release-body">Four-arm CPG matrix on a second env at TD-MPC2 <code>model_size = 5</code> AND <code>model_size = 1</code>, $n = 30$ pooled each. All four cells at <code>size = 5</code> reproduce <code>MODEL BOTTLENECK</code>; the CEM&times;TD-MPC2 cell at <code>size = 1</code> flips to <code>INCONCLUSIVE</code> (learned $0.533$ vs oracle $0.500$, CPG $-0.033$, CI $[-0.28, +0.21]$) &mdash; first moderate-$n$ <code>INCONCLUSIVE</code> in the paper. Paper §5.10 + Figures 3 and 4. GPU queue added at <code>experiments/GPU_ROADMAP.md</code>.</p>
+    <p class="release-title">Third environment: DMC Reacher-easy</p>
+    <p class="release-body">The four-arm CPG matrix replayed on a third env: the first task with a two-dimensional action and an exactly-reconstructed oracle. Oracle solves the reach in every cell ($1.000$); both learned arms are clearly non-zero (TD-MPC2 $0.567$&ndash;$0.633$, the paper's highest), so all four cells are <code>MODEL BOTTLENECK</code> on genuine, non-degenerate gaps ($+0.367$ to $+0.700$) &mdash; the cleanest evidence the metric tracks gap magnitude, not just presence. See the paper's Reacher section; Figure 3 extended to three series.</p>
   </article>
 
   <article class="release-card">
     <div class="release-head">
-      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.1">v0.14.1</a>
+      <a class="release-version" href="paper.html#sec-power">v0.16</a>
+      <span class="release-meta">2026-05-29</span>
+    </div>
+    <p class="release-title">Power analysis: how many episodes a ranking needs</p>
+    <p class="release-body">The verdict gate, read as a power calculator: <code>ac_ci_half_width</code>, <code>required_n_for_half_width</code>, <code>detectable_gap_at_n</code>. A plausible $0.94$-vs-$0.92$ leaderboard near-tie at $n = 100$ is shown statistically indistinguishable from noise (needs $n = 209$). Paper power-analysis section + Figure 5. Also: CPG positioned neutrally against the concurrent swm platform paper.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="paper.html#sec-crossenv">v0.15.0</a>
+      <span class="release-meta">2026-05-23</span>
+    </div>
+    <p class="release-title">Cross-environment: DMC Cartpole-swingup, two capacities</p>
+    <p class="release-body">Four-arm CPG matrix on a second env at TD-MPC2 <code>model_size = 5</code> AND <code>model_size = 1</code>, $n = 30$ pooled each. All four cells at <code>size = 5</code> reproduce <code>MODEL BOTTLENECK</code>; the CEM&times;TD-MPC2 cell at <code>size = 1</code> flips to <code>INCONCLUSIVE</code> (learned $0.533$ vs oracle $0.500$, CPG $-0.033$, CI $[-0.28, +0.21]$) &mdash; first moderate-$n$ <code>INCONCLUSIVE</code> in the paper. See the paper's cross-environment section + Figures 3 and 4.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
+      <a class="release-version" href="paper.html#sec-empirical">v0.14.1</a>
       <span class="release-meta">2026-05-23</span>
     </div>
     <p class="release-title">First two paper figures (CPG vs data, coverage histogram)</p>
@@ -345,11 +371,11 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 
   <article class="release-card">
     <div class="release-head">
-      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/releases/tag/v0.14.0">v0.14.0</a>
+      <a class="release-version" href="paper.html#sec-robustness">v0.14.0</a>
       <span class="release-meta">2026-05-23</span>
     </div>
     <p class="release-title">Robustness sweep: published model, stronger planner, perturbation</p>
-    <p class="release-body">Three new axes test the v0.11 <code>MODEL BOTTLENECK</code> verdict: TD-MPC2 (2M env steps) as <code>dynamics</code>, CEM as planner, <code>DropNextActions(k)</code> as in-episode perturbation. Verdict survives all three; pooled-150 under CEM tightens CI half-width to <code>0.054</code>. Paper Sections 5.8 + 5.9.</p>
+    <p class="release-body">Three new axes test the v0.11 <code>MODEL BOTTLENECK</code> verdict: TD-MPC2 (2M env steps) as <code>dynamics</code>, CEM as planner, <code>DropNextActions(k)</code> as in-episode perturbation. Verdict survives all three; pooled-150 under CEM tightens CI half-width to <code>0.054</code>. See the paper's robustness sections.</p>
   </article>
 
   <article class="release-card">
