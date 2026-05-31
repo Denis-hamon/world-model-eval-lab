@@ -52,6 +52,13 @@ jobs:
       - name: Build paper
         working-directory: paper
         run: |
+          # Force a from-scratch build. `make` alone keys off file mtimes,
+          # and a fresh git checkout sets mtimes nondeterministically: when
+          # the committed main.pdf lands newer than main.tex, `make` treats
+          # the PDF as up-to-date and does nothing, leaving a stale PDF
+          # committed back. `make clean` removes the artifacts so the PDF is
+          # always rebuilt from the current source.
+          make clean
           make
           ls -la main.pdf
 
