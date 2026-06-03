@@ -99,6 +99,7 @@ def _parse_args() -> argparse.Namespace:
             "task distribution. Off by default to reproduce committed results."
         ),
     )
+    p.add_argument("--out-suffix", default="", help="Extra suffix appended to the output result-JSON filename (e.g. _fixedinit) so a re-run does not overwrite existing results. Does NOT affect checkpoint paths.")
     return p.parse_args()
 
 
@@ -243,7 +244,7 @@ def main() -> None:
     if args.agent_ckpt == str(AGENT_PATH):
         args.agent_ckpt = str(_REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt")
     AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
-    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"coverage_mlp_on_tdmpc2_cpg{suffix}.json"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"coverage_mlp_on_tdmpc2_cpg{suffix}{args.out_suffix}.json"
 
     # Validate code path with random data if smoke OR if the data-source is
     # random; otherwise load the TD-MPC2 agent and run its policy.

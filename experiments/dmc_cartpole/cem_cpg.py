@@ -108,6 +108,7 @@ def _parse_args() -> argparse.Namespace:
             "task distribution. Off by default to reproduce committed results."
         ),
     )
+    p.add_argument("--out-suffix", default="", help="Extra suffix appended to the output result-JSON filename (e.g. _fixedinit) so a re-run does not overwrite existing results. Does NOT affect checkpoint paths.")
     return p.parse_args()
 
 
@@ -201,7 +202,7 @@ def main() -> None:
     global TDMPC2_AGENT_PATH, TDMPC2_DYNAMICS_PATH, JSON_PATH
     TDMPC2_AGENT_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_agent{suffix}.pt"
     TDMPC2_DYNAMICS_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"tdmpc2_cartpole{suffix}.pt"
-    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"cem_cpg{suffix}.json"
+    JSON_PATH = _REPO_ROOT / "results" / "dmc_cartpole" / f"cem_cpg{suffix}{args.out_suffix}.json"
 
     use_tdmpc2 = (args.mlp_data_source == "tdmpc2") and not args.smoke
 
