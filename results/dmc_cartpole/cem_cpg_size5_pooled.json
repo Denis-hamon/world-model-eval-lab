@@ -14,24 +14,24 @@
   },
   "cpgs": {
     "mlp_on_data": {
-      "oracle_success_rate": 0.5,
+      "oracle_success_rate": 0.4666666666666667,
       "learned_success_rate": 0.0,
-      "gap": 0.5,
+      "gap": 0.4666666666666667,
       "n_episodes_oracle": 30,
       "n_episodes_learned": 30,
-      "gap_ci_low": 0.28531928781723875,
-      "gap_ci_high": 0.6521807121827612,
+      "gap_ci_low": 0.2543891323712598,
+      "gap_ci_high": 0.6206108676287402,
       "verdict": "MODEL BOTTLENECK"
     },
     "tdmpc2": {
-      "oracle_success_rate": 0.5,
-      "learned_success_rate": 0.13333333333333333,
-      "gap": 0.3666666666666667,
+      "oracle_success_rate": 0.4666666666666667,
+      "learned_success_rate": 0.7333333333333333,
+      "gap": -0.2666666666666666,
       "n_episodes_oracle": 30,
       "n_episodes_learned": 30,
-      "gap_ci_low": 0.12964861210894732,
-      "gap_ci_high": 0.5578513878910527,
-      "verdict": "MODEL BOTTLENECK"
+      "gap_ci_low": -0.48272985110155076,
+      "gap_ci_high": -0.017270148898449217,
+      "verdict": "LEARNED OUTPERFORMS ORACLE"
     }
   }
 }
