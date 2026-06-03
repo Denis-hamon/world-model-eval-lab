@@ -9,9 +9,16 @@ next:
 <div class="release-banner">
   <span class="tag">v0.17.0</span>
   <span class="release-banner-text">
-    A third environment ships: the four-arm CPG matrix is replayed on DMC Reacher-easy, the first task with a two-dimensional action and an exactly-reconstructed oracle. It is the cleanest case in the paper &mdash; the oracle solves the reach perfectly (<code>1.000</code>) and both learned arms are clearly non-zero (the published TD-MPC2 dynamics reaches <code>0.567</code>&ndash;<code>0.633</code>; the MLP arm <code>0.300</code>&ndash;<code>0.333</code>), so all four cells are <code>MODEL BOTTLENECK</code> on genuine, non-degenerate gaps. Evidence the metric tracks gap <em>magnitude</em>, not just presence.
+    A third environment ships: the four-arm CPG matrix is replayed on DMC Reacher-easy, the first task with a two-dimensional action and an exactly-reconstructed oracle. It is the cleanest case in the paper &mdash; the oracle solves the reach perfectly (<code>1.000</code>) and both learned arms are clearly non-zero (the published TD-MPC2 dynamics reaches <code>0.567</code>&ndash;<code>0.633</code>; the MLP arm <code>0.300</code>&ndash;<code>0.333</code>), so all four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps at the evaluated fixed initial state. Evidence the metric tracks gap <em>magnitude</em>, not just presence &mdash; pending the varying-initial-state re-run noted in the status banner above.
   </span>
   <a href="paper.html#sec-reacher">Read the section &rarr;</a>
+</div>
+
+<div class="status-note" style="border:1px solid #c9a227;border-left-width:4px;border-radius:6px;padding:1rem 1.25rem;margin:1.25rem 0;background:#fffdf5;">
+  <p style="margin:0 0 .5rem;font-weight:600;">Methodological status (2026-06) &mdash; re-run in progress</p>
+  <p style="margin:0 0 .5rem;">Every CPG worked example below was evaluated at a single fixed per-environment initial state. The DMC adapters load with <code>task_kwargs={"random":0}</code> and a fresh env is built per episode, so all episodes &mdash; including across the &ldquo;three seeds&rdquo; &mdash; started from the same state (Reacher's intended per-episode target was effectively fixed too). The reported success rates therefore estimate P(success | one fixed start, planner noise), not the task's initial-state distribution, and the pooled seeds varied planner RNG rather than the start state.</p>
+  <p style="margin:0 0 .5rem;">This is config-sensitive: the Acrobot flagship gap is $+0.30$ at the fixed start but $0.0$ / <code>INCONCLUSIVE</code> over a 10-instance task sample at $n = 10$. A paired, pooled re-run varying the initial state per episode is in progress; it will likely shrink the oracle advantage and may soften some <code>MODEL BOTTLENECK</code> verdicts. The v0.17 numbers below are intentionally left unchanged until then &mdash; the v0.18 paper revision is gated on the re-run.</p>
+  <p style="margin:0;">The re-run harness is opt-in (default off), so the committed results still reproduce exactly as published. See <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">experiments/RERUN_VARIED_INIT.md</a>.</p>
 </div>
 
 <section class="hero">
@@ -51,8 +58,8 @@ next:
   <h3>What's new in v0.17</h3>
   <ul>
     <li><strong>Third environment: DMC Reacher-easy</strong> (<code>src/wmel/envs/dmc_reacher.py</code>). The first task with a two-dimensional action (a $3\times3 = 9$ torque grid) and an oracle reconstructed exactly (reproduces <code>env.step</code> to $&lt;10^{-16}$). Four-arm CPG matrix pooled to $n = 30$ at TD-MPC2 <code>model_size = 1</code>.</li>
-    <li><strong>The cleanest gap-magnitude case in the paper</strong>: the oracle solves the reach in every cell ($1.000$) and both learned arms are clearly non-zero (TD-MPC2 $0.567$ random-shooting / $0.633$ CEM, the paper's highest learned-arm successes). All four cells are <code>MODEL BOTTLENECK</code> on genuine, non-degenerate gaps ($+0.367$ to $+0.700$), and the verdict ranks the two learned dynamics by how much planning success they forfeit.</li>
-    <li><strong>Three environments, one verdict</strong>: across Acrobot, Cartpole, and Reacher &mdash; underactuated swing-up to actuated reaching, 1-D to 2-D actions, oracle rates from $0.30$ to $1.00$ &mdash; the gated verdict reproduces <code>MODEL BOTTLENECK</code> wherever a real gap exists and abstains where it does not. The paper's Reacher section, abstract, intro, and conclusion are updated; Figure 3 extended to three series.</li>
+    <li><strong>The cleanest gap-magnitude case in the paper</strong>: the oracle solves the reach in every cell ($1.000$) and both learned arms are clearly non-zero (TD-MPC2 $0.567$ random-shooting / $0.633$ CEM, the paper's highest learned-arm successes). All four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps ($+0.367$ to $+0.700$) at the evaluated fixed initial state, and the verdict ranks the two learned dynamics by how much planning success they forfeit (pending the varying-initial-state re-run; see the status banner above).</li>
+    <li><strong>Three environments, one verdict</strong>: across Acrobot, Cartpole, and Reacher &mdash; underactuated swing-up to actuated reaching, 1-D to 2-D actions, oracle rates from $0.30$ to $1.00$ &mdash; the gated verdict reproduces <code>MODEL BOTTLENECK</code> at the evaluated fixed initial state wherever a gap is present and abstains where it is not (whether these hold over the full initial-state distribution is the subject of the pending re-run; see status banner). The paper's Reacher section, abstract, intro, and conclusion are updated; Figure 3 extended to three series.</li>
     <li><strong>From v0.16: a power-analysis tool</strong>. Because the verdict gate is a function of the confidence interval, it doubles as a power calculator: the per-arm episode count a comparison needs before its interval clears zero. A plausible leaderboard near-tie ($0.94$ vs $0.92$ at $n = 100$) is shown to be statistically indistinguishable from noise (it needs $n = 209$). See the paper's power-analysis section and Figure 5.</li>
   </ul>
 </aside>
@@ -249,7 +256,7 @@ Held-out validation MSE drops by **~150 times** across the three cells. Planning
 
   <h3 class="chapter-sub">Across three environments, and a power-analysis tool</h3>
 
-The same four-arm matrix (random-shooting / CEM, against a learned MLP and against published TD-MPC2 dynamics) was then replayed on two further DeepMind Control Suite tasks. On **Cartpole-swingup** the verdict reproduces in every cell at TD-MPC2 `model_size = 5`; at `model_size = 1` the CEM x TD-MPC2 cell flips to `INCONCLUSIVE` (learned $0.533$ vs oracle $0.500$, CI $[-0.28, +0.21]$) -- the first moderate-$n$ cell where the gate refuses to commit. On **Reacher-easy** the oracle solves the reach perfectly ($1.000$) and both learned arms are clearly non-zero ($0.300$ to $0.633$), so all four cells are `MODEL BOTTLENECK` on genuine, non-degenerate gaps ($+0.367$ to $+0.700$) -- the cleanest evidence the metric tracks gap *magnitude* rather than gap presence.
+The same four-arm matrix (random-shooting / CEM, against a learned MLP and against published TD-MPC2 dynamics) was then replayed on two further DeepMind Control Suite tasks. On **Cartpole-swingup** the verdict reproduces in every cell at TD-MPC2 `model_size = 5`; at `model_size = 1` the CEM x TD-MPC2 cell flips to `INCONCLUSIVE` (learned $0.533$ vs oracle $0.500$, CI $[-0.28, +0.21]$) -- the first moderate-$n$ cell where the gate refuses to commit. On **Reacher-easy** the oracle solves the reach perfectly ($1.000$) and both learned arms are clearly non-zero ($0.300$ to $0.633$), so all four cells are `MODEL BOTTLENECK` on non-degenerate gaps ($+0.367$ to $+0.700$) at the evaluated fixed initial state -- the cleanest evidence the metric tracks gap *magnitude* rather than gap presence, pending the varying-initial-state re-run (see the methodological status note near the top of the page).
 
 Because the verdict gate is a function of the confidence interval, it also answers a question a bare leaderboard cannot: **how many episodes a comparison needs before its ranking is trustworthy.** A plausible $0.94$-vs-$0.92$ near-tie at $n = 100$ is statistically indistinguishable from noise; the gate shows it needs $n = 209$ per arm before the interval clears zero.
 
@@ -335,11 +342,20 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 <section class="release-timeline">
   <article class="release-card release-current">
     <div class="release-head">
+      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">status &middot; in progress</a>
+      <span class="release-meta">2026-06-03 &middot; methodological</span>
+    </div>
+    <p class="release-title">Single-fixed-init self-correction + varying-initial-state re-run harness</p>
+    <p class="release-body">The committed CPG worked examples were each measured at one fixed per-environment initial state: the DMC adapters load with <code>task_kwargs={"random":0}</code> and a fresh env is built per episode, so the &ldquo;three seeds&rdquo; varied planner RNG, not the start state, and the reported rates estimate P(success | one fixed start, planner noise). This is config-sensitive (the Acrobot flagship gap is $+0.30$ at the fixed start but $0.0$ / <code>INCONCLUSIVE</code> over a 10-instance task sample). An opt-in <code>--varied-init</code> re-run harness now ships (<code>experiments/_seeding.py</code>, 12 drivers, <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">experiments/RERUN_VARIED_INIT.md</a>); default off, so committed results still reproduce. A CI fix also guarantees the live Download-PDF can no longer ship a stale <code>paper/main.pdf</code>. The v0.18 paper revision is gated on the pooled, paired task-distribution re-run; no new git tag.</p>
+  </article>
+
+  <article class="release-card">
+    <div class="release-head">
       <a class="release-version" href="paper.html#sec-reacher">v0.17.0</a>
-      <span class="release-meta">2026-05-31 &middot; current</span>
+      <span class="release-meta">2026-05-31</span>
     </div>
     <p class="release-title">Third environment: DMC Reacher-easy</p>
-    <p class="release-body">The four-arm CPG matrix replayed on a third env: the first task with a two-dimensional action and an exactly-reconstructed oracle. Oracle solves the reach in every cell ($1.000$); both learned arms are clearly non-zero (TD-MPC2 $0.567$&ndash;$0.633$, the paper's highest), so all four cells are <code>MODEL BOTTLENECK</code> on genuine, non-degenerate gaps ($+0.367$ to $+0.700$) &mdash; the cleanest evidence the metric tracks gap magnitude, not just presence. See the paper's Reacher section; Figure 3 extended to three series.</p>
+    <p class="release-body">The four-arm CPG matrix replayed on a third env: the first task with a two-dimensional action and an exactly-reconstructed oracle. Oracle solves the reach in every cell ($1.000$); both learned arms are clearly non-zero (TD-MPC2 $0.567$&ndash;$0.633$, the paper's highest), so all four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps at the evaluated fixed initial state ($+0.367$ to $+0.700$) &mdash; the cleanest evidence the metric tracks gap magnitude, not just presence, pending the varying-initial-state re-run (see the methodological status card above). See the paper's Reacher section; Figure 3 extended to three series.</p>
   </article>
 
   <article class="release-card">
