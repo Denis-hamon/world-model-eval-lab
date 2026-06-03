@@ -15,22 +15,22 @@
   "cpgs": {
     "mlp_on_data": {
       "oracle_success_rate": 1.0,
-      "learned_success_rate": 0.3333333333333333,
-      "gap": 0.6666666666666667,
+      "learned_success_rate": 0.6666666666666666,
+      "gap": 0.33333333333333337,
       "n_episodes_oracle": 30,
       "n_episodes_learned": 30,
-      "gap_ci_low": 0.44974042688414995,
-      "gap_ci_high": 0.80025957311585,
+      "gap_ci_low": 0.13724042688414992,
+      "gap_ci_high": 0.48775957311585005,
       "verdict": "MODEL BOTTLENECK"
     },
     "tdmpc2": {
       "oracle_success_rate": 1.0,
-      "learned_success_rate": 0.6333333333333333,
-      "gap": 0.3666666666666667,
+      "learned_success_rate": 0.7666666666666667,
+      "gap": 0.23333333333333328,
       "n_episodes_oracle": 30,
       "n_episodes_learned": 30,
-      "gap_ci_low": 0.16550565949552562,
-      "gap_ci_high": 0.5219943405044744,
+      "gap_ci_low": 0.057059860622624886,
+      "gap_ci_high": 0.3804401393773751,
       "verdict": "MODEL BOTTLENECK"
     }
   }

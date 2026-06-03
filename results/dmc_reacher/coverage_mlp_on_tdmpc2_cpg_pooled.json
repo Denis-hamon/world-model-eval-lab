@@ -14,12 +14,12 @@
   },
   "cpg": {
     "oracle_success_rate": 1.0,
-    "learned_success_rate": 0.3,
-    "gap": 0.7,
+    "learned_success_rate": 0.7,
+    "gap": 0.30000000000000004,
     "n_episodes_oracle": 30,
     "n_episodes_learned": 30,
-    "gap_ci_low": 0.48470898927843814,
-    "gap_ci_high": 0.8277910107215618,
+    "gap_ci_low": 0.10970898927843814,
+    "gap_ci_high": 0.45279101072156186,
     "verdict": "MODEL BOTTLENECK"
   }
 }

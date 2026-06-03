@@ -13,21 +13,21 @@
   },
   "cpg": {
     "oracle_success_rate": 1.0,
-    "learned_success_rate": 0.5666666666666667,
-    "gap": 0.43333333333333335,
+    "learned_success_rate": 0.8,
+    "gap": 0.19999999999999996,
     "n_episodes_oracle": 30,
     "n_episodes_learned": 30,
-    "gap_ci_low": 0.224102035807767,
-    "gap_ci_high": 0.588397964192233,
+    "gap_ci_low": 0.03209509790952539,
+    "gap_ci_high": 0.34290490209047464,
     "verdict": "MODEL BOTTLENECK"
   },
   "training": {
-    "training_steps": 1000000,
+    "training_steps": 500000,
     "tdmpc2_model_size": 1,
     "frame_skip": 1,
     "decoder": {
-      "final_train_mse": 0.0009355599759146571,
-      "full_dataset_mse": 0.0010277444962412119,
+      "final_train_mse": 0.0008396859047934413,
+      "full_dataset_mse": 0.0004918491467833519,
       "samples": 9990,
       "steps": 5000
     }
