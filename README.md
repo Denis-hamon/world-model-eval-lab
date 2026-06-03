@@ -7,13 +7,13 @@
 
 > A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
 
-## Status (2026-06): varying-initial-state re-run in progress
+## Status (2026-06): task-distribution re-run complete; v0.18 revision underway
 
 > Every CPG worked example in the Roadmap below was evaluated at a single fixed per-environment initial state. The DMC adapters load with `task_kwargs={"random":0}` and a fresh env is built per episode, so all episodes -- including across the "three seeds" -- started from the same state (Reacher's intended per-episode target was effectively fixed too). The reported success rates therefore estimate P(success | one fixed start, planner noise), not the task's initial-state distribution, and the pooled seeds varied planner RNG rather than the start state.
 >
-> This is config-sensitive: the Acrobot flagship gap is +0.30 at the fixed start but 0.0 / `INCONCLUSIVE` over a 10-instance task sample at n = 10. A paired, pooled re-run varying the initial state per episode is in progress; it will likely shrink the oracle advantage and may soften some `MODEL BOTTLENECK` verdicts. The numbers in the Roadmap below are intentionally left unchanged until then -- the v0.18 paper revision is gated on the re-run.
+> The paired, pooled re-run varying the initial state per episode is now **complete** (committed result JSONs are task-level, tagged `varied_init: true`), and the picture is **heterogeneous** -- exactly the config-sensitivity the metric is built to expose. At task level: **Acrobot** flips from `MODEL BOTTLENECK` to `PLANNER BOTTLENECK` (the oracle planner solves only ~3% of random starts, so the fixed-start gap was an artifact); a **Cartpole** cell reaches `LEARNED OUTPERFORMS ORACLE`; **Reacher** keeps `MODEL BOTTLENECK`. The numbers in the Roadmap below have **not yet been rewritten** to the task-level values -- that is the v0.18 revision now underway (Cartpole is being re-run for a clean, non-confounded initial-state ablation first).
 >
-> The re-run harness is opt-in (default off), so the committed results still reproduce exactly as published. See [`experiments/RERUN_VARIED_INIT.md`](experiments/RERUN_VARIED_INIT.md).
+> The re-run harness is opt-in (default off), so the fixed-init results still reproduce exactly as originally published. See [`experiments/RERUN_VARIED_INIT.md`](experiments/RERUN_VARIED_INIT.md).
 
 ## Thesis
 
