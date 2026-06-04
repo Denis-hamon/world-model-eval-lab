@@ -10,6 +10,13 @@ updates:
     commit-message:
       prefix: "deps"
       include: "scope"
+    ignore:
+      # mujoco >= 3.9 dropped the `flex_bandwidth` MjModel attribute that
+      # dm-control 1.0.41 still reads, which breaks every DMC test. #35
+      # auto-bumped the pin from <3.9 to <3.10 and broke CI. Hold mujoco < 3.9
+      # until dm-control ships a release that catches up, then lift this.
+      - dependency-name: "mujoco"
+        versions: [">=3.9.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
