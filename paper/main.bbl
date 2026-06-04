@@ -1,4 +1,4 @@
-\begin{thebibliography}{26}
+\begin{thebibliography}{34}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -41,6 +41,11 @@ Adrien Bardes et~al.
 \newblock {V-JEPA~2}, 2025.
 \newblock Meta AI technical report.
 
+\bibitem[Brown et~al.(2001)Brown, Cai, and DasGupta]{brown2001interval}
+Lawrence~D. Brown, T.~Tony Cai, and Anirban DasGupta.
+\newblock Interval estimation for a binomial proportion.
+\newblock \emph{Statistical Science}, 16\penalty0 (2):\penalty0 101--133, 2001.
+
 \bibitem[Bruce et~al.(2024{\natexlab{a}})Bruce, Dennis, Edwards,
   et~al.]{bruce2024genie}
 Jake Bruce, Michael Dennis, Ashley Edwards, et~al.
@@ -52,6 +57,29 @@ Jake Bruce, Michael Dennis, Ashley Edwards, et~al.
 Jake Bruce et~al.
 \newblock {Genie 2}: A large-scale foundation world model, 2024{\natexlab{b}}.
 \newblock DeepMind technical report.
+
+\bibitem[D'Oro et~al.(2020)D'Oro, Metelli, Tirinzoni, Papini, and
+  Restelli]{doro2020gradient}
+Pierluca D'Oro, Alberto~Maria Metelli, Andrea Tirinzoni, Matteo Papini, and
+  Marcello Restelli.
+\newblock Gradient-aware model-based policy search.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}, 2020.
+
+\bibitem[Grimm et~al.(2020)Grimm, Barreto, Singh, and Silver]{grimm2020value}
+Christopher Grimm, Andr{\'e} Barreto, Satinder Singh, and David Silver.
+\newblock The value equivalence principle for model-based reinforcement
+  learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2020.
+
+\bibitem[Grimm et~al.(2021)Grimm, Barreto, Farquhar, Silver, and
+  Singh]{grimm2021proper}
+Christopher Grimm, Andr{\'e} Barreto, Greg Farquhar, David Silver, and Satinder
+  Singh.
+\newblock Proper value equivalence.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2021.
 
 \bibitem[Ha and Schmidhuber(2018)]{ha2018world}
 David Ha and J{\"u}rgen Schmidhuber.
@@ -120,6 +148,19 @@ Lucas Maes, Quentin~Le Lidec, Luiz Facury, Nassim Massaudi, Ayush Chaurasia,
 \newblock stable-worldmodel: A platform for reproducible world modeling
   research and evaluation, 2026.
 
+\bibitem[massoud Farahmand(2018)]{farahmand2018iterative}
+Amir massoud Farahmand.
+\newblock Iterative value-aware model learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2018.
+
+\bibitem[massoud Farahmand et~al.(2017)massoud Farahmand, Barreto, and
+  Nikovski]{farahmand2017value}
+Amir massoud Farahmand, Andr{\'e} Barreto, and Daniel Nikovski.
+\newblock Value-aware loss function for model-based reinforcement learning.
+\newblock In \emph{Proceedings of the International Conference on Artificial
+  Intelligence and Statistics (AISTATS)}, 2017.
+
 \bibitem[Micheli et~al.(2023)Micheli, Alonso, and Fleuret]{micheli2023iris}
 Vincent Micheli, Eloi Alonso, and Fran{\c{c}}ois Fleuret.
 \newblock Transformers are sample-efficient world models.
@@ -164,12 +205,27 @@ Yuval Tassa, Yotam Doron, Alistair Muldal, Tom Erez, Yazhe Li, Diego
   Timothy Lillicrap, and Martin Riedmiller.
 \newblock {DeepMind} control suite, 2018.
 
+\bibitem[Tobin et~al.(2017)Tobin, Fong, Ray, Schneider, Zaremba, and
+  Abbeel]{tobin2017domain}
+Josh Tobin, Rachel Fong, Alex Ray, Jonas Schneider, Wojciech Zaremba, and
+  Pieter Abbeel.
+\newblock Domain randomization for transferring deep neural networks from
+  simulation to the real world.
+\newblock In \emph{IEEE/RSJ International Conference on Intelligent Robots and
+  Systems (IROS)}, 2017.
+
 \bibitem[Tunyasuvunakool et~al.(2020)Tunyasuvunakool, Muldal, Doron, Liu,
   Bohez, Merel, Erez, Lillicrap, Heess, and
   Tassa]{tunyasuvunakool2020dmcontrol}
 Saran Tunyasuvunakool, Alistair Muldal, Yotam Doron, Siqi Liu, Steven Bohez,
   Josh Merel, Tom Erez, Timothy Lillicrap, Nicolas Heess, and Yuval Tassa.
 \newblock {dm\_control}: Software and tasks for continuous control, 2020.
+
+\bibitem[Wang et~al.(2019)Wang, Bao, Clavera, Hoang, Wen, Langlois, Zhang,
+  Zhang, Abbeel, and Ba]{wang2019benchmarking}
+Tingwu Wang, Xuchan Bao, Ignasi Clavera, Jerrick Hoang, Yeming Wen, Eric
+  Langlois, Shunshi Zhang, Guodong Zhang, Pieter Abbeel, and Jimmy Ba.
+\newblock Benchmarking model-based reinforcement learning, 2019.
 
 \bibitem[Wilson(1927)]{wilson1927}
 Edwin~B. Wilson.
