@@ -110,6 +110,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--model-size", type=int, required=True)
     p.add_argument("--seeds", type=int, nargs="+", required=True)
+    p.add_argument("--out-suffix", default="", help="Extra suffix appended to BOTH the per-seed input filenames read and the pooled output filenames written (e.g. _fixedinit), so a fixed-init re-run pools its own results without overwriting existing ones.")
     args = p.parse_args()
 
     results_dir = _REPO_ROOT / "results" / "dmc_cartpole"
@@ -122,14 +123,14 @@ def main() -> None:
         ("cem_cpg", _pool_cem),
     ]
     for stem, pooler in pieces:
-        per_seed_paths = [results_dir / f"{stem}{_suffix(args.model_size, s)}.json" for s in args.seeds]
+        per_seed_paths = [results_dir / f"{stem}{_suffix(args.model_size, s)}{args.out_suffix}.json" for s in args.seeds]
         missing = [str(p) for p in per_seed_paths if not p.exists()]
         if missing:
             print(f"[skip] {stem}: missing {missing}")
             continue
         payloads = [_read(p) for p in per_seed_paths]
         pooled = pooler(payloads)
-        out_path = results_dir / f"{stem}_{pooled_tag}.json"
+        out_path = results_dir / f"{stem}{args.out_suffix}_{pooled_tag}.json"
         out_path.write_text(json.dumps(pooled, indent=2) + "\n")
         cpg_repr = pooled.get("cpg") or pooled.get("cpgs")
         print(f"[ok] wrote {out_path.relative_to(_REPO_ROOT)} (n={pooled['pooling']['n_total']})")

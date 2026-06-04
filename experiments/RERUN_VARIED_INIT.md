@@ -83,6 +83,31 @@ python -m experiments.dmc_cartpole.pool_cpg --model-size 1 --seeds 0 1 2
 python -m experiments.dmc_cartpole.pool_cpg --model-size 5 --seeds 0 1 2
 ```
 
+#### Clean Cartpole init-only ablation (matched checkpoint)
+
+The varied-init Cartpole numbers above (committed at the default filenames) were
+produced from checkpoints that had to be **retrained from scratch** (the
+originals were cleaned off disk). Comparing them to the v0.17 fixed-init numbers
+therefore confounds the initial-state change with a checkpoint change. For a
+clean, non-confounded init-only ablation, evaluate the **same** on-disk
+checkpoints at **fixed** init and write to a distinct suffix (so the committed
+varied results are not overwritten), using the `--out-suffix` flag:
+
+```bash
+for M in 1 5; do for S in 0 1 2; do
+  python -m experiments.dmc_cartpole.tdmpc2_cpg             --seed $S --model-size $M --device cuda --out-suffix _fixedinit
+  python -m experiments.dmc_cartpole.cem_cpg               --seed $S --model-size $M --device cuda --out-suffix _fixedinit
+  python -m experiments.dmc_cartpole.coverage_mlp_on_tdmpc2 --seed $S --model-size $M --device cuda --out-suffix _fixedinit
+done; done
+python -m experiments.dmc_cartpole.pool_cpg --model-size 1 --seeds 0 1 2 --out-suffix _fixedinit
+python -m experiments.dmc_cartpole.pool_cpg --model-size 5 --seeds 0 1 2 --out-suffix _fixedinit
+```
+
+This yields `*_fixedinit*.json` (fixed init) alongside the default-name varied
+files, both from the same checkpoints -- a clean fixed-vs-varied pair for the
+v0.18 Cartpole section. `--out-suffix` affects only the output result JSON, not
+the `.pt` checkpoint paths.
+
 ### Reacher (third env, `model_size = 1`)
 
 ```bash
