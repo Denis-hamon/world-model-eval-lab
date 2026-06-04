@@ -56,9 +56,13 @@ control = [
     "dm-control>=1.0",
     # mujoco 3.9.0 (released 2026-05-26) dropped the `flex_bandwidth`
     # MjModel attribute that dm-control 1.0.41 still reads via
-    # `getattr(struct, field_name)` in `dm_control/mujoco/index.py:635`.
-    # Pin under 3.9 until dm-control ships a release that catches up.
-    "mujoco<3.10",
+    # `getattr(struct, field_name)` in `dm_control/mujoco/index.py:635`, which
+    # raises `AttributeError: 'MjModel' object has no attribute 'flex_bandwidth'`
+    # and breaks every DMC test. Keep this under 3.9 until dm-control ships a
+    # release that catches up; a dependabot ignore (.github/dependabot.yml)
+    # stops the pin being auto-bumped past it again (it was, in #35, which is
+    # what this reverts).
+    "mujoco<3.9",
     "numpy>=1.24",
 ]
 
