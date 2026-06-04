@@ -48,35 +48,37 @@ paper moves to task-level numbers) and git preserves the old files.
 
 ### Acrobot (flagship + robustness)
 
-CPU is enough for the oracle and MLP arms; the TD-MPC2 / CEM arms need the
-existing Acrobot TD-MPC2 checkpoint (GPU for inference, no retraining).
+Only `tdmpc2_cpg.py` takes `--device` (it can train TD-MPC2); the other drivers
+load the TD-MPC2 checkpoint, run the dynamics callable on CPU, and retrain the
+small MLP each run, so they run CPU-only and need no `--device` flag.
 
 ```bash
 # Flagship random-shooting, n=10 (CPU):
 MUJOCO_GL=disable python -m experiments.dmc_acrobot.cpg --varied-init
 
-# Multi-seed CEM sweep -> pooled n=150 (reuses the Acrobot TD-MPC2 ckpt; GPU):
-python -m experiments.dmc_acrobot.cem_cpg_sweep --varied-init --device cuda
+# Multi-seed CEM sweep -> pooled n=150 (reuses the Acrobot TD-MPC2 ckpt; CPU):
+python -m experiments.dmc_acrobot.cem_cpg_sweep --varied-init
 
-# Robustness arms (reuse ckpt; GPU for the TD-MPC2 arm):
+# Robustness arms (reuse the TD-MPC2 ckpt):
 python -m experiments.dmc_acrobot.tdmpc2_cpg            --varied-init --device cuda
-python -m experiments.dmc_acrobot.coverage_mlp_on_tdmpc2 --varied-init --device cuda
-python -m experiments.dmc_acrobot.perturbation_cpg      --varied-init --device cuda
-python -m experiments.dmc_acrobot.cem_cpg               --varied-init --device cuda
+python -m experiments.dmc_acrobot.coverage_mlp_on_tdmpc2 --varied-init
+python -m experiments.dmc_acrobot.perturbation_cpg      --varied-init
+python -m experiments.dmc_acrobot.cem_cpg               --varied-init
 ```
 
 ### Cartpole (cross-env, two capacities)
 
 For each `MODEL_SIZE in {1, 5}` and `SEED in {0, 1, 2}` (reuses the existing
 `tdmpc2_agent*.pt` checkpoints -- `tdmpc2_cpg.py` resumes and **skips training**
-when the checkpoint is already at the target step count, so the GPU is used for
-evaluation inference only):
+when the checkpoint is already at the target step count, so GPU is only used by
+that first command; `cem_cpg` and `coverage` run CPU-only and take no
+`--device`):
 
 ```bash
 for M in 1 5; do for S in 0 1 2; do
   python -m experiments.dmc_cartpole.tdmpc2_cpg             --varied-init --seed $S --model-size $M --device cuda
-  python -m experiments.dmc_cartpole.cem_cpg               --varied-init --seed $S --model-size $M --device cuda
-  python -m experiments.dmc_cartpole.coverage_mlp_on_tdmpc2 --varied-init --seed $S --model-size $M --device cuda
+  python -m experiments.dmc_cartpole.cem_cpg               --varied-init --seed $S --model-size $M
+  python -m experiments.dmc_cartpole.coverage_mlp_on_tdmpc2 --varied-init --seed $S --model-size $M
 done; done
 # Pool each capacity:
 python -m experiments.dmc_cartpole.pool_cpg --model-size 1 --seeds 0 1 2
@@ -96,8 +98,8 @@ varied results are not overwritten), using the `--out-suffix` flag:
 ```bash
 for M in 1 5; do for S in 0 1 2; do
   python -m experiments.dmc_cartpole.tdmpc2_cpg             --seed $S --model-size $M --device cuda --out-suffix _fixedinit
-  python -m experiments.dmc_cartpole.cem_cpg               --seed $S --model-size $M --device cuda --out-suffix _fixedinit
-  python -m experiments.dmc_cartpole.coverage_mlp_on_tdmpc2 --seed $S --model-size $M --device cuda --out-suffix _fixedinit
+  python -m experiments.dmc_cartpole.cem_cpg               --seed $S --model-size $M --out-suffix _fixedinit
+  python -m experiments.dmc_cartpole.coverage_mlp_on_tdmpc2 --seed $S --model-size $M --out-suffix _fixedinit
 done; done
 python -m experiments.dmc_cartpole.pool_cpg --model-size 1 --seeds 0 1 2 --out-suffix _fixedinit
 python -m experiments.dmc_cartpole.pool_cpg --model-size 5 --seeds 0 1 2 --out-suffix _fixedinit
@@ -108,13 +110,44 @@ files, both from the same checkpoints -- a clean fixed-vs-varied pair for the
 v0.18 Cartpole section. `--out-suffix` affects only the output result JSON, not
 the `.pt` checkpoint paths.
 
+#### Hardening the LEARNED OUTPERFORMS cell to n=150 (top priority)
+
+The most novel and most fragile result is the size=5 CEM x TD-MPC2 cell:
+`LEARNED OUTPERFORMS ORACLE`, gap `-0.267`, AC CI `[-0.483, -0.017]` -- a
+striking "learned model beats the oracle planner" claim whose interval barely
+clears zero, at only `n = 30`, on a from-scratch-retrained checkpoint. The
+single highest-value run is to make this cell **well-powered and clean**:
+re-evaluate the existing size=5 checkpoints (seeds 0, 1, 2 -- the TD-MPC2 agent
+is loaded, not retrained) at **50 episodes per seed** so the pooled estimate is
+`n = 150`.
+
+```bash
+for S in 0 1 2; do
+  python -m experiments.dmc_cartpole.cem_cpg --model-size 5 --seed $S --varied-init --episodes 50
+done
+python -m experiments.dmc_cartpole.pool_cpg --model-size 5 --seeds 0 1 2
+```
+
+`--episodes 50` overrides the default 10. `cem_cpg` runs CPU-only (it loads the
+TD-MPC2 agent checkpoint and runs the dynamics callable on CPU, and retrains the
+small MLP arm each call -- no `--device` flag), so this is CPU compute, not GPU;
+it is heavier than the n=30 run only by the 5x episode count. The pooled
+`cem_cpg_size5_pooled.json` now carries all three CEM arms at `n = 150`; the
+`tdmpc2` arm is the headline cell. Either it firms up well below zero (a strong,
+citable result that
+exercises a verdict branch nothing else in the paper reaches) or it crosses
+back to `INCONCLUSIVE` -- both outcomes are better known now than discovered by
+a reviewer. The v0.18 write-up reports this cell with a paired bootstrap CI
+(`wmel.metrics.paired_bootstrap_gap_ci`) in addition to the Agresti-Caffo
+interval, since the varied-init design is genuinely paired.
+
 ### Reacher (third env, `model_size = 1`)
 
 ```bash
 for S in 0 1 2; do
   python -m experiments.dmc_reacher.tdmpc2_cpg             --varied-init --seed $S --model-size 1 --device cuda
-  python -m experiments.dmc_reacher.cem_cpg               --varied-init --seed $S --model-size 1 --device cuda
-  python -m experiments.dmc_reacher.coverage_mlp_on_tdmpc2 --varied-init --seed $S --model-size 1 --device cuda
+  python -m experiments.dmc_reacher.cem_cpg               --varied-init --seed $S --model-size 1
+  python -m experiments.dmc_reacher.coverage_mlp_on_tdmpc2 --varied-init --seed $S --model-size 1
 done
 python -m experiments.dmc_reacher.pool_cpg --seeds 0 1 2
 ```
