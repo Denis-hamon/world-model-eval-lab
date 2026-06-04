@@ -80,3 +80,62 @@ def test_compute_scorecard_aggregates_all_fields() -> None:
     assert card.perturbation_recovery_rate == pytest.approx(0.5)
     assert card.average_compute_per_decision is None
     assert card.extras == {}
+
+
+# --- paired bootstrap CI ---
+
+from wmel.metrics import paired_bootstrap_gap_ci
+
+
+def _res(successes: list[bool]) -> list[EpisodeResult]:
+    return [EpisodeResult(success=s, steps=1, planning_latencies_ms=(1.0,)) for s in successes]
+
+
+def test_paired_bootstrap_requires_equal_length() -> None:
+    with pytest.raises(ValueError):
+        paired_bootstrap_gap_ci(_res([True, False]), _res([True]))
+
+
+def test_paired_bootstrap_rejects_empty() -> None:
+    with pytest.raises(ValueError):
+        paired_bootstrap_gap_ci(_res([]), _res([]))
+
+
+def test_paired_bootstrap_point_matches_raw_gap() -> None:
+    oracle = _res([True, True, True, False])   # 0.75
+    learned = _res([True, False, False, False])  # 0.25
+    gap, lo, hi = paired_bootstrap_gap_ci(oracle, learned, n_boot=2000, seed=0)
+    assert gap == pytest.approx(0.5)
+    assert lo <= gap <= hi
+
+
+def test_paired_bootstrap_degenerate_arms_ci_pinned() -> None:
+    # Oracle always succeeds, learned always fails: every paired resample
+    # yields a per-episode difference of exactly 1.0, so the CI collapses to 1.
+    gap, lo, hi = paired_bootstrap_gap_ci(_res([True] * 8), _res([False] * 8), n_boot=1000, seed=1)
+    assert gap == pytest.approx(1.0)
+    assert lo == pytest.approx(1.0)
+    assert hi == pytest.approx(1.0)
+
+
+def test_paired_bootstrap_identical_arms_give_zero_width() -> None:
+    # The defining paired property: if the two arms agree on every episode
+    # (same outcome at the same shared initial state), the difference is 0 on
+    # every resample, so the bootstrap CI has exactly zero width -- whereas an
+    # independent-proportions interval on the same marginals would not.
+    outcomes = [True, False, True, True, False, False]
+    gap, lo, hi = paired_bootstrap_gap_ci(_res(outcomes), _res(list(outcomes)), n_boot=1000, seed=2)
+    assert gap == pytest.approx(0.0)
+    assert lo == pytest.approx(0.0)
+    assert hi == pytest.approx(0.0)
+
+
+def test_paired_bootstrap_is_deterministic_given_seed() -> None:
+    oracle = _res([True, False, True, True, False, True, False, False])
+    learned = _res([False, False, True, False, False, True, False, False])
+    a = paired_bootstrap_gap_ci(oracle, learned, n_boot=3000, seed=7)
+    b = paired_bootstrap_gap_ci(oracle, learned, n_boot=3000, seed=7)
+    assert a == b
+    # different seed -> generally different bounds (point estimate unchanged)
+    c = paired_bootstrap_gap_ci(oracle, learned, n_boot=3000, seed=8)
+    assert c[0] == pytest.approx(a[0])

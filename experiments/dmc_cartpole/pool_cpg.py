@@ -66,7 +66,7 @@ def _pool_tdmpc2_cpg(payloads: list[dict]) -> dict:
         "environment": payloads[0]["environment"],
         "metric": "counterfactual_planning_gap",
         "learned_model": payloads[0]["learned_model"],
-        "pooling": {"seeds": [int(p["seed"]) for p in payloads], "n_per_seed": 10, "n_total": len(oracle)},
+        "pooling": {"seeds": [int(p["seed"]) for p in payloads], "n_per_seed": [len(_episodes_from(p, "oracle_full")) for p in payloads], "n_total": len(oracle)},
         "cpg": _cpg_dict(oracle, learned),
         "training": payloads[0].get("training"),
     }
@@ -80,7 +80,7 @@ def _pool_coverage_mlp(payloads: list[dict]) -> dict:
         "metric": "counterfactual_planning_gap",
         "learned_model": payloads[0]["learned_model"],
         "data_source": payloads[0].get("data_source"),
-        "pooling": {"seeds": [int(p["seed"]) for p in payloads], "n_per_seed": 10, "n_total": len(oracle)},
+        "pooling": {"seeds": [int(p["seed"]) for p in payloads], "n_per_seed": [len(_episodes_from(p, "oracle_full")) for p in payloads], "n_total": len(oracle)},
         "cpg": _cpg_dict(oracle, learned),
     }
 
@@ -94,7 +94,7 @@ def _pool_cem(payloads: list[dict]) -> dict:
         "metric": "counterfactual_planning_gap",
         "planner": payloads[0]["planner"],
         "mlp_data_source": payloads[0].get("mlp_data_source"),
-        "pooling": {"seeds": [int(p["seed"]) for p in payloads], "n_per_seed": 10, "n_total": len(oracle)},
+        "pooling": {"seeds": [int(p["seed"]) for p in payloads], "n_per_seed": [len(_episodes_from(p, "oracle_full")) for p in payloads], "n_total": len(oracle)},
         "cpgs": {"mlp_on_data": _cpg_dict(oracle, mlp)},
     }
     if tdmpc2 is not None:

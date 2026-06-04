@@ -109,6 +109,7 @@ def _parse_args() -> argparse.Namespace:
         ),
     )
     p.add_argument("--out-suffix", default="", help="Extra suffix appended to the output result-JSON filename (e.g. _fixedinit) so a re-run does not overwrite existing results. Does NOT affect checkpoint paths.")
+    p.add_argument("--episodes", type=int, default=None, help="Override benchmark episodes per arm per seed (default 10). Use 50 with three seeds + pool_cpg for an n=150 pooled estimate on the existing checkpoints.")
     return p.parse_args()
 
 
@@ -195,6 +196,8 @@ def _run_arm(
 def main() -> None:
     args = _parse_args()
     cfg = _config(smoke=args.smoke, n_mlp_transitions=args.n_mlp_transitions)
+    if args.episodes is not None:
+        cfg["benchmark_episodes"] = args.episodes
     seed = args.seed
     model_size = args.model_size
     levels = DEFAULT_DISCRETE_LEVELS

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass, field
 from statistics import fmean
 from typing import Iterable, Sequence
@@ -273,6 +274,69 @@ def counterfactual_planning_gap(
         gap_ci_low=tilde_gap - half_width,
         gap_ci_high=tilde_gap + half_width,
     )
+
+
+def paired_bootstrap_gap_ci(
+    oracle_results: Sequence[EpisodeResult],
+    learned_results: Sequence[EpisodeResult],
+    n_boot: int = 10_000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> tuple[float, float, float]:
+    """Percentile bootstrap CI on the CPG when the two arms are *paired*.
+
+    Use this when episode ``k`` of each list starts from the **same** initial
+    state -- which is the case for varied-initial-state runs, where both arms
+    share the per-episode task seed (``experiments/_seeding.py``). The two
+    lists must then be equal length and index-aligned.
+
+    Resampling episode *indices* (the same index drawn for both arms), rather
+    than resampling the two arms independently, preserves the within-episode
+    correlation between the arms. When the arms are **positively** correlated --
+    the expected regime, where a hard initial state tends to hurt both at once --
+    that covariance shrinks the variance of the *difference*, so the paired
+    interval is tighter than the independent-proportions Agresti-Caffo interval
+    of :func:`counterfactual_planning_gap`, which ignores the shared state.
+    (Under negative correlation it can instead be wider; it is calibrated to the
+    actual paired structure either way.) AC remains the right tool for unpaired
+    or boundary (``0/n``) cells; this is the right tool for the non-degenerate
+    paired cells where the two arms can both succeed or both fail on the same
+    start.
+
+    Returns ``(gap_point, ci_low, ci_high)``: the raw paired difference of
+    success rates and the ``[alpha/2, 1 - alpha/2]`` percentile bootstrap
+    bounds. Deterministic given ``seed``.
+    """
+    if len(oracle_results) != len(learned_results):
+        raise ValueError(
+            "paired bootstrap requires equal-length, index-aligned arms "
+            f"(got {len(oracle_results)} oracle, {len(learned_results)} learned)"
+        )
+    if not oracle_results:
+        raise ValueError("results must not be empty")
+    if n_boot < 1:
+        raise ValueError("n_boot must be >= 1")
+    if not (0.0 < alpha < 1.0):
+        raise ValueError("alpha must be in (0, 1)")
+
+    o = [1.0 if r.success else 0.0 for r in oracle_results]
+    l = [1.0 if r.success else 0.0 for r in learned_results]
+    n = len(o)
+    gap_point = fmean(o) - fmean(l)
+
+    rng = random.Random(seed)
+    gaps: list[float] = []
+    for _ in range(n_boot):
+        diff_sum = 0.0
+        for _ in range(n):
+            j = rng.randrange(n)
+            diff_sum += o[j] - l[j]
+        gaps.append(diff_sum / n)
+    gaps.sort()
+
+    lo_idx = max(0, min(int((alpha / 2.0) * n_boot), n_boot - 1))
+    hi_idx = max(0, min(int((1.0 - alpha / 2.0) * n_boot) - 1, n_boot - 1))
+    return gap_point, gaps[lo_idx], gaps[hi_idx]
 
 
 CPG_VERDICT_MODEL_BOTTLENECK = "MODEL BOTTLENECK"
