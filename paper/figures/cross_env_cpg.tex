@@ -1,44 +1,24 @@
-% Figure: CPG comparison across THREE environments (Acrobot, Cartpole,
-% Reacher), same four arm configurations (random-shooting / CEM x MLP /
-% TD-MPC2).
+% Figure: task-level CPG across THREE environments (Acrobot, Cartpole,
+% Reacher) on the same four arm configurations (RS / CEM x MLP / TD-MPC2).
+% All varied-init (task-distribution sampling). gap, with AC 95% CI error
+% bars (eplus = ci_high - gap, eminus = gap - ci_low).
 %
-% Data sources:
-%   Acrobot:
-%     - RS x MLP-on-random-rollouts        : n=10, results/dmc_acrobot/cpg.json
-%       CPG = +0.300, AC CI [-0.059, +0.559]
-%     - RS x TD-MPC2 (2M)                  : n=10, results/dmc_acrobot/tdmpc2_cpg.json
-%       CPG = +0.300, AC CI [-0.059, +0.559]
-%     - CEM x MLP-on-TDMPC2-data, n=150    : results/dmc_acrobot/cem_cpg_sweep.json
-%       CPG = +0.880, AC CI [+0.814, +0.923]
-%     - CEM x TD-MPC2, n=150               : same JSON
-%       CPG = +0.880, AC CI [+0.814, +0.923]
-%   Cartpole (all four cells at n=30 pooled, model_size=5):
-%     - RS x MLP-on-TDMPC2-data            : results/dmc_cartpole/coverage_mlp_on_tdmpc2_cpg_size5_pooled.json
-%       CPG = +0.900, AC CI [+0.714, +0.973]
-%     - RS x TD-MPC2 (1M, model_size=5)    : results/dmc_cartpole/tdmpc2_cpg_size5_pooled.json
-%       CPG = +0.700, AC CI [+0.473, +0.840]
-%     - CEM x MLP-on-TDMPC2-data           : results/dmc_cartpole/cem_cpg_size5_pooled.json
-%       CPG = +0.500, AC CI [+0.285, +0.652]
-%     - CEM x TD-MPC2                      : same JSON
-%       CPG = +0.367, AC CI [+0.130, +0.558]
-%   Reacher-easy (all four cells at n=30 pooled, model_size=1):
-%     - RS x MLP-on-TDMPC2-data            : results/dmc_reacher/coverage_mlp_on_tdmpc2_cpg_pooled.json
-%       CPG = +0.700, AC CI [+0.485, +0.828]   (eplus 0.128, eminus 0.215)
-%     - RS x TD-MPC2 (1M)                  : results/dmc_reacher/tdmpc2_cpg_pooled.json
-%       CPG = +0.433, AC CI [+0.224, +0.588]   (eplus 0.155, eminus 0.209)
-%     - CEM x MLP-on-TDMPC2-data           : results/dmc_reacher/cem_cpg_pooled.json
-%       CPG = +0.667, AC CI [+0.450, +0.800]   (eplus 0.134, eminus 0.217)
-%     - CEM x TD-MPC2                      : same JSON
-%       CPG = +0.367, AC CI [+0.166, +0.522]   (eplus 0.155, eminus 0.201)
-%
-% AC error bars are asymmetric around the raw point estimate; we provide
-% (eplus, eminus) per row.
-%
-% Note on sample-size asymmetry: the Acrobot random-shooting rows are at
-% n=10 (not pooled to n=150) and inherit the wider CI of the v0.10/v0.11
-% headline; the Acrobot CEM rows are pooled-150; all Cartpole and Reacher
-% rows are pooled-n=30. We label this in the caption rather than overlay
-% sample-size glyphs in the figure.
+% Acrobot (RS arms n=10, results/dmc_acrobot/{cpg,tdmpc2_cpg}.json;
+%          CEM arms pooled n=150, results/dmc_acrobot/cem_cpg_sweep.json):
+%   RS x MLP        gap  0.000  CI [-0.298, +0.298]   (PLANNER BOTTLENECK regime / INCONCLUSIVE)
+%   RS x TD-MPC2    gap  0.000  CI [-0.298, +0.298]
+%   CEM x MLP       gap +0.013  CI [-0.027, +0.053]   PLANNER BOTTLENECK
+%   CEM x TD-MPC2   gap +0.007  CI [-0.035, +0.049]   PLANNER BOTTLENECK
+% Cartpole, model_size=5, pooled n=30 (results/dmc_cartpole/*_size5_pooled.json):
+%   RS x MLP        gap +0.933  CI [+0.757, +0.993]   MODEL BOTTLENECK
+%   RS x TD-MPC2    gap +0.167  CI [-0.025, +0.337]   INCONCLUSIVE
+%   CEM x MLP       gap +0.467  CI [+0.254, +0.621]   MODEL BOTTLENECK
+%   CEM x TD-MPC2   gap -0.267  CI [-0.483, -0.017]   LEARNED OUTPERFORMS ORACLE
+% Reacher, model_size=1, pooled n=30 (results/dmc_reacher/*_pooled.json):
+%   RS x MLP        gap +0.300  CI [+0.110, +0.453]   MODEL BOTTLENECK
+%   RS x TD-MPC2    gap +0.200  CI [+0.032, +0.343]   MODEL BOTTLENECK
+%   CEM x MLP       gap +0.333  CI [+0.137, +0.488]   MODEL BOTTLENECK
+%   CEM x TD-MPC2   gap +0.233  CI [+0.057, +0.380]   MODEL BOTTLENECK
 \begin{figure}[t]
   \centering
   \begin{tikzpicture}
@@ -48,9 +28,9 @@
         font=\small,
         ybar=2pt,
         bar width=8pt,
-        ymin=-0.15, ymax=1.05,
-        ytick={0, 0.2, 0.4, 0.6, 0.8, 1.0},
-        ylabel={Counterfactual Planning Gap},
+        ymin=-0.55, ymax=1.05,
+        ytick={-0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0},
+        ylabel={Counterfactual Planning Gap (task-level)},
         ymajorgrids=true,
         xtick={1, 2, 3, 4},
         xticklabels={
@@ -75,39 +55,39 @@
         ]
         table[x=x, y=y, y error plus=eplus, y error minus=eminus, row sep=\\] {
           x y     eplus eminus \\
-          1 0.300 0.259 0.359  \\
-          2 0.300 0.259 0.359  \\
-          3 0.880 0.043 0.066  \\
-          4 0.880 0.043 0.066  \\
+          1 0.000 0.298 0.298  \\
+          2 0.000 0.298 0.298  \\
+          3 0.013 0.040 0.040  \\
+          4 0.007 0.042 0.042  \\
         };
-      \addlegendentry{Acrobot}
+      \addlegendentry{Acrobot (planner-bound)}
       \addplot+[
           fill=blue!45, draw=blue!75!black,
           error bars/.cd, y dir=both, y explicit,
         ]
         table[x=x, y=y, y error plus=eplus, y error minus=eminus, row sep=\\] {
-          x y     eplus eminus \\
-          1 0.900 0.073 0.186  \\
-          2 0.700 0.140 0.227  \\
-          3 0.500 0.152 0.215  \\
-          4 0.367 0.191 0.237  \\
+          x y      eplus eminus \\
+          1 0.933  0.060 0.176  \\
+          2 0.167  0.170 0.192  \\
+          3 0.467  0.154 0.213  \\
+          4 -0.267 0.250 0.216  \\
         };
-      \addlegendentry{Cartpole}
+      \addlegendentry{Cartpole (size 5)}
       \addplot+[
           fill=green!45!black!60, draw=green!45!black,
           error bars/.cd, y dir=both, y explicit,
         ]
         table[x=x, y=y, y error plus=eplus, y error minus=eminus, row sep=\\] {
           x y     eplus eminus \\
-          1 0.700 0.128 0.215  \\
-          2 0.433 0.155 0.209  \\
-          3 0.667 0.134 0.217  \\
-          4 0.367 0.155 0.201  \\
+          1 0.300 0.153 0.190  \\
+          2 0.200 0.143 0.168  \\
+          3 0.333 0.155 0.196  \\
+          4 0.233 0.147 0.176  \\
         };
       \addlegendentry{Reacher}
       \draw[densely dashed, gray!50] (axis cs:0.5, 0) -- (axis cs:4.5, 0);
     \end{axis}
   \end{tikzpicture}
-  \caption{Cross-environment CPG with Agresti--Caffo $95\%$ CI error bars, three environments on the same four planner-dynamics combinations. Sample sizes: Acrobot random-shooting cells at $n = 10$, Acrobot CEM cells pooled at $n = 150$, Cartpole and Reacher all cells pooled at $n = 30$ (Cartpole TD-MPC2 \texttt{model\_size}~$= 5$, Reacher \texttt{model\_size}~$= 1$). The \textsc{model bottleneck} verdict reproduces in every cell shown; the gap magnitude differs and ranks the arm configurations consistently within each env. On Reacher the oracle solves the reach perfectly ($1.000$) and both learned arms are clearly non-zero ($0.300$--$0.633$), so every Reacher gap is genuine and non-degenerate -- the cleanest evidence that the metric tracks gap magnitude rather than gap presence. (The Cartpole capacity sweep produced one \textsc{inconclusive} cell not shown here; see Figure~\ref{fig:cartpole_capacity}.)}
+  \caption{Task-level CPG (varied initial state) with Agresti--Caffo $95\%$ CI error bars, across three environments and four planner-dynamics arms. The verdict is heterogeneous: Acrobot (red) sits at $\approx 0$ -- the oracle planner barely solves random starts, so the gap is \textsc{planner bottleneck} / \textsc{inconclusive}; Reacher (green) is strictly positive \textsc{model bottleneck} in every cell; and Cartpole size~5 (blue) spans the range, from a large \textsc{model bottleneck} (RS~$\times$~MLP) to a \emph{negative} bar at CEM~$\times$~TD-MPC2 whose interval clears zero -- \textsc{learned outperforms oracle}. Sample sizes: Acrobot RS cells $n = 10$ and CEM cells pooled $n = 150$; Cartpole and Reacher pooled $n = 30$. The dashed line marks zero gap.}
   \label{fig:cross_env_cpg}
 \end{figure}
