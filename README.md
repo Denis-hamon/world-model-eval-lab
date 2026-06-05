@@ -7,13 +7,11 @@
 
 > A decision-oriented benchmark framework for evaluating action-conditioned world models beyond static AI benchmarks.
 
-## Status (2026-06): task-distribution re-run complete; v0.18 revision underway
+## Status (v0.18): task-level results, heterogeneous verdicts
 
-> Every CPG worked example in the Roadmap below was evaluated at a single fixed per-environment initial state. The DMC adapters load with `task_kwargs={"random":0}` and a fresh env is built per episode, so all episodes -- including across the "three seeds" -- started from the same state (Reacher's intended per-episode target was effectively fixed too). The reported success rates therefore estimate P(success | one fixed start, planner noise), not the task's initial-state distribution, and the pooled seeds varied planner RNG rather than the start state.
+> The [paper](paper/main.tex) is rewritten on **task-level** results: each CPG worked example samples the task's initial-state distribution (the two arms paired by start state, three seeds pooled), via the opt-in `--varied-init` harness (default off, so the original fixed-init results still reproduce; see [`experiments/RERUN_VARIED_INIT.md`](experiments/RERUN_VARIED_INIT.md)).
 >
-> The paired, pooled re-run varying the initial state per episode is now **complete** (committed result JSONs are task-level, tagged `varied_init: true`), and the picture is **heterogeneous** -- exactly the config-sensitivity the metric is built to expose. At task level: **Acrobot** flips from `MODEL BOTTLENECK` to `PLANNER BOTTLENECK` (the oracle planner solves only ~3% of random starts, so the fixed-start gap was an artifact); a **Cartpole** cell reaches `LEARNED OUTPERFORMS ORACLE`; **Reacher** keeps `MODEL BOTTLENECK`. The numbers in the Roadmap below have **not yet been rewritten** to the task-level values -- that is the v0.18 revision now underway (Cartpole is being re-run for a clean, non-confounded initial-state ablation first).
->
-> The re-run harness is opt-in (default off), so the fixed-init results still reproduce exactly as originally published. See [`experiments/RERUN_VARIED_INIT.md`](experiments/RERUN_VARIED_INIT.md).
+> The verdict is **heterogeneous** -- the config-sensitivity the metric is built to expose. **Acrobot** flips from `MODEL BOTTLENECK` to `PLANNER BOTTLENECK` (the oracle planner solves only ~3% of random starts, so the fixed-start gap was an artifact); **Reacher** holds `MODEL BOTTLENECK` (CPG +0.20 to +0.33); high-capacity **Cartpole** under CEM reaches `LEARNED OUTPERFORMS ORACLE` (CPG −0.27, AC and paired-bootstrap CIs both clearing zero). The headline is a **self-correction**: the metric's own interval-gated machinery overturned an earlier fixed-start result. (The Roadmap further below is historical and predates the task-level rewrite.)
 
 ## Thesis
 
