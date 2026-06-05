@@ -385,7 +385,7 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 
   <article class="release-card">
     <div class="release-head">
-      <a class="release-version" href="paper.html#sec-robustness">v0.14.0</a>
+      <a class="release-version" href="paper.html#sec-selfcorrection">v0.14.0</a>
       <span class="release-meta">2026-05-23</span>
     </div>
     <p class="release-title">Robustness sweep: published model, stronger planner, perturbation</p>
