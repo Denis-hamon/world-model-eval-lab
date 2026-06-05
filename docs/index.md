@@ -7,18 +7,16 @@ next:
 ---
 
 <div class="release-banner">
-  <span class="tag">v0.17.0</span>
+  <span class="tag">v0.18.0</span>
   <span class="release-banner-text">
-    A third environment ships: the four-arm CPG matrix is replayed on DMC Reacher-easy, the first task with a two-dimensional action and an exactly-reconstructed oracle. It is the cleanest case in the paper &mdash; the oracle solves the reach perfectly (<code>1.000</code>) and both learned arms are clearly non-zero (the published TD-MPC2 dynamics reaches <code>0.567</code>&ndash;<code>0.633</code>; the MLP arm <code>0.300</code>&ndash;<code>0.333</code>), so all four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps at the evaluated fixed initial state. Evidence the metric tracks gap <em>magnitude</em>, not just presence &mdash; pending the varying-initial-state re-run noted in the status banner above.
+    The paper is rewritten on task-level results, and the verdict is <strong>heterogeneous</strong>: sampling each task's initial-state distribution turns Acrobot from <code>MODEL BOTTLENECK</code> into <code>PLANNER BOTTLENECK</code> (the oracle planner solves only ~3% of random starts), keeps Reacher at <code>MODEL BOTTLENECK</code>, and on high-capacity Cartpole under CEM the learned model <em>beats</em> the oracle planner (<code>LEARNED OUTPERFORMS ORACLE</code>). The headline is a self-correction: the metric's own interval-gated machinery overturned an earlier fixed-start result.
   </span>
-  <a href="paper.html#sec-reacher">Read the section &rarr;</a>
+  <a href="paper.html#sec-selfcorrection">Read the section &rarr;</a>
 </div>
 
 <div class="status-note" style="border:1px solid #c9a227;border-left-width:4px;border-radius:6px;padding:1rem 1.25rem;margin:1.25rem 0;background:#fffdf5;">
-  <p style="margin:0 0 .5rem;font-weight:600;">Methodological status (2026-06) &mdash; re-run complete, v0.18 revision underway</p>
-  <p style="margin:0 0 .5rem;">Every CPG worked example below was evaluated at a single fixed per-environment initial state. The DMC adapters load with <code>task_kwargs={"random":0}</code> and a fresh env is built per episode, so all episodes &mdash; including across the &ldquo;three seeds&rdquo; &mdash; started from the same state (Reacher's intended per-episode target was effectively fixed too). The reported success rates therefore estimate P(success | one fixed start, planner noise), not the task's initial-state distribution, and the pooled seeds varied planner RNG rather than the start state.</p>
-  <p style="margin:0 0 .5rem;">The paired, pooled re-run varying the initial state per episode is now <strong>complete</strong> (the committed result JSONs are task-level, tagged <code>varied_init: true</code>), and it is config-sensitive in exactly the way the metric is built to expose. At the task level the picture is <strong>heterogeneous</strong>: Acrobot flips from <code>MODEL BOTTLENECK</code> to <code>PLANNER BOTTLENECK</code> (the oracle planner itself solves only ~3% of random starts, so the fixed-start gap was an artifact); a Cartpole cell reaches <code>LEARNED OUTPERFORMS ORACLE</code>; Reacher keeps <code>MODEL BOTTLENECK</code>. The v0.17 numbers in the prose/tables below have <em>not yet been rewritten</em> to the task-level values &mdash; that is the v0.18 revision, in progress (Cartpole is being re-run for a clean, non-confounded initial-state ablation first).</p>
-  <p style="margin:0;">The re-run harness is opt-in (default off), so the committed results still reproduce exactly as published. See <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">experiments/RERUN_VARIED_INIT.md</a>.</p>
+  <p style="margin:0 0 .5rem;font-weight:600;">Note on this page vs. the paper (v0.18)</p>
+  <p style="margin:0;">The <a href="paper.html">paper</a> reports the authoritative <strong>task-level</strong> results: each episode samples the task's initial-state distribution (the two CPG arms paired by start state), which is what makes the heterogeneous verdicts above. The Step-04 walkthrough below keeps the original <strong>single-fixed-initial-state</strong> Acrobot example for illustration; the paper's <a href="paper.html#sec-selfcorrection">self-correction section</a> shows how sampling the task distribution collapses the oracle there and overturns the verdict. A full task-level refresh of this walkthrough is the next docs update.</p>
 </div>
 
 <section class="hero">
@@ -43,7 +41,7 @@ next:
 </section>
 
 <ul class="stat-strip">
-  <li><span class="stat-value">v0.17.0</span><span class="stat-label">current version</span></li>
+  <li><span class="stat-value">v0.18.0</span><span class="stat-label">current version</span></li>
   <li><span class="stat-value">148</span><span class="stat-label">passing tests</span></li>
   <li><span class="stat-value">4 envs</span><span class="stat-label">maze toy + 3 DMC tasks</span></li>
   <li><span class="stat-value">CPU-only</span><span class="stat-label">no GPU required</span></li>
@@ -55,12 +53,12 @@ next:
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/LICENSE)
 
 <aside class="whats-new">
-  <h3>What's new in v0.17</h3>
+  <h3>What's new in v0.18</h3>
   <ul>
-    <li><strong>Third environment: DMC Reacher-easy</strong> (<code>src/wmel/envs/dmc_reacher.py</code>). The first task with a two-dimensional action (a $3\times3 = 9$ torque grid) and an oracle reconstructed exactly (reproduces <code>env.step</code> to $&lt;10^{-16}$). Four-arm CPG matrix pooled to $n = 30$ at TD-MPC2 <code>model_size = 1</code>.</li>
-    <li><strong>The cleanest gap-magnitude case in the paper</strong>: the oracle solves the reach in every cell ($1.000$) and both learned arms are clearly non-zero (TD-MPC2 $0.567$ random-shooting / $0.633$ CEM, the paper's highest learned-arm successes). All four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps ($+0.367$ to $+0.700$) at the evaluated fixed initial state, and the verdict ranks the two learned dynamics by how much planning success they forfeit (pending the varying-initial-state re-run; see the status banner above).</li>
-    <li><strong>Three environments, one verdict</strong>: across Acrobot, Cartpole, and Reacher &mdash; underactuated swing-up to actuated reaching, 1-D to 2-D actions, oracle rates from $0.30$ to $1.00$ &mdash; the gated verdict reproduces <code>MODEL BOTTLENECK</code> at the evaluated fixed initial state wherever a gap is present and abstains where it is not (whether these hold over the full initial-state distribution is the subject of the pending re-run; see status banner). The paper's Reacher section, abstract, intro, and conclusion are updated; Figure 3 extended to three series.</li>
-    <li><strong>From v0.16: a power-analysis tool</strong>. Because the verdict gate is a function of the confidence interval, it doubles as a power calculator: the per-arm episode count a comparison needs before its interval clears zero. A plausible leaderboard near-tie ($0.94$ vs $0.92$ at $n = 100$) is shown to be statistically indistinguishable from noise (it needs $n = 209$). See the paper's power-analysis section and Figure 5.</li>
+    <li><strong>The paper is rewritten on task-level results.</strong> Every CPG worked example now samples the task's initial-state distribution (the two arms paired by start state, three seeds pooled), instead of a single fixed start. This is the design the metric's own honesty discipline demands.</li>
+    <li><strong>Heterogeneous verdicts &mdash; four of five branches fire on real data.</strong> <code>PLANNER BOTTLENECK</code> on Acrobot (the oracle planner solves only ~3% of random starts), <code>MODEL BOTTLENECK</code> on Reacher ($\mathrm{CPG}$ $+0.20$ to $+0.33$) and most of Cartpole, <code>LEARNED OUTPERFORMS ORACLE</code> on high-capacity Cartpole under CEM ($\mathrm{CPG} = -0.27$, AC and paired-bootstrap intervals both clearing zero), and <code>INCONCLUSIVE</code> on several near-ties.</li>
+    <li><strong>The metric as self-correction.</strong> An earlier fixed-initial-state evaluation reported a large <code>MODEL BOTTLENECK</code> gap on Acrobot; re-running over the task distribution collapsed the oracle and overturned the verdict to <code>PLANNER BOTTLENECK</code>. A calibrated, interval-gated statistic caught a configuration-sensitive artifact a point estimate would have published.</li>
+    <li><strong>Statistics + tooling.</strong> A paired bootstrap CI (<code>wmel.metrics.paired_bootstrap_gap_ci</code>) for the paired varied-init design; value-equivalence / decision-aware citations added; the verdict gate doubles as a power tool that sizes a comparison before the rollouts.</li>
   </ul>
 </aside>
 
@@ -342,11 +340,11 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 <section class="release-timeline">
   <article class="release-card release-current">
     <div class="release-head">
-      <a class="release-version" href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">status &middot; in progress</a>
-      <span class="release-meta">2026-06-03 &middot; methodological</span>
+      <a class="release-version" href="paper.html#sec-selfcorrection">v0.18.0</a>
+      <span class="release-meta">2026-06-04 &middot; current</span>
     </div>
-    <p class="release-title">Single-fixed-init self-correction + varying-initial-state re-run harness</p>
-    <p class="release-body">The committed CPG worked examples were each measured at one fixed per-environment initial state: the DMC adapters load with <code>task_kwargs={"random":0}</code> and a fresh env is built per episode, so the &ldquo;three seeds&rdquo; varied planner RNG, not the start state, and the reported rates estimate P(success | one fixed start, planner noise). This is config-sensitive (the Acrobot flagship gap is $+0.30$ at the fixed start but $0.0$ / <code>INCONCLUSIVE</code> over a 10-instance task sample). An opt-in <code>--varied-init</code> re-run harness now ships (<code>experiments/_seeding.py</code>, 12 drivers, <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">experiments/RERUN_VARIED_INIT.md</a>); default off, so committed results still reproduce. A CI fix also guarantees the live Download-PDF can no longer ship a stale <code>paper/main.pdf</code>. The re-run is now complete and the task-level picture is heterogeneous (Acrobot &rarr; <code>PLANNER BOTTLENECK</code>, a Cartpole cell &rarr; <code>LEARNED OUTPERFORMS ORACLE</code>, Reacher holds <code>MODEL BOTTLENECK</code>); the v0.18 paper revision integrating those numbers is underway; no new git tag.</p>
+    <p class="release-title">Task-level rewrite: heterogeneous verdicts and a self-correction</p>
+    <p class="release-body">The paper is rewritten on <strong>task-level</strong> results -- each worked example samples the task's initial-state distribution (arms paired by start state), produced by the opt-in <code>--varied-init</code> harness (<code>experiments/_seeding.py</code>, <a href="https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md">RERUN_VARIED_INIT.md</a>; default off, so the original fixed-init results still reproduce). The verdict is heterogeneous: Acrobot flips to <code>PLANNER BOTTLENECK</code> (oracle solves ~3% of random starts -- the fixed-start <code>MODEL BOTTLENECK</code> was an artifact), Reacher holds <code>MODEL BOTTLENECK</code>, and high-capacity Cartpole under CEM reaches <code>LEARNED OUTPERFORMS ORACLE</code> ($\mathrm{CPG} = -0.27$, AC + paired-bootstrap CIs clear zero). Four of the five verdict branches fire on real data. Adds a paired-bootstrap CI and value-equivalence citations. No new git tag.</p>
   </article>
 
   <article class="release-card">
@@ -387,7 +385,7 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
 
   <article class="release-card">
     <div class="release-head">
-      <a class="release-version" href="paper.html#sec-robustness">v0.14.0</a>
+      <a class="release-version" href="paper.html#sec-selfcorrection">v0.14.0</a>
       <span class="release-meta">2026-05-23</span>
     </div>
     <p class="release-title">Robustness sweep: published model, stronger planner, perturbation</p>
