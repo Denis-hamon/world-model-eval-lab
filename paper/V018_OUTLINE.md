@@ -105,6 +105,53 @@ the negative gap clears zero).
 - [ ] Add a methods note that the re-run design is paired; report per-seed
       dispersion (the seed-level JSONs make this cheap).
 
+## VERIFIED task-level numbers (from result JSONs, 2026-06-04)
+
+All varied-init. AC = Agresti-Caffo 95% CI. Use these verbatim in §5.
+
+**Acrobot** (the self-correction env):
+- RS x MLP, n=10 (`cpg.json`): o=0.100 l=0.100 gap=+0.000 AC[-0.298,+0.298] INCONCLUSIVE
+- RS x TD-MPC2, n=10 (`tdmpc2_cpg.json`): o=0.100 l=0.100 gap=+0.000 INCONCLUSIVE
+- CEM pooled n=150 (`cem_cpg_sweep.json`): mlp_on_data o=0.033 l=0.020 gap=+0.013 AC[-0.027,+0.053] PLANNER BOTTLENECK; tdmpc2 o=0.033 l=0.027 gap=+0.007 AC[-0.035,+0.049] PLANNER BOTTLENECK
+- Fixed-init contrast (v0.17, git history): CEM pooled +0.88 MODEL BOTTLENECK -> the artifact.
+
+**Cartpole size=5**, pooled n=30:
+- CEM x MLP-on-data: o=0.467 l=0.000 gap=+0.467 AC[+0.254,+0.621] MODEL BOTTLENECK
+- CEM x TD-MPC2: o=0.467 l=0.733 gap=-0.267 AC[-0.483,-0.017] LEARNED OUTPERFORMS ORACLE; paired bootstrap [-0.500,-0.033] (both clear zero); 2x2 both=10 oracle-only=4 tdmpc2-only=12 neither=4
+- RS x TD-MPC2: o=0.933 l=0.767 gap=+0.167 AC[-0.025,+0.337] INCONCLUSIVE
+- RS x MLP (coverage): o=0.933 l=0.000 gap=+0.933 AC[+0.757,+0.993] MODEL BOTTLENECK
+
+**Cartpole size=1**, pooled n=30:
+- CEM x MLP: o=0.467 l=0.067 gap=+0.400 AC[+0.175,+0.575] MODEL BOTTLENECK
+- CEM x TD-MPC2: o=0.467 l=0.367 gap=+0.100 AC[-0.147,+0.335] INCONCLUSIVE
+- RS x TD-MPC2: o=0.933 l=0.300 gap=+0.633 AC[+0.404,+0.783] MODEL BOTTLENECK
+- RS x MLP (coverage): o=0.933 l=0.067 gap=+0.867 AC[+0.670,+0.955] MODEL BOTTLENECK
+
+**Reacher** (model_size=1), pooled n=30 -- all MODEL BOTTLENECK:
+- CEM x MLP: o=1.000 l=0.667 gap=+0.333 AC[+0.137,+0.488]
+- CEM x TD-MPC2: o=1.000 l=0.767 gap=+0.233 AC[+0.057,+0.380]
+- RS x TD-MPC2: o=1.000 l=0.800 gap=+0.200 AC[+0.032,+0.343]
+- RS x MLP (coverage): o=1.000 l=0.700 gap=+0.300 AC[+0.110,+0.453]
+
+Verdict-branch coverage on real data: PLANNER BOTTLENECK (Acrobot), MODEL
+BOTTLENECK (Reacher, most Cartpole), LEARNED OUTPERFORMS ORACLE (Cartpole s5
+CEM x TD-MPC2), INCONCLUSIVE (several). Only MODEL AS GOOD AS ORACLE never
+fires. NOTE n=30 caveat on all Cartpole/Reacher pooled cells; Cartpole s5
+LEARNED OUTPERFORMS holds under both AC and paired bootstrap but the upper
+bound is near zero -- disclose n=30 + single-checkpoint as limitations.
+
+## Status of the rewrite (branch v018-rewrite)
+
+- [x] Title -> "...under a Fixed Planner".
+- [x] Abstract rewritten (task-level, heterogeneity, self-correction, ~280 words).
+- [x] Intro contributions reordered (gated rule / heterogeneity / self-correction).
+- [ ] Empirical section (§5): restructure to per-env task-level + a
+      `\label{sec:selfcorrection}` subsection (Acrobot fixed-vs-varied artifact).
+- [ ] Discussion + conclusion to the heterogeneity story.
+- [ ] cross_env figure (TikZ + SVG) -> task-level heterogeneity.
+- [ ] docs/paper.md mirror sync; remove status banners; version 0.18.0.
+- [ ] Adversarial review; PR.
+
 ## Gating
 
 The only blocker is the clean Cartpole ablation (PR #39 command). Everything
