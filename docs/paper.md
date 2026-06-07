@@ -74,7 +74,7 @@ $$
 \mathrm{CPG} \;=\; \mathrm{success\_rate}(D^{\star}) \;-\; \mathrm{success\_rate}(D_\theta).
 $$
 
-All free quantities on the right-hand side — env, planner, score, $N$, $T$, seed — are held fixed between the two runs. The only thing that changes is the `dynamics` callable. This identification is what licenses interpreting CPG as a property of the *model* rather than the planner or the env.
+All free quantities on the right-hand side — env, planner, score, $N$, $T$, and the initial-state distribution — are held fixed between the two runs. The only thing that changes is the `dynamics` callable, so CPG attributes the success-rate difference to that callable, holding everything else fixed. It is therefore a property of the (model, planner, distribution) triple, *not* a planner- or distribution-free property of the model alone: as §4.4 shows, the same model can flip the verdict when only the evaluation distribution changes. Read CPG relative to a stated planner and a stated distribution.
 
 ### 3.2 Statistical reporting
 
