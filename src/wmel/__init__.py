@@ -28,6 +28,7 @@ from wmel.report import (
     to_markdown_scorecard,
 )
 from wmel.metrics import (
+    BradleyTerryRanking,
     EpisodeResult,
     Scorecard,
     ac_ci_half_width,
@@ -36,6 +37,7 @@ from wmel.metrics import (
     average_steps_to_success,
     compute_scorecard,
     detectable_gap_at_n,
+    paired_bradley_terry_ranking,
     perturbation_recovery_rate,
     required_n_for_half_width,
 )
@@ -45,6 +47,7 @@ __version__ = "0.18.0"
 __all__ = [
     "BenchmarkEnvironment",
     "BenchmarkRunner",
+    "BradleyTerryRanking",
     "CompositePerturbation",
     "DropNextActions",
     "EnvPerturbation",
@@ -61,6 +64,7 @@ __all__ = [
     "compute_scorecard",
     "detectable_gap_at_n",
     "horizon_sweep",
+    "paired_bradley_terry_ranking",
     "perturbation_recovery_rate",
     "required_n_for_half_width",
     "print_horizon_sweep",

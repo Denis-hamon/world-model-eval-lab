@@ -150,8 +150,25 @@ Sources: [`results/dmc_acrobot/`](https://github.com/Denis-hamon/world-model-eva
 - **Single-run reporting at $n &lt; 10$** &mdash; the AC CI will refuse to commit. That is the correctly-calibrated behaviour, not a defect.
 </section>
 
+## Methodology we draw on
+
+As physical-AI world models proliferate and get ranked on success-rate leaderboards, two ideas from that evaluation literature sharpen what CPG already does. We borrow the *methods*, not the metrics: pixel-fidelity scores (PSNR/SSIM/LPIPS, generation FID) are exactly the prediction-quality measures this page argues are silent on decisions, so they stay out.
+
+- **Pairwise, matched-condition ranking.** RoboArena ([Atreya et al., 2025](https://arxiv.org/abs/2506.18123)) ranks generalist robot policies from *double-blind pairwise comparisons*, and flags that the Bradley-Terry assumption of identical conditions per comparison breaks when evaluators pick disparate tasks -- so they add a task-aware ranking. CPG's design already gives the matched condition for free: under varied-init sampling every model is scored on the *same* per-episode initial state, so each pairwise comparison is condition-matched by construction. `wmel.metrics.paired_bradley_terry_ranking` builds on this -- it ranks N models from their paired per-episode runs with a Bradley-Terry fit and a paired bootstrap CI on the *ranking itself*, with an optional `groups=` argument that stratifies the bootstrap by task so the rank interval reflects the task mix (a calibration correction on the interval only -- it does not change the point ranking). When two models' rank intervals overlap, the leaderboard cannot separate them -- the ranking analogue of an `INCONCLUSIVE` verdict.
+
+  ```python
+  from wmel.metrics import paired_bradley_terry_ranking
+  ranking = paired_bradley_terry_ranking(
+      {"oracle": oracle_results, "tdmpc2": tdmpc2_results, "mlp": mlp_results}
+  )
+  ranking.ranks       # {"oracle": 1, "tdmpc2": 2, "mlp": 3}
+  ranking.rank_ci     # {"tdmpc2": (2, 3), ...}  -- overlap => not separable
+  ```
+
+- **Calibration as a stated design goal.** NVIDIA's Cosmos human-evaluation framework decomposes each output into atomic yes/no checks, with the stated rationale that "as SOTA models saturate existing automated leaderboards, score differences between releases are often too narrow for meaningful comparison." That is the same diagnosis as this framework's power analysis (a $0.94$-vs-$0.92$ tie at $n=100$ is noise), arrived at independently -- external corroboration that calibrated, interval-aware reading of a leaderboard is the right design target. A binary decomposition of the success criterion into per-condition checks, each with its own AC interval, is a natural future extension that keeps the binomial machinery intact.
+
 ## Source
 
-- [`src/wmel/metrics.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/src/wmel/metrics.py) -- `CPGResult`, `counterfactual_planning_gap`, `cpg_verdict`.
+- [`src/wmel/metrics.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/src/wmel/metrics.py) -- `CPGResult`, `counterfactual_planning_gap`, `cpg_verdict`, `paired_bradley_terry_ranking`.
 - [`experiments/dmc_acrobot/cpg.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/dmc_acrobot/cpg.py) -- end-to-end run on DMC Acrobot-swingup.
 - [`paper/main.tex`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex) -- short paper that formalises the metric and reports the worked example.
