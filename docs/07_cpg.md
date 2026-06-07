@@ -25,9 +25,9 @@ $$
 \mathrm{CPG} \;=\; \mathrm{success\_rate}(D^{\star}) \;-\; \mathrm{success\_rate}(D_\theta)
 $$
 
-with $D^{\star}$ the oracle dynamics and $D_\theta$ the learned model. All other quantities (env, planner, scoring function, $N$ episodes, horizon, seed) are held fixed between the two runs.
+with $D^{\star}$ the oracle dynamics and $D_\theta$ the learned model. All other quantities (env, planner, scoring function, $N$ episodes, horizon, seed, and the initial-state distribution) are held fixed between the two runs.
 
-This identification &mdash; same planner, same scoring, same env, same seed, only `dynamics=` swapped &mdash; is what licenses interpreting CPG as a property of the *model*, not of the planner or the env.
+This identification &mdash; same planner, same scoring, same env, same seed, only `dynamics=` swapped &mdash; attributes the success-rate difference to that callable. CPG is therefore a property of the **(model, planner, distribution) triple**, *not* a planner- or distribution-free property of the model alone: as the worked example below shows, the same model can flip the verdict when only the evaluation distribution changes. Read CPG relative to a stated planner and a stated initial-state distribution.
 </section>
 
 <section class="chapter" id="why-ac" markdown="1">
@@ -75,8 +75,8 @@ The default tolerance is $\tau = 0.05$. Crucially, `MODEL BOTTLENECK` is **not**
 
 <section class="chapter" id="example" markdown="1">
   <p class="chapter-eyebrow">Step 04</p>
-  <h2 class="chapter-title">Worked example: DMC Acrobot-swingup at $n = 10$</h2>
-  <p class="chapter-lead">The framework's reference run. Random-shooting MPC over a five-level torque discretisation, $50$ candidates of $15$-step horizon, $10$ episodes per arm, seed $0$.</p>
+  <h2 class="chapter-title">Worked example: a fixed-init snapshot, then the metric correcting itself</h2>
+  <p class="chapter-lead">The framework's reference run. Random-shooting MPC over a five-level torque discretisation, $50$ candidates of $15$-step horizon, $10$ episodes per arm, seed $0$, on DMC Acrobot-swingup.</p>
 
 |  | Oracle dynamics | Learned MLP |
 | --- | ---: | ---: |
@@ -91,7 +91,7 @@ The default tolerance is $\tau = 0.05$. Crucially, `MODEL BOTTLENECK` is **not**
 | Agresti--Caffo $95\%$ CI | $[-0.059, +0.559]$ |
 | Verdict | <span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span> |
 
-The data is *suggestive* of a model bottleneck &mdash; the raw point estimate is positive and large &mdash; but with $n_\ell = 10$ and the learned arm reporting $0/10$, the AC CI cannot rule out zero. The honest call is to **run more episodes**.
+The data is *suggestive* of a model bottleneck &mdash; the raw point estimate is positive and large &mdash; but with $n_\ell = 10$ and the learned arm reporting $0/10$, the AC CI cannot rule out zero. The honest call is to **run more episodes**. As the next sub-section shows, doing so first appears to confirm a model bottleneck, and then &mdash; once the *initial-state distribution* is sampled rather than fixed &mdash; overturns it.
 
 Numbers above are pulled verbatim from [`results/dmc_acrobot/cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cpg.json). Regenerate with:
 
@@ -100,60 +100,36 @@ pip install -e ".[dev,control,learned]"
 python -m experiments.dmc_acrobot.cpg
 ```
 
-  <h3 class="chapter-sub">Multi-seed extension (n = 150 pooled per arm)</h3>
+  <h3 class="chapter-sub">The metric corrects itself</h3>
 
-We pooled three seeds at $50$ episodes per arm per seed ($n = 150$ pooled) and swept the MLP's training-set size by a factor of $100$ across $\{200,\, 2{,}000,\, 20{,}000\}$ random-policy transitions. Every other quantity is held fixed.
+The honest next step at $n = 10$ is more episodes. Pooling three seeds at $50$ episodes per arm and switching to a stronger CEM planner makes the fixed-start gap look decisive: the oracle solves $88\%$ of episodes, the learned arm stays at $0$, and the verdict hardens to `MODEL BOTTLENECK` ($\mathrm{CPG} = +0.88$, AC CI $[+0.81, +0.92]$). A point-estimate leaderboard would publish that headline.
 
-| Train size | Val MSE | Oracle | Learned | Raw CPG | AC 95% CI | Verdict |
-|---:|---:|---:|---:|---:|---:|---|
-| $200$ | $0.0651$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
-| $2{,}000$ | $0.0233$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
-| $20{,}000$ | $0.0004$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+It is an artifact of the **evaluation distribution**. Every episode above started from the *same* fixed initial state -- a deterministic env reset, with only the planner's internal randomness varying -- and on Acrobot that start happens to be an unusually easy swing-up. (A coverage receipt confirms why the learned arm fails at that start: on the uprightness axis $u = \cos\theta_1 + \cos\theta_2$, $0/2000$ random-rollout training states reach $u > 1.0$, while the oracle planner visits the upright regime on ~20% of its steps -- the MLP is extrapolating off its training manifold during planning.) But the fixed start is not the task. Sampling the task's actual initial-state distribution (a fresh start per episode, the two arms **paired** by start state) collapses the oracle's success rate from $0.88$ to $\sim\!3\%$. With the oracle planner itself solving only $\sim\!3\%$ of random starts, the gap closes and the verdict flips to `PLANNER BOTTLENECK`: even a perfect model would not help, because the search cannot solve the task from a typical start.
 
-Validation MSE drops by **~150 times** across the three cells; learned-arm planning success stays at **exactly zero**; CPG returns the same point estimate, the same CI, and the same verdict in every cell. The most parsimonious read separates *model-capacity* (refuted: the MLP is fitting the training distribution to $4\!\cdot\!10^{-4}$ at $20\,000$ transitions) from *data coverage* (consistent: random rollouts in Acrobot never reach the upright regime; the model is extrapolating during planning and its predictions are unreliable off the training manifold). Planner-side limitations (random-shooting MPC is not exhaustive search) and score-function approximation are not ruled out by this experiment; a second-axis sweep that varies the exploration policy under fixed data size would confirm coverage as the dominant driver.
+| Initial state | Planner | Dynamics | Oracle | Learned | CPG (AC 95% CI), verdict |
+|---|---|---|---:|---:|---|
+| fixed, pooled 150 | CEM | TD-MPC2 | $0.88$ | $0.00$ | $+0.88$ $[+0.81, +0.92]$, <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| **task**, pooled 150 | CEM | MLP | $0.033$ | $0.020$ | $+0.013$ $[-0.027, +0.053]$, <span class="verdict-pill verdict-planner-bottleneck">PLANNER BOTTLENECK</span> |
+| **task**, pooled 150 | CEM | TD-MPC2 | $0.033$ | $0.027$ | $+0.007$ $[-0.035, +0.049]$, <span class="verdict-pill verdict-planner-bottleneck">PLANNER BOTTLENECK</span> |
 
-The recommended remediation is to change the **data-collection policy** (energy-aware exploration, relabelled trajectories) -- and to consider a stronger planner -- not to grow the model.
+This is the single strongest piece of evidence for what the metric is *for*: a calibrated, interval-gated statistic, run honestly over the task distribution, overturned a headline that a point estimate at one configuration would have published. Numbers from [`results/dmc_acrobot/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_acrobot) (`varied_init: true`); regenerate the task-level cells via [`RERUN_VARIED_INIT.md`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/RERUN_VARIED_INIT.md).
 
-  <h3 class="chapter-sub">Empirical receipt for the coverage claim</h3>
+  <h3 class="chapter-sub">Heterogeneity across three tasks</h3>
 
-We measure the visited-state distribution directly. On the natural "uprightness" axis $u(\mathbf{o}) = \cos\theta_1 + \cos\theta_2 \in [-2, +2]$ (upright pose at $+2$):
+Run over the task distribution on three DMC tasks, the verdict is *heterogeneous*: the gate fires four of its five branches on real data. This is the headline result -- a fixed metric, or a point-estimate leaderboard, reports none of this structure.
 
-| Dataset | $n$ states | Mean $u$ | Max $u$ | Frac $u > 1.0$ | Frac $u > 1.5$ |
-|---|---:|---:|---:|---:|---:|
-| Random rollouts | 2 000 | $-0.503$ | $+0.865$ | **0.00%** | **0.00%** |
-| Oracle planner | 846 | $+0.161$ | $+1.866$ | 20.2% | 12.2% |
+| Task | Representative cell | CPG (AC 95% CI) | Verdict |
+|---|---|---:|---|
+| Acrobot-swingup | CEM, TD-MPC2, task-level pooled 150 | $+0.007$ $[-0.035, +0.049]$ | <span class="verdict-pill verdict-planner-bottleneck">PLANNER BOTTLENECK</span> |
+| Reacher-easy | all four arms, pooled 30 | $+0.20$ to $+0.33$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| Cartpole-swingup | CEM, TD-MPC2, `model_size = 5`, pooled 30 | $-0.27$ $[-0.48, -0.02]$ | <span class="verdict-pill verdict-learned-outperforms">LEARNED OUTPERFORMS</span> |
+| Cartpole-swingup | RS, TD-MPC2, `model_size = 5`, pooled 30 | $+0.167$ $[-0.03, +0.34]$ | <span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span> |
 
-The upright regime that swing-up requires is **strictly absent** from the training distribution: $0/2000$ random-rollout states have $u > 1.0$. The oracle planner visits that regime in roughly one-fifth of its trajectory. The MLP has never been shown a state from which the planner needs to predict.
+- **Acrobot** is `PLANNER BOTTLENECK` (above): the oracle planner solves only ~3% of random starts, so neither arm wins.
+- **Reacher** is uniformly `MODEL BOTTLENECK`: the oracle solves the reach perfectly ($1.000$), *both* learned arms are clearly non-zero ($0.667$ to $0.800$), and yet every AC lower bound on the gap stays strictly positive. The verdict here tracks gap *magnitude*, not a learned arm pinned at zero.
+- **Cartpole** at the larger TD-MPC2 capacity under CEM is `LEARNED OUTPERFORMS ORACLE`: the learned model lets CEM solve $0.733$ of episodes against the oracle planner's $0.467$. The AC CI $[-0.48, -0.02]$ and a paired-bootstrap CI $[-0.50, -0.03]$ both clear zero (the varied-init arms are paired by initial state). The remaining Cartpole cells are `MODEL BOTTLENECK` or `INCONCLUSIVE` -- one environment, three branches.
 
-Numbers from [`results/dmc_acrobot/coverage.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/coverage.json). Regenerate with:
-
-```bash
-python -m experiments.dmc_acrobot.coverage_analysis
-```
-
-Numbers from [`results/dmc_acrobot/cpg_sweep.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cpg_sweep.json). Regenerate with:
-
-```bash
-python -m experiments.dmc_acrobot.cpg_sweep \
-    --data-sizes 200,2000,20000 --seeds 0,1,2 --episodes 50
-```
-
-  <h3 class="chapter-sub">Robustness: published model, stronger planner, in-episode perturbation</h3>
-
-Three further axes test how robust the `MODEL BOTTLENECK` verdict really is, all sharing the §4 setup with only one knob changed at a time.
-
-| Knob changed | Result | Verdict |
-|---|---|---|
-| MLP $\rightarrow$ TD-MPC2 (2M env steps), random-shooting unchanged | oracle 0.30, learned 0.00 | <span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span> at $n=10$ |
-| Random-shooting $\rightarrow$ CEM, MLP retrained on TD-MPC2 collection data | oracle 0.90, learned 0.00, CPG $+0.900$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
-| CEM, both MLP-on-TD-MPC2-data and TD-MPC2 arms, pooled $n = 150$ | CPG $+0.880$, CI $[+0.814, +0.923]$, half-width $0.054$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> confirmed |
-| In-episode `DropNextActions(k)` for $k \in \{0, 1, 5\}$ | oracle drops $\sim 6$ pp at $k=5$, both learned arms stay at $0/50$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> at every cell |
-| Cross-env: DMC Cartpole-swingup, same 4 arms, $n = 30$ pooled at $\texttt{model\_size}=5$ | oracle $0.5$-$0.9$ depending on planner; TD-MPC2 learned reaches **non-zero** ($0.200$ RS, $0.133$ CEM) | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> in every cell |
-| Same Cartpole protocol at $\texttt{model\_size}=1$ (smaller capacity, same $10^6$ steps) | three of four cells `MODEL BOTTLENECK`; CEM $\times$ TD-MPC2 learned matches oracle ($0.533$ vs $0.500$), CPG $-0.033$, CI $[-0.28, +0.21]$ | <span class="verdict-pill verdict-inconclusive">INCONCLUSIVE</span> on CEM $\times$ TD-MPC2 (first moderate-$n$ INCONCLUSIVE in the paper) |
-
-The verdict survives all four swaps. A stronger planner does not close the gap on the learned arms — it widens it, because the oracle is no longer the constraint. An in-episode action-burst only hurts the oracle further, so the gap holds. The decomposition CPG provides is robust to the four most obvious "is this just an artifact?" hypotheses a reviewer raises.
-
-Sources: [`cem_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cem_cpg.json), [`cem_cpg_sweep.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/cem_cpg_sweep.json), [`tdmpc2_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/tdmpc2_cpg.json), [`perturbation_cpg.json`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/results/dmc_acrobot/perturbation_cpg.json).
+Sources: [`results/dmc_acrobot/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_acrobot), [`results/dmc_cartpole/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_cartpole), [`results/dmc_reacher/`](https://github.com/Denis-hamon/world-model-eval-lab/tree/main/results/dmc_reacher). See the paper's [self-correction](paper.html#sec-selfcorrection), [Cartpole](paper.html#sec-crossenv), and [Reacher](paper.html#sec-reacher) sections.
 </section>
 
 <section class="chapter" id="use-cases" markdown="1">

@@ -115,7 +115,7 @@ Fix an environment $\mathcal{E}$, a planner $\pi$, a scoring function $\sigma$, 
   \mathrm{CPG} \;=\; \mathrm{success\_rate}(D^{\star}) \;-\; \mathrm{success\_rate}(D_\theta).
   \label{eq:cpg}
 \end{equation}
-All free quantities in the right-hand side -- env, planner, score, $N$, $T$, seed -- are held fixed between the two runs. The only thing that changes is the \texttt{dynamics} callable passed to the planner. This identification is what licenses interpreting CPG as a property of the model rather than the planner or the env.
+All free quantities in the right-hand side -- env, planner, score, $N$, $T$, and the initial-state distribution -- are held fixed between the two runs. The only thing that changes is the \texttt{dynamics} callable passed to the planner, so CPG attributes the success-rate difference to that callable, holding everything else fixed. It is therefore a property of the (model, planner, distribution) triple, \emph{not} a planner- or distribution-free property of the model alone: as \S\ref{sec:selfcorrection} shows, the same model can flip the verdict when only the evaluation distribution changes. Read CPG relative to a stated planner and a stated distribution.
 
 \subsection{Statistical reporting}
 

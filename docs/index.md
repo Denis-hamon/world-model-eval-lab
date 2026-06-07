@@ -16,7 +16,7 @@ next:
 
 <div class="status-note" style="border:1px solid #c9a227;border-left-width:4px;border-radius:6px;padding:1rem 1.25rem;margin:1.25rem 0;background:#fffdf5;">
   <p style="margin:0 0 .5rem;font-weight:600;">Note on this page vs. the paper (v0.18)</p>
-  <p style="margin:0;">The <a href="paper.html">paper</a> reports the authoritative <strong>task-level</strong> results: each episode samples the task's initial-state distribution (the two CPG arms paired by start state), which is what makes the heterogeneous verdicts above. The Step-04 walkthrough below keeps the original <strong>single-fixed-initial-state</strong> Acrobot example for illustration; the paper's <a href="paper.html#sec-selfcorrection">self-correction section</a> shows how sampling the task distribution collapses the oracle there and overturns the verdict. A full task-level refresh of this walkthrough is the next docs update.</p>
+  <p style="margin:0;">The <a href="paper.html">paper</a> reports the authoritative <strong>task-level</strong> results: each episode samples the task's initial-state distribution (the two CPG arms paired by start state), which is what makes the heterogeneous verdicts above. The Step-04 walkthrough below opens with the original <strong>single-fixed-initial-state</strong> Acrobot example, then shows the metric correcting itself: sampling the task distribution collapses the oracle there and overturns the verdict (the paper's <a href="paper.html#sec-selfcorrection">self-correction section</a>).</p>
 </div>
 
 <section class="hero">
@@ -238,23 +238,29 @@ Sweep the planning horizon of the tabular world-model planner and watch where it
 
 A low validation MSE on prediction quality does **not** translate into closed-loop success. CPG quantifies the planning-side gap with an Agresti--Caffo $95\%$ confidence interval that **does not collapse** at the boundary proportions $p \in \{0, 1\}$ where the standard Wald approximation degenerates. The verdict is gated on the CI lower bound, not the raw point estimate -- at $n = 10$ the framework reports `INCONCLUSIVE` rather than over-claiming a model bottleneck.
 
-  <h3 class="chapter-sub">Multi-seed extension: capacity vs.\ coverage</h3>
+  <h3 class="chapter-sub">The metric corrects itself</h3>
 
-At $n = 10$ the framework refused to commit. We then pooled three seeds at $n = 50$ episodes per arm per seed and swept the MLP's training-set size by a factor of $100$. The verdict hardens to **MODEL BOTTLENECK** with a tight, identical confidence interval *in every cell*.
+That `INCONCLUSIVE` at $n = 10$ is suggestive, so the natural next step is more episodes. Pooling three seeds and switching to a stronger CEM planner makes the gap look decisive: the oracle solves $88\%$ of episodes, the learned arm stays at zero, and the verdict hardens to **`MODEL BOTTLENECK`** ($\mathrm{CPG} = +0.88$, AC CI $[+0.81, +0.92]$). A point-estimate leaderboard would publish that headline.
 
-| Train size | Val MSE | Oracle | Learned | Raw CPG | AC 95% CI | Verdict |
-|---:|---:|---:|---:|---:|---:|---|
-| $200$ | $0.0651$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
-| $2{,}000$ | $0.0233$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
-| $20{,}000$ | $0.0004$ | $40/150$ | $0/150$ | $+0.267$ | $[+0.191, +0.335]$ | <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+It is an artifact. Every one of those episodes started from the *same* fixed initial state -- a deterministic env reset, with only the planner's internal randomness varying -- and on Acrobot that start happens to be an unusually easy swing-up. Sampling the task's actual initial-state distribution (a fresh start per episode, the two arms **paired** by start state) collapses the oracle's success rate from $0.88$ to $\sim\!3\%$. With the oracle planner itself solving only $\sim\!3\%$ of random starts, the gap closes and the verdict flips to **`PLANNER BOTTLENECK`**: even a perfect model would not help, because the search cannot solve the task from a typical start.
 
-Held-out validation MSE drops by **~150 times** across the three cells. Planning success stays at **exactly zero**. The gap does not close. A prediction-quality metric alone would have declared the largest-data cell solved; CPG points to a *data-coverage* bottleneck (random rollouts in Acrobot never visit the upright-balancing regime) as the most parsimonious read, with planner-side and score-function residuals as plausible second-order contributors. The recommended remediation is to change the data-collection policy, not to grow the model.
+| Initial state | Planner | Dynamics | Oracle | Learned | CPG (AC 95% CI), verdict |
+|---|---|---|---:|---:|---|
+| fixed, pooled 150 | CEM | TD-MPC2 | $0.88$ | $0.00$ | $+0.88$ $[+0.81, +0.92]$, <span class="verdict-pill verdict-model-bottleneck">MODEL BOTTLENECK</span> |
+| **task**, pooled 150 | CEM | MLP | $0.033$ | $0.020$ | $+0.013$ $[-0.027, +0.053]$, <span class="verdict-pill verdict-planner-bottleneck">PLANNER BOTTLENECK</span> |
+| **task**, pooled 150 | CEM | TD-MPC2 | $0.033$ | $0.027$ | $+0.007$ $[-0.035, +0.049]$, <span class="verdict-pill verdict-planner-bottleneck">PLANNER BOTTLENECK</span> |
+
+This is the single strongest piece of evidence for what the metric is *for*: a calibrated, interval-gated statistic, run honestly over the task distribution, overturned a headline that a point estimate at one configuration would have published. The prediction-vs-decision dissociation still holds -- the learned MLP's held-out validation MSE is low while its planning success is zero -- but the load-bearing diagnosis is now about the *planner and the distribution*, not the model.
 
 [Read the full page on CPG &rarr;](07_cpg.html) &nbsp;&middot;&nbsp; [Read the paper &rarr;](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/paper/main.tex)
 
   <h3 class="chapter-sub">Across three environments, and a power-analysis tool</h3>
 
-The same four-arm matrix (random-shooting / CEM, against a learned MLP and against published TD-MPC2 dynamics) was then replayed on two further DeepMind Control Suite tasks. On **Cartpole-swingup** the verdict reproduces in every cell at TD-MPC2 `model_size = 5`; at `model_size = 1` the CEM x TD-MPC2 cell flips to `INCONCLUSIVE` (learned $0.533$ vs oracle $0.500$, CI $[-0.28, +0.21]$) -- the first moderate-$n$ cell where the gate refuses to commit. On **Reacher-easy** the oracle solves the reach perfectly ($1.000$) and both learned arms are clearly non-zero ($0.300$ to $0.633$), so all four cells are `MODEL BOTTLENECK` on non-degenerate gaps ($+0.367$ to $+0.700$) at the evaluated fixed initial state -- the cleanest evidence the metric tracks gap *magnitude* rather than gap presence, pending the varying-initial-state re-run (see the methodological status note near the top of the page).
+Run over the task distribution on all three DeepMind Control Suite tasks, the verdict is **heterogeneous** -- the gate fires four of its five branches on real data, which is precisely what a calibrated metric should surface and what a point-estimate leaderboard cannot.
+
+- **Acrobot-swingup** &rarr; `PLANNER BOTTLENECK` (above): the oracle planner itself solves only $\sim\!3\%$ of random starts, so neither arm wins.
+- **Reacher-easy** &rarr; `MODEL BOTTLENECK` in all four cells. The oracle solves the reach perfectly ($1.000$), *both* learned arms are clearly non-zero ($0.667$ to $0.800$), and yet every AC lower bound on the gap ($\mathrm{CPG}$ $+0.20$ to $+0.33$) stays strictly positive. The verdict tracks gap *magnitude*, not just a learned arm pinned at zero.
+- **Cartpole-swingup** at the larger TD-MPC2 capacity under CEM &rarr; `LEARNED OUTPERFORMS ORACLE`: the learned model lets CEM solve $0.733$ of episodes against the oracle planner's $0.467$, so $\mathrm{CPG} = -0.27$, with the AC CI $[-0.48, -0.02]$ and a paired-bootstrap CI $[-0.50, -0.03]$ both clearing zero. The other Cartpole cells are `MODEL BOTTLENECK` or `INCONCLUSIVE` -- one environment, three branches.
 
 Because the verdict gate is a function of the confidence interval, it also answers a question a bare leaderboard cannot: **how many episodes a comparison needs before its ranking is trustworthy.** A plausible $0.94$-vs-$0.92$ near-tie at $n = 100$ is statistically indistinguishable from noise; the gate shows it needs $n = 209$ per arm before the interval clears zero.
 
@@ -353,7 +359,7 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
       <span class="release-meta">2026-05-31</span>
     </div>
     <p class="release-title">Third environment: DMC Reacher-easy</p>
-    <p class="release-body">The four-arm CPG matrix replayed on a third env: the first task with a two-dimensional action and an exactly-reconstructed oracle. Oracle solves the reach in every cell ($1.000$); both learned arms are clearly non-zero (TD-MPC2 $0.567$&ndash;$0.633$, the paper's highest), so all four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps at the evaluated fixed initial state ($+0.367$ to $+0.700$) &mdash; the cleanest evidence the metric tracks gap magnitude, not just presence, pending the varying-initial-state re-run (see the methodological status card above). See the paper's Reacher section; Figure 3 extended to three series.</p>
+    <p class="release-body">The four-arm CPG matrix replayed on a third env: the first task with a two-dimensional action and an exactly-reconstructed oracle. Oracle solves the reach in every cell ($1.000$); both learned arms are clearly non-zero (TD-MPC2 $0.567$&ndash;$0.633$, the paper's highest), so all four cells are <code>MODEL BOTTLENECK</code> on non-degenerate gaps at the evaluated fixed initial state ($+0.367$ to $+0.700$) &mdash; the cleanest evidence the metric tracks gap magnitude, not just presence. The varying-initial-state re-run that supersedes these fixed-init numbers landed in v0.18. See the paper's Reacher section; Figure 3 extended to three series.</p>
   </article>
 
   <article class="release-card">
@@ -371,7 +377,7 @@ Every JSON report carries a versioned envelope (`schema_version`, `wmel_version`
       <span class="release-meta">2026-05-23</span>
     </div>
     <p class="release-title">Cross-environment: DMC Cartpole-swingup, two capacities</p>
-    <p class="release-body">Four-arm CPG matrix on a second env at TD-MPC2 <code>model_size = 5</code> AND <code>model_size = 1</code>, $n = 30$ pooled each. All four cells at <code>size = 5</code> reproduce <code>MODEL BOTTLENECK</code>; the CEM&times;TD-MPC2 cell at <code>size = 1</code> flips to <code>INCONCLUSIVE</code> (learned $0.533$ vs oracle $0.500$, CPG $-0.033$, CI $[-0.28, +0.21]$) &mdash; first moderate-$n$ <code>INCONCLUSIVE</code> in the paper. See the paper's cross-environment section + Figures 3 and 4.</p>
+    <p class="release-body">Four-arm CPG matrix on a second env at TD-MPC2 <code>model_size = 5</code> AND <code>model_size = 1</code>, $n = 30$ pooled each. At this fixed-init stage all four cells at <code>size = 5</code> read <code>MODEL BOTTLENECK</code> and the CEM&times;TD-MPC2 cell at <code>size = 1</code> flips to <code>INCONCLUSIVE</code> (learned $0.533$ vs oracle $0.500$, CPG $-0.033$, CI $[-0.28, +0.21]$). The v0.18 task-level re-run supersedes these numbers: the size-5 CEM&times;TD-MPC2 cell becomes <code>LEARNED OUTPERFORMS ORACLE</code> ($\mathrm{CPG} = -0.27$). See the paper's cross-environment section + Figures 3 and 4.</p>
   </article>
 
   <article class="release-card">

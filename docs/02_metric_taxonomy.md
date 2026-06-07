@@ -176,7 +176,7 @@ Hover (or focus) any metric name to see its formula in a popover. The popover is
       </td>
       <td>Success-rate gap between an oracle-dynamics planner and the same planner using a learned model. Packaged as a single scalar with an Agresti-Caffo CI and a gated verdict.</td>
       <td>Decomposes model error from planner capacity. The packaged-scalar form (with CI and gated verdict) is new in this framework; the underlying oracle-vs-learned-rollout comparison is in the spirit of model-exploitation analyses in MOPO and MOReL.</td>
-      <td>On DMC Acrobot-swingup with random-shooting MPC, 10 episodes each: raw $\mathrm{CPG} = +0.30$, AC 95% CI $[-0.06, +0.56]$ (crosses zero). Verdict: <code>INCONCLUSIVE</code> at $n=10$ - suggestive of a model bottleneck but more episodes are needed to confirm.</td>
+      <td>On DMC Acrobot-swingup with random-shooting MPC at one fixed initial state, 10 episodes each: raw $\mathrm{CPG} = +0.30$, AC 95% CI $[-0.06, +0.56]$ (crosses zero), verdict <code>INCONCLUSIVE</code> at $n=10$. Sampling the task's initial-state distribution rather than that fixed start collapses the oracle and flips the verdict to <code>PLANNER BOTTLENECK</code> -- the metric correcting itself (<a href="07_cpg.html#example">CPG page</a>).</td>
     </tr>
   </tbody>
 </table>
