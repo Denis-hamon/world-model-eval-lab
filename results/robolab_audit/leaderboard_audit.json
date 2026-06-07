@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.18.0",
+  "generated_at": "2026-06-07T11:48:10+00:00",
+  "metric": "robolab_leaderboard_audit",
+  "source": "RoboLab-120, arXiv:2604.09860 (N=10 episodes/task, 120 tasks, n=1200/model)",
+  "scope": "overall leaderboard only (per-axis deferred: tasks are multi-labeled)",
+  "caveat": "Trials span heterogeneous tasks, not i.i.d. Bernoulli. The i.i.d. Agresti-Caffo interval is the optimistic case; task clustering only widens it, so 'within noise' pairs are conservative.",
+  "overall": {
+    "n_per_arm": 1200,
+    "ranking": [
+      "pi0.5",
+      "pi0-FAST",
+      "GR00T N1.6",
+      "pi0",
+      "PaliGemma"
+    ],
+    "pairs": [
+      {
+        "better": "pi0.5",
+        "worse": "pi0-FAST",
+        "rate_better": 0.28,
+        "rate_worse": 0.155,
+        "raw_gap": 0.125,
+        "ac_ci": [
+          0.0922,
+          0.1574
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0.5",
+        "worse": "GR00T N1.6",
+        "rate_better": 0.28,
+        "rate_worse": 0.072,
+        "raw_gap": 0.208,
+        "ac_ci": [
+          0.1783,
+          0.237
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0.5",
+        "worse": "pi0",
+        "rate_better": 0.28,
+        "rate_worse": 0.05,
+        "raw_gap": 0.23,
+        "ac_ci": [
+          0.2014,
+          0.2579
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0.5",
+        "worse": "PaliGemma",
+        "rate_better": 0.28,
+        "rate_worse": 0.034,
+        "raw_gap": 0.246,
+        "ac_ci": [
+          0.2182,
+          0.273
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0-FAST",
+        "worse": "GR00T N1.6",
+        "rate_better": 0.155,
+        "rate_worse": 0.072,
+        "raw_gap": 0.083,
+        "ac_ci": [
+          0.0577,
+          0.1081
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0-FAST",
+        "worse": "pi0",
+        "rate_better": 0.155,
+        "rate_worse": 0.05,
+        "raw_gap": 0.105,
+        "ac_ci": [
+          0.0809,
+          0.1288
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0-FAST",
+        "worse": "PaliGemma",
+        "rate_better": 0.155,
+        "rate_worse": 0.034,
+        "raw_gap": 0.121,
+        "ac_ci": [
+          0.0978,
+          0.1438
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "GR00T N1.6",
+        "worse": "pi0",
+        "rate_better": 0.072,
+        "rate_worse": 0.05,
+        "raw_gap": 0.022,
+        "ac_ci": [
+          0.0027,
+          0.0412
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "GR00T N1.6",
+        "worse": "PaliGemma",
+        "rate_better": 0.072,
+        "rate_worse": 0.034,
+        "raw_gap": 0.038,
+        "ac_ci": [
+          0.02,
+          0.0559
+        ],
+        "separable": true,
+        "n_to_separate": null
+      },
+      {
+        "better": "pi0",
+        "worse": "PaliGemma",
+        "rate_better": 0.05,
+        "rate_worse": 0.034,
+        "raw_gap": 0.016,
+        "ac_ci": [
+          -0.0002,
+          0.0321
+        ],
+        "separable": false,
+        "n_to_separate": 1229
+      }
+    ]
+  },
+  "summary": {
+    "pairs": 10,
+    "separable": 9,
+    "within_noise": 1
+  }
+}
