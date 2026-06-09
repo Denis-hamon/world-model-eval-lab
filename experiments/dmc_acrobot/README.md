@@ -84,4 +84,6 @@ Writes a `Scorecard` JSON to [`results/dmc_acrobot/baseline_random.json`](../../
 
 - **v1.0 planned (deferred)**: perturbation-aware CPG (does the gap widen under sensor noise?); a second env (DMC Cartpole-swingup or Reacher) to test whether the CPG verdict pattern generalises across tasks; an energy-aware exploration data-collection axis paired with a fixed-data-size sweep to *quantify* the coverage continuum surfaced by v0.12.
 
+- **DreamerV3 arm (harness shipped, GPU run queued).** `dreamerv3_cpg.py` is the second published-model arm: it trains the reference PyTorch DreamerV3 (NM512/dreamerv3-torch, `dmc_proprio` config) as a subprocess at `--action_repeat 1`, ports the RSSM world model into `wmel.adapters.dreamerv3_adapter` (a pure weight relayout; numerical equivalence to upstream is asserted by `tests/test_dreamerv3_upstream_equivalence.py` once `third_party/` is populated; DreamerV3 ships its own obs decoder so there is no post-hoc decoder training step), and runs the same two CPG arms as `tdmpc2_cpg.py`. Setup: `./scripts/setup_dreamerv3.sh`. The training run is queued as Task 6 in [`../GPU_ROADMAP.md`](../GPU_ROADMAP.md); results will land in `results/dmc_acrobot/dreamerv3_cpg.json` and the cross-model table `results/MODEL_TABLE.md`.
+
 See [docs/05_30_day_prototype_plan.md](../../docs/05_30_day_prototype_plan.md) for the broader roadmap.

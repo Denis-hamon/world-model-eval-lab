@@ -120,3 +120,11 @@ jobs:
           python -m examples.two_room_toy.run_baseline > /dev/null
           python -m examples.maze_toy.run_baseline > /dev/null
           python -m examples.maze_toy.run_horizon_sweep > /dev/null
+
+      - name: Verify the committed multi-model table is up to date
+        # results/MODEL_TABLE.md is generated from the committed result
+        # JSONs; a drift means someone landed results without regenerating
+        # it (or hand-edited the table).
+        run: |
+          python scripts/build_model_table.py
+          git diff --exit-code results/MODEL_TABLE.md
