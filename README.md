@@ -110,6 +110,15 @@ Success rate plateaus at horizon 15. Per-call latency keeps rising past the plat
 
 See [docs/02_metric_taxonomy.md](docs/02_metric_taxonomy.md) for definitions and example measurements.
 
+## Published-model adapters and the multi-model table
+
+Two published world models are wired into the same planner contract:
+
+- **TD-MPC2** (`wmel.adapters.tdmpc2_adapter`, v0.12): encoder + latent dynamics plus a post-hoc obs decoder trained on the agent's rollouts. Results committed across all three DMC environments.
+- **DreamerV3** (`wmel.adapters.dreamerv3_adapter`): the RSSM (encoder, recurrent latent dynamics, native obs decoder) ported from the reference PyTorch implementation; numerical equivalence to upstream is asserted by `tests/test_dreamerv3_upstream_equivalence.py` (runs once `scripts/setup_dreamerv3.sh` has populated `third_party/`). The first *recurrent* model through the Markovian contract: each dynamics call truncates the latent to a one-frame posterior, and the CPG measures what that projection costs the planner. Training run queued (`experiments/GPU_ROADMAP.md`, Task 6).
+
+The cross-model summary lives in [`results/MODEL_TABLE.md`](results/MODEL_TABLE.md) -- one row per (environment, model, planner, init) cell with both arms' success rates, the CPG with its Agresti--Caffo 95% interval, and the gated verdict. Regenerate with `python scripts/build_model_table.py`; CI fails if the committed table drifts from the committed JSONs.
+
 ## Repository layout
 
 ```
@@ -146,7 +155,9 @@ world-model-eval-lab/
 │       ├── greedy_policy.py
 │       ├── lewm_adapter_stub.py
 │       ├── tabular_world_model.py
-│       └── learned_dynamics_torch.py   # optional, needs [learned] extra
+│       ├── learned_dynamics_torch.py   # optional, needs [learned] extra
+│       ├── tdmpc2_adapter.py           # published-model adapter (TD-MPC2)
+│       └── dreamerv3_adapter.py        # published-model adapter (DreamerV3)
 ├── examples/
 │   ├── two_room_toy/
 │   │   ├── environment.py
@@ -197,6 +208,7 @@ The GPU experiment queue lives in [`experiments/GPU_ROADMAP.md`](experiments/GPU
 2. ~~**Cross-env to DMC Reacher-easy** — third env after Acrobot + Cartpole.~~ Done: landed in **v0.17.0** (`src/wmel/envs/dmc_reacher.py`).
 3. **Cartpole size=5 pooled-150** — CI tightening (cosmetic).
 4. **Observation-noise perturbation** — closes the §5.9 flagged limitation.
+5. **DreamerV3 CPG on Acrobot** — second published-model adapter; harness and numerically-verified weight port already on main, only the 500k-step training run remains (Task 6).
 
 ## Paper
 

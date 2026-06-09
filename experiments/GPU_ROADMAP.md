@@ -138,13 +138,125 @@ pooled-30 cells are MODEL BOTTLENECK; see PR.
 
 ---
 
+## Task 6 — DreamerV3 CPG on Acrobot (second published-model adapter)
+
+**Why**: the multi-model claim. With only TD-MPC2 adapted, the framework ranks one published model; a benchmark is judged by how many models it can put in the same table. DreamerV3 is the canonical latent-dynamics world model and the first *recurrent* one through the Markovian planner contract -- the CPG cost of that recurrence truncation is itself a finding. The adapter, the porting layer (numerical equivalence to upstream `dreamerv3-torch` is asserted by `tests/test_dreamerv3_upstream_equivalence.py`, which runs once `third_party/` is populated), the experiment harness, and the multi-model table generator are all on main; only the training run remains.
+
+**Branch**: `phase-5y-dreamerv3-acrobot`
+**Effort**: ~10-20 h GPU (500k env steps, dmc_proprio config, single env)
+**Priority**: HIGH (multi-model generality claim; everything but GPU time is already shipped)
+**Status**: queued
+
+**Steps**:
+
+1. `./scripts/setup_dreamerv3.sh` (clones NM512/dreamerv3-torch to `third_party/`).
+2. Install the training deps in a *separate venv* if upstream's pinned gym/mujoco versions conflict with the wmel `[control]` extra (see the experiment docstring). Upstream requirements target older Pythons; use python 3.10/3.11 for the training venv if 3.12 fights gym 0.22. The box also needs OSMesa (`apt install libosmesa6`): upstream's `dreamer.py` hard-sets `MUJOCO_GL=osmesa` and renders a 64x64 frame every env step even in proprio mode.
+3. Run the equivalence test now that `third_party/` exists: `pytest tests/test_dreamerv3_upstream_equivalence.py -q`.
+4. Pre-flight: `python -m experiments.dmc_acrobot.dreamerv3_cpg --smoke` (validates the subprocess wiring, the weight port, and both CPG arms end-to-end before committing GPU hours; roughly half an hour on a GPU box -- the per-step render dominates, so do not expect minutes on CPU).
+5. Full run: `python -m experiments.dmc_acrobot.dreamerv3_cpg --varied-init --seed 0` (500k steps at `--action_repeat 1`). For pooling, seeds 1 and 2 via `--seed N --out-suffix _seedN` (each seed gets its own workdir automatically; sharing one would resume seed 0's checkpoint). Start with seed 0 and judge.
+6. Regenerate the table: `python scripts/build_model_table.py` and commit the refreshed `results/MODEL_TABLE.md`.
+
+**Expected outputs**:
+
+- `results/dmc_acrobot/dreamerv3_cpg.json`
+- refreshed `results/MODEL_TABLE.md` with the first DreamerV3 row next to the TD-MPC2 rows.
+- `results/dmc_acrobot/dreamerv3_acrobot.pt` is NOT committed (no checkpoints in git); upload it to the release assets instead.
+
+**Paper update**: a "Cross-model" subsection in §5: same env, same planner, two published world models in one CPG table. If the DreamerV3 verdict differs from TD-MPC2's, that heterogeneity is the headline; if it matches, the metric generalises across model families. Either way, discuss the Markovian-projection caveat (the adapter truncates DreamerV3's recurrent state to a one-frame posterior; the measured CPG includes the cost of that truncation).
+
+---
+
+## Task 7 — DreamerV3 cross-env: Cartpole-swingup + Reacher-easy
+
+**Why**: the multi-model claim only becomes a *table* when both published models cover the same environment grid. TD-MPC2 has all three DMC envs; after Task 6, DreamerV3 has one. This task fills the remaining two cells and makes `results/MODEL_TABLE.md` a genuine 2-model x 3-env cross-comparison -- the artifact a reader cites.
+
+**Branch**: `phase-5z-dreamerv3-crossenv`
+**Effort**: ~20-40 h GPU (2 x 500k env steps; one env per L40S in parallel)
+**Priority**: HIGH (after Task 6 validates the pipeline on Acrobot)
+**Status**: queued
+
+**Steps**:
+
+1. Mirror `experiments/dmc_acrobot/dreamerv3_cpg.py` into `experiments/dmc_cartpole/dreamerv3_cpg.py` and `experiments/dmc_reacher/dreamerv3_cpg.py`, the same way the per-env `tdmpc2_cpg.py` scripts mirror each other. Env-specific deltas:
+   - **Cartpole**: `--task dmc_cartpole_swingup`, `ARCH["obs_dim"] = 5` (position 3 + velocity 2), `ARCH["action_dim"] = 1`, same 5-level `action_levels`, score/env imports from `wmel.envs.dmc_cartpole`.
+   - **Reacher**: `--task dmc_reacher_easy`, `ARCH["obs_dim"] = 6` (position 2 + to_target 2 + velocity 2), `ARCH["action_dim"] = 2`, checkpoint key `action_set` (the 9 discrete pairs from `DMCReacherEnv.action_space`, same convention as `experiments/dmc_reacher/tdmpc2_cpg.py`), score/env imports from `wmel.envs.dmc_reacher`.
+   - Both envs flatten observations in sorted-key order, which matches upstream's dict order (`position < to_target < velocity`); the port asserts this and fails loudly if not.
+2. Pre-flight each script with `--smoke` before the full runs.
+3. Full runs at `--varied-init`, seed 0; pool seeds 1-2 (n=30 per arm) if seed 0 is informative, matching the TD-MPC2 pooled-30 cells.
+4. Regenerate and commit `results/MODEL_TABLE.md`.
+
+**Expected outputs**:
+
+- `results/dmc_cartpole/dreamerv3_cpg.json`, `results/dmc_reacher/dreamerv3_cpg.json` (+ `_pooled` variants if pooled)
+- refreshed `results/MODEL_TABLE.md`: 2 published models x 3 envs under the random-shooting planner.
+
+**Paper update**: the cross-model subsection becomes a cross-model x cross-env *matrix*. The interesting question the table answers: does the verdict pattern (Acrobot planner-bound, Reacher model-bound, Cartpole capacity-dependent) hold per-environment regardless of the model family, or does DreamerV3's recurrent latent shift it?
+
+---
+
+## Task 8 — DreamerV3 under CEM (planner-capacity axis, no retraining)
+
+**Why**: the v0.13 result showed the planner axis flips verdicts for TD-MPC2 (random-shooting INCONCLUSIVE -> CEM MODEL BOTTLENECK at the fixed init). The DreamerV3 checkpoints from Tasks 6-7 are reusable as-is: this task only re-plans, so it costs planning compute, not training compute. It completes the planner column of the multi-model table.
+
+**Branch**: `phase-6a-dreamerv3-cem`
+**Effort**: ~6-12 h, planner-bound (mostly CPU; see note)
+**Priority**: MEDIUM (after Tasks 6-7 land their checkpoints)
+**Status**: queued
+
+**Steps**:
+
+1. Add a `--learned dreamerv3` arm to the per-env `cem_cpg.py` scripts (they already take the dynamics as a callable; load it with `wmel.adapters.dreamerv3_adapter.make_dreamerv3_dynamics`).
+2. Note on throughput: the dmc_proprio RSSM (5x1024 encoder/decoder, 512-d GRU) is roughly an order of magnitude slower per call than the TD-MPC2 adapter on CPU (informal local measurement, no committed artifact). `make_dreamerv3_dynamics` returns a single-`(state, action)` callable, which `_batched_cem.py` cannot batch: add a batched `(states, actions) -> next_states` variant to the adapter first (the underlying `DreamerV3Dynamics.forward` is already batched; only the factory wrapper is scalar), then pass `device="cuda"` so CEM's candidate batch amortises the launch overhead.
+3. n=30 pooled per cell, `--varied-init`, same seeds as the TD-MPC2 CEM cells.
+
+**Expected outputs**: `results/dmc_*/cem_cpg_dreamerv3*.json` + refreshed `results/MODEL_TABLE.md` (planner column complete for both models).
+
+**Paper update**: the planner x model interaction table. If CEM closes the DreamerV3 gap the way it reshaped TD-MPC2's, the planner-capacity reading generalises across model families.
+
+---
+
+## Task 9 — Recurrence-truncation ablation (latent rollout vs Markovian projection)
+
+**Why**: the DreamerV3 adapter's documented limitation is the Markovian projection: every dynamics call re-encodes from obs and truncates the recurrent state to a one-frame posterior. DreamerV3's native planning mode rolls out *in latent space* from a single encode. The `LeWMAdapterStub` contract already has the right interface for this (`encode` once, `rollout(latent, actions)`, `score`): implement a `DreamerV3LatentPlanner` that imagines forward without re-encoding, and run it as a third arm next to (a) the oracle and (b) the Markovian-projection arm. The CPG difference between (b) and the latent arm *is* the measured cost of the truncation -- a result no other framework reports, and the cleanest methodological payoff of having a recurrent model in the table.
+
+**Branch**: `phase-6b-dreamerv3-latent-rollout`
+**Effort**: ~2-4 h GPU + adapter work (reuses Task 6 checkpoint)
+**Priority**: MEDIUM-HIGH scientific payoff, small compute
+**Status**: queued
+
+**Steps**:
+
+1. Add a `DreamerV3LatentPlanner` to `wmel.adapters.dreamerv3_adapter` implementing the `LeWMAdapterStub` interface: `encode` = first-frame posterior, `rollout` = repeated `_img_step` + `decode` per step (no re-encode), `score` = the env's upright/goal score on decoded observations, `plan` = the same random-shooting loop as `TabularWorldModelPlanner`.
+2. Unit tests on the synthetic-checkpoint fixture (same pattern as `tests/test_dreamerv3_adapter.py`).
+3. Run the three Acrobot arms at `--varied-init`, n=30 pooled.
+
+**Expected outputs**: `results/dmc_acrobot/dreamerv3_latent_cpg.json`; a two-row comparison (Markovian projection vs latent rollout) in the README and the paper.
+
+**Paper update**: a "What the Markovian contract costs a recurrent model" subsection. Either the truncation is cheap (the contract is fair to recurrent models) or it is expensive (and the latent-rollout interface becomes the recommended adapter path for RSSM-family models). Both outcomes are publishable statements about evaluation methodology.
+
+---
+
+## Scheduling on the 2x L40S box
+
+Two GPUs, so two training tasks can run concurrently (`--device cuda:0` / `--device cuda:1`; the training subprocess takes the device flag). The dependency-aware order:
+
+1. **Now**: Task 6 (Acrobot, GPU 0) and the first half of Task 7 (Cartpole, GPU 1) in parallel -- Task 7's scripts can be written and smoke-tested while Task 6 trains.
+2. **Then**: Task 7 second half (Reacher, either GPU) + Task 4 (Cartpole size=5 pooled-150, other GPU).
+3. **Then**: Tasks 8 and 9 -- both reuse the Tasks 6-7 checkpoints; 9 before 8 if the paper deadline matters (bigger methodological payoff), 8 before 9 if table completeness matters.
+4. Task 2 (horizon ablation) is done with its PR pending; land that PR before queueing new Acrobot work on top of it.
+
+---
+
 ## Picking the next task
 
-If the GPU is free right now, the order is **Task 3 (Reacher training) → Task 4** (Tasks 1, 2, 5 are done; Task 3's adapter+oracle are shipped and only the training remains). Task 3 is now top priority: it is the multi-env generality claim and the power-analysis thesis's cross-env test, and the hard part (the verified oracle) is already on main.
+Tasks 1, 2, 3, 5 are done. The DreamerV3 line (Tasks 6 -> 7 -> 8/9) is now the top priority: it is the multi-*model* generality claim, the symmetric counterpart to Task 3's multi-env claim, and the hard part (the numerically-verified adapter and the harness) is already on main. Follow the "Scheduling on the 2x L40S box" section above for the parallel order.
 
 - Task 2 closes the largest open methodological hole in the paper.
 - Task 5 closes a self-flagged limitation cheaply.
-- Task 3 extends generality (needs new env adapter, real work).
+- Task 3 extends generality across environments (done).
+- Tasks 6-7 extend generality across models (queued, highest payoff per GPU-hour).
+- Task 8 completes the planner column for both models without retraining.
+- Task 9 measures what the Markovian contract costs a recurrent model (small compute, large methodological payoff).
 - Task 4 is pure CI tightening, do last when bandwidth allows.
 
 When you finish one, before starting the next: update its `Status:` to `done`, link the PR, and rebase / pull the latest main.
