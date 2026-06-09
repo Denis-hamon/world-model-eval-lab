@@ -145,7 +145,7 @@ pooled-30 cells are MODEL BOTTLENECK; see PR.
 **Branch**: `phase-5y-dreamerv3-acrobot`
 **Effort**: ~10-20 h GPU (500k env steps, dmc_proprio config, single env)
 **Priority**: HIGH (multi-model generality claim; everything but GPU time is already shipped)
-**Status**: queued
+**Status**: in_flight
 
 **Steps**:
 
