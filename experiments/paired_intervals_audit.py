@@ -37,6 +37,7 @@ import json
 import math
 import sys
 from pathlib import Path
+from statistics import stdev
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 for _entry in (_REPO_ROOT, _REPO_ROOT / "src"):
@@ -74,15 +75,16 @@ def _seed_files(prefix: str, size: int) -> list[str]:
     return [f"{prefix}_size{size}_seed{s}.json" for s in (0, 1, 2)]
 
 
-def _load_arm(env_dir: str, prefix: str, size: int, arm_key: str) -> list[EpisodeResult]:
-    """Pool one arm's per-episode results across the 3 seed files, in seed order.
+def _load_arm_by_seed(
+    env_dir: str, prefix: str, size: int, arm_key: str
+) -> list[list[EpisodeResult]]:
+    """One arm's per-episode results, grouped per seed file (fixed seed order).
 
-    Pooling both arms in the same file order preserves the per-episode pairing.
     Strict: a missing seed file or arm key is an error, so a silently truncated
     cell fails loudly rather than reporting an undersized n as if intended.
     """
     base = _REPO_ROOT / "results" / env_dir
-    out: list[EpisodeResult] = []
+    per_seed: list[list[EpisodeResult]] = []
     for fn in _seed_files(prefix, size):
         path = base / fn
         if not path.exists():
@@ -90,14 +92,30 @@ def _load_arm(env_dir: str, prefix: str, size: int, arm_key: str) -> list[Episod
         payload = json.loads(path.read_text())
         if arm_key not in payload:
             raise KeyError(f"arm {arm_key!r} not in {path}")
-        for r in payload[arm_key]["results"]:
-            out.append(EpisodeResult(success=bool(r["success"]), steps=int(r.get("steps", 0))))
-    return out
+        per_seed.append([
+            EpisodeResult(success=bool(r["success"]), steps=int(r.get("steps", 0)))
+            for r in payload[arm_key]["results"]
+        ])
+    return per_seed
+
+
+def _load_arm(env_dir: str, prefix: str, size: int, arm_key: str) -> list[EpisodeResult]:
+    """Pool one arm across the 3 seed files, in seed order (pairing preserved)."""
+    return [e for seed in _load_arm_by_seed(env_dir, prefix, size, arm_key) for e in seed]
 
 
 def audit_cell(env_dir: str, prefix: str, size: int, learned_key: str) -> dict:
-    oracle = _load_arm(env_dir, prefix, size, "oracle_full")
-    learned = _load_arm(env_dir, prefix, size, learned_key)
+    oracle_by_seed = _load_arm_by_seed(env_dir, prefix, size, "oracle_full")
+    learned_by_seed = _load_arm_by_seed(env_dir, prefix, size, learned_key)
+    # Per-seed CPG (each on that seed's n_per_seed episodes): the dispersion the
+    # pooled point estimate hides. With equal episodes per seed the pooled gap is
+    # the mean of these, so it lies within [min, max].
+    per_seed_gaps = [
+        counterfactual_planning_gap(o, l).gap
+        for o, l in zip(oracle_by_seed, learned_by_seed)
+    ]
+    oracle = [e for seed in oracle_by_seed for e in seed]
+    learned = [e for seed in learned_by_seed for e in seed]
     cpg = counterfactual_planning_gap(oracle, learned)
     verdict = cpg_verdict(cpg)
     pb_gap, pb_lo, pb_hi = paired_bootstrap_gap_ci(oracle, learned)
@@ -117,6 +135,9 @@ def audit_cell(env_dir: str, prefix: str, size: int, learned_key: str) -> dict:
         "oracle_rate": round(cpg.oracle_success_rate, 4),
         "learned_rate": round(cpg.learned_success_rate, 4),
         "gap": round(cpg.gap, 4),
+        "per_seed_gaps": [round(g, 4) for g in per_seed_gaps],
+        "gap_range": [round(min(per_seed_gaps), 4), round(max(per_seed_gaps), 4)],
+        "gap_std": round(stdev(per_seed_gaps), 4),
         "phi": round(phi, 4),
         "ac_half_width": round(ac_hw, 4),
         "newcombe_half_width": round(nc_hw, 4),
@@ -158,7 +179,10 @@ def main() -> None:
             "is ~0 on Reacher and slightly negative on Cartpole, so the paired "
             "intervals are not tighter than AC here -- the corroboration is that all "
             "three intervals agree on clearing zero. McNemar p-values carry a Holm "
-            "family-wise correction across cells."
+            "family-wise correction across cells. per_seed_gaps reports the CPG on "
+            "each of the three seeds separately (the dispersion the pooled estimate "
+            "hides); the pooled gap is their mean and gap_std is the sample (n-1) "
+            "standard deviation over the three seeds."
         ),
         "cells": cells,
     }
@@ -176,6 +200,14 @@ def main() -> None:
         print(f"  {c['cell']:<52} {c['n']:>3} {c['oracle_rate']:>5.2f} {c['learned_rate']:>5.2f} "
               f"{c['gap']:>+7.3f} {c['phi']:>+6.2f} {ac:>17} {pb:>17} {nc:>17} "
               f"{c['mcnemar']['p_value']:>6.3f} {c['mcnemar']['p_holm']:>6.3f}")
+    print()
+
+    # Per-seed CPG dispersion: the spread the pooled point estimate hides (3 seeds).
+    print("Per-seed CPG (3 seeds x n_per_seed) -- pooled gap is their mean, so it lies in [min, max]:")
+    for c in cells:
+        seeds = ", ".join(f"{g:+.2f}" for g in c["per_seed_gaps"])
+        print(f"  {c['cell']:<52} pooled {c['gap']:>+7.3f}  per-seed [{seeds}]  "
+              f"range [{c['gap_range'][0]:+.2f},{c['gap_range'][1]:+.2f}]  std(n-1) {c['gap_std']:.3f}")
     print()
 
     # Agreement summary: does each paired estimator agree with AC on clearing zero?

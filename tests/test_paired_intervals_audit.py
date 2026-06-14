@@ -35,6 +35,24 @@ def test_learned_outperforms_cell_reproduces_paper():
     assert c["mcnemar"]["p_value"] == pytest.approx(0.0768, abs=2e-3)
 
 
+def test_per_seed_dispersion_reported_and_pooled_is_mean():
+    # Per-seed CPG is reported for every cell; with equal episodes per seed the
+    # pooled gap is the mean of the three, so it lies within [min, max].
+    for label, env_dir, prefix, size, learned_key in CELLS:
+        c = audit_cell(env_dir, prefix, size, learned_key)
+        assert len(c["per_seed_gaps"]) == 3
+        assert c["gap_range"][0] <= c["gap"] <= c["gap_range"][1]
+
+
+def test_learned_outperforms_cell_is_seed_fragile():
+    # Honesty check: the LEARNED OUTPERFORMS cell rests on high seed dispersion --
+    # one of the three seeds reverses the sign -- reinforcing the n=150 follow-up.
+    # (Reacher cells, by contrast, are tight and sign-consistent.)
+    c = _cell("Cartpole-swingup | CEM | TD-MPC2")
+    assert min(c["per_seed_gaps"]) < 0 < max(c["per_seed_gaps"])  # sign reversal
+    assert c["gap_std"] > 0.3
+
+
 def test_reacher_cells_clear_zero_under_all_interval_methods():
     for label in (
         "Reacher-easy | random-shooting | MLP-on-TD-MPC2",

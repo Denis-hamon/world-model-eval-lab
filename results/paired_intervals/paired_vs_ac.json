@@ -1,15 +1,25 @@
 {
   "schema_version": "1.0",
   "wmel_version": "0.18.0",
-  "generated_at": "2026-06-14T13:43:45+00:00",
+  "generated_at": "2026-06-14T14:36:28+00:00",
   "metric": "paired_intervals_audit",
-  "note": "Paired-aware re-analysis of the non-degenerate CPG cells. AC treats the arms as independent; the measured within-pair correlation phi (per cell) is ~0 on Reacher and slightly negative on Cartpole, so the paired intervals are not tighter than AC here -- the corroboration is that all three intervals agree on clearing zero. McNemar p-values carry a Holm family-wise correction across cells.",
+  "note": "Paired-aware re-analysis of the non-degenerate CPG cells. AC treats the arms as independent; the measured within-pair correlation phi (per cell) is ~0 on Reacher and slightly negative on Cartpole, so the paired intervals are not tighter than AC here -- the corroboration is that all three intervals agree on clearing zero. McNemar p-values carry a Holm family-wise correction across cells. per_seed_gaps reports the CPG on each of the three seeds separately (the dispersion the pooled estimate hides); the pooled gap is their mean and gap_std is the sample (n-1) standard deviation over the three seeds.",
   "cells": [
     {
       "n": 30,
       "oracle_rate": 1.0,
       "learned_rate": 0.7,
       "gap": 0.3,
+      "per_seed_gaps": [
+        0.3,
+        0.2,
+        0.4
+      ],
+      "gap_range": [
+        0.2,
+        0.4
+      ],
+      "gap_std": 0.1,
       "phi": 0.0,
       "ac_half_width": 0.1715,
       "newcombe_half_width": 0.1769,
@@ -44,6 +54,16 @@
       "oracle_rate": 1.0,
       "learned_rate": 0.8,
       "gap": 0.2,
+      "per_seed_gaps": [
+        0.2,
+        0.1,
+        0.3
+      ],
+      "gap_range": [
+        0.1,
+        0.3
+      ],
+      "gap_std": 0.1,
       "phi": 0.0,
       "ac_half_width": 0.1554,
       "newcombe_half_width": 0.1638,
@@ -78,6 +98,16 @@
       "oracle_rate": 1.0,
       "learned_rate": 0.6667,
       "gap": 0.3333,
+      "per_seed_gaps": [
+        0.5,
+        0.2,
+        0.3
+      ],
+      "gap_range": [
+        0.2,
+        0.5
+      ],
+      "gap_std": 0.1528,
       "phi": 0.0,
       "ac_half_width": 0.1753,
       "newcombe_half_width": 0.18,
@@ -112,6 +142,16 @@
       "oracle_rate": 1.0,
       "learned_rate": 0.7667,
       "gap": 0.2333,
+      "per_seed_gaps": [
+        0.3,
+        0.2,
+        0.2
+      ],
+      "gap_range": [
+        0.2,
+        0.3
+      ],
+      "gap_std": 0.0577,
       "phi": 0.0,
       "ac_half_width": 0.1617,
       "newcombe_half_width": 0.1689,
@@ -146,6 +186,16 @@
       "oracle_rate": 0.9333,
       "learned_rate": 0.7667,
       "gap": 0.1667,
+      "per_seed_gaps": [
+        0.5,
+        0.1,
+        -0.1
+      ],
+      "gap_range": [
+        -0.1,
+        0.5
+      ],
+      "gap_std": 0.3055,
       "phi": -0.1474,
       "ac_half_width": 0.1809,
       "newcombe_half_width": 0.1943,
@@ -180,6 +230,16 @@
       "oracle_rate": 0.4667,
       "learned_rate": 0.7333,
       "gap": -0.2667,
+      "per_seed_gaps": [
+        -0.4,
+        0.2,
+        -0.6
+      ],
+      "gap_range": [
+        -0.6,
+        0.2
+      ],
+      "gap_std": 0.4163,
       "phi": -0.0403,
       "ac_half_width": 0.2327,
       "newcombe_half_width": 0.2313,
