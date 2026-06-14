@@ -1,4 +1,4 @@
-\begin{thebibliography}{34}
+\begin{thebibliography}{36}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -161,18 +161,31 @@ Amir massoud Farahmand, Andr{\'e} Barreto, and Daniel Nikovski.
 \newblock In \emph{Proceedings of the International Conference on Artificial
   Intelligence and Statistics (AISTATS)}, 2017.
 
+\bibitem[McNemar(1947)]{mcnemar1947}
+Quinn McNemar.
+\newblock Note on the sampling error of the difference between correlated
+  proportions or percentages.
+\newblock \emph{Psychometrika}, 12\penalty0 (2):\penalty0 153--157, 1947.
+
 \bibitem[Micheli et~al.(2023)Micheli, Alonso, and Fleuret]{micheli2023iris}
 Vincent Micheli, Eloi Alonso, and Fran{\c{c}}ois Fleuret.
 \newblock Transformers are sample-efficient world models.
 \newblock In \emph{Proceedings of the International Conference on Learning
   Representations (ICLR)}, 2023.
 
-\bibitem[Newcombe(1998)]{newcombe1998}
+\bibitem[Newcombe(1998{\natexlab{a}})]{newcombe1998}
 Robert~G. Newcombe.
 \newblock Interval estimation for the difference between independent
   proportions: Comparison of eleven methods.
 \newblock \emph{Statistics in Medicine}, 17\penalty0 (8):\penalty0 873--890,
-  1998.
+  1998{\natexlab{a}}.
+
+\bibitem[Newcombe(1998{\natexlab{b}})]{newcombe1998paired}
+Robert~G. Newcombe.
+\newblock Improved confidence intervals for the difference between binomial
+  proportions based on paired data.
+\newblock \emph{Statistics in Medicine}, 17\penalty0 (22):\penalty0 2635--2650,
+  1998{\natexlab{b}}.
 
 \bibitem[Park et~al.(2024)]{park2024ogbench}
 Seohong Park et~al.
