@@ -1,0 +1,435 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.18.0",
+  "generated_at": "2026-06-14T18:38:39+00:00",
+  "metric": "observation_robustness_cpg",
+  "environment": "dmc_cartpole",
+  "note": "Reframed T2.3: does prediction != decision survive a richer, partly task-irrelevant observation? Observation = true_state ++ nuisance; the sim stays oracle and the planner scores only the state slice. Compare gap and mse_state (should be ~flat across width/kind) against mse_total (expected down for redundant smooth features, up for high_freq features). width=0 is the no-nuisance control. Non-pixel by the line-92 non-affiliation guardrail; same scientific payload.",
+  "config": {
+    "kinds": [
+      "redundant",
+      "high_freq"
+    ],
+    "widths": [
+      0,
+      4,
+      16,
+      64
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_mlp_episodes": 40,
+    "mlp_max_steps": 200,
+    "mlp_epochs": 200,
+    "mlp_hidden": 64,
+    "num_candidates": 50,
+    "plan_horizon": 15,
+    "benchmark_episodes": 10,
+    "benchmark_horizon": 500,
+    "mse_states": 200
+  },
+  "cells": [
+    {
+      "kind": "none",
+      "width": 0,
+      "seed": 0,
+      "gap": 1.0,
+      "gap_ci_low": 0.6121789545404654,
+      "gap_ci_high": 1.054487712126201,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 1.364e-05,
+      "mse_state": 1.364e-05,
+      "mse_nuisance": null,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 3.745533467736095e-05,
+        "obs_dim": 5,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "none",
+      "width": 0,
+      "seed": 1,
+      "gap": 0.9,
+      "gap_ci_low": 0.4874783959507473,
+      "gap_ci_high": 1.0125216040492526,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 5.86e-06,
+      "mse_state": 5.86e-06,
+      "mse_nuisance": null,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.00018072086095344275,
+        "obs_dim": 5,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "none",
+      "width": 0,
+      "seed": 2,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 3.716e-05,
+      "mse_state": 3.716e-05,
+      "mse_nuisance": null,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.00017541588749736547,
+        "obs_dim": 5,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 4,
+      "seed": 0,
+      "gap": 0.9,
+      "gap_ci_low": 0.48747839595074727,
+      "gap_ci_high": 1.0125216040492528,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 5.76e-06,
+      "mse_state": 6.96e-06,
+      "mse_nuisance": 4.27e-06,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.1,
+        "final_val_mse": 2.8236712751095183e-05,
+        "obs_dim": 9,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 4,
+      "seed": 1,
+      "gap": 0.5,
+      "gap_ci_low": 0.06699089091411597,
+      "gap_ci_high": 0.7663424424192173,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 1.125e-05,
+      "mse_state": 1.656e-05,
+      "mse_nuisance": 4.63e-06,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.4,
+        "final_val_mse": 0.000125647391541861,
+        "obs_dim": 9,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 4,
+      "seed": 2,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 1.392e-05,
+      "mse_state": 1.627e-05,
+      "mse_nuisance": 1.099e-05,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 8.954860822996125e-05,
+        "obs_dim": 9,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 16,
+      "seed": 0,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 2.563e-05,
+      "mse_state": 1.03e-05,
+      "mse_nuisance": 3.042e-05,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.2,
+        "final_val_mse": 6.819140253355727e-05,
+        "obs_dim": 21,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 16,
+      "seed": 1,
+      "gap": 0.9,
+      "gap_ci_low": 0.4874783959507473,
+      "gap_ci_high": 1.0125216040492526,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 8.342e-05,
+      "mse_state": 6.144e-05,
+      "mse_nuisance": 9.028e-05,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.00021558775915764272,
+        "obs_dim": 21,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 16,
+      "seed": 2,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 3.561e-05,
+      "mse_state": 4.436e-05,
+      "mse_nuisance": 3.288e-05,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.00012518327275756747,
+        "obs_dim": 21,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 64,
+      "seed": 0,
+      "gap": 0.30000000000000004,
+      "gap_ci_low": -0.0591850099380149,
+      "gap_ci_high": 0.5591850099380149,
+      "verdict": "INCONCLUSIVE",
+      "mse_total": 8.763e-05,
+      "mse_state": 9.697e-05,
+      "mse_nuisance": 8.69e-05,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.7,
+        "final_val_mse": 0.00018706040282268077,
+        "obs_dim": 69,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 64,
+      "seed": 1,
+      "gap": 0.8,
+      "gap_ci_low": 0.36846216313607627,
+      "gap_ci_high": 0.9648711701972572,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.00010164,
+      "mse_state": 9.938e-05,
+      "mse_nuisance": 0.00010181,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.1,
+        "final_val_mse": 0.00033545182668603957,
+        "obs_dim": 69,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "redundant",
+      "width": 64,
+      "seed": 2,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.00017924,
+      "mse_state": 0.00011044,
+      "mse_nuisance": 0.00018461,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.0003647639532573521,
+        "obs_dim": 69,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 4,
+      "seed": 0,
+      "gap": 1.0,
+      "gap_ci_low": 0.6121789545404654,
+      "gap_ci_high": 1.054487712126201,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.03577733,
+      "mse_state": 9.93e-05,
+      "mse_nuisance": 0.08037485,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.03960305452346802,
+        "obs_dim": 9,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 4,
+      "seed": 1,
+      "gap": 0.9,
+      "gap_ci_low": 0.4874783959507473,
+      "gap_ci_high": 1.0125216040492526,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.03761535,
+      "mse_state": 0.000104,
+      "mse_nuisance": 0.08450454,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.03773174807429314,
+        "obs_dim": 9,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 4,
+      "seed": 2,
+      "gap": 0.10000000000000009,
+      "gap_ci_low": -0.27883477782602967,
+      "gap_ci_high": 0.4455014444926964,
+      "verdict": "INCONCLUSIVE",
+      "mse_total": 0.03706645,
+      "mse_state": 0.00011518,
+      "mse_nuisance": 0.08325553,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.7,
+        "final_val_mse": 0.0417073555290699,
+        "obs_dim": 9,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 16,
+      "seed": 0,
+      "gap": 1.0,
+      "gap_ci_low": 0.6121789545404654,
+      "gap_ci_high": 1.054487712126201,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.10932782,
+      "mse_state": 0.00079642,
+      "mse_nuisance": 0.14324388,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.13905315101146698,
+        "obs_dim": 21,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 16,
+      "seed": 1,
+      "gap": 0.8,
+      "gap_ci_low": 0.36846216313607627,
+      "gap_ci_high": 0.9648711701972572,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.11659332,
+      "mse_state": 0.00059473,
+      "mse_nuisance": 0.15284288,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.1,
+        "final_val_mse": 0.15297317504882812,
+        "obs_dim": 21,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 16,
+      "seed": 2,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.12488273,
+      "mse_state": 0.00066474,
+      "mse_nuisance": 0.16370085,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.1567736268043518,
+        "obs_dim": 21,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 64,
+      "seed": 0,
+      "gap": 1.0,
+      "gap_ci_low": 0.6121789545404654,
+      "gap_ci_high": 1.054487712126201,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.27736967,
+      "mse_state": 0.00283398,
+      "mse_nuisance": 0.29881777,
+      "context": {
+        "oracle_success_rate": 1.0,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.3103943169116974,
+        "obs_dim": 69,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 64,
+      "seed": 1,
+      "gap": 0.9,
+      "gap_ci_low": 0.4874783959507473,
+      "gap_ci_high": 1.0125216040492526,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.27465461,
+      "mse_state": 0.00340348,
+      "mse_nuisance": 0.2958461,
+      "context": {
+        "oracle_success_rate": 0.9,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.32426565885543823,
+        "obs_dim": 69,
+        "n_episodes": 10
+      }
+    },
+    {
+      "kind": "high_freq",
+      "width": 64,
+      "seed": 2,
+      "gap": 0.8,
+      "gap_ci_low": 0.3760128698058143,
+      "gap_ci_high": 0.957320463527519,
+      "verdict": "MODEL BOTTLENECK",
+      "mse_total": 0.28291244,
+      "mse_state": 0.00345546,
+      "mse_nuisance": 0.30474502,
+      "context": {
+        "oracle_success_rate": 0.8,
+        "learned_success_rate": 0.0,
+        "final_val_mse": 0.32223761081695557,
+        "obs_dim": 69,
+        "n_episodes": 10
+      }
+    }
+  ]
+}

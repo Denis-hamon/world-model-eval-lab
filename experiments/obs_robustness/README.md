@@ -67,6 +67,46 @@ be mildly distracted by them, nudging `mse_state` (and thus CPG) a little. The
 analysis reports `mse_state` separately precisely so that input-distraction
 effect is visible rather than hidden inside an aggregate.
 
+## Result (full CPU sweep, 21 cells: {redundant, high_freq} x {0,4,16,64} x 3 seeds)
+
+The decoupling holds, and strongly. A popular "model quality" proxy --
+observation-space one-step MSE -- swings by orders of magnitude purely from
+task-irrelevant observation design, while the downstream gap does not track it:
+
+- `mse_total` ranges **0.0000 to 0.283** (the `high_freq` arm climbs monotonically
+  with width: 0.037 -> 0.117 -> 0.278 at w = 4/16/64; `redundant` stays ~0).
+- the CPG `gap` stays at **mean +0.79** (range +0.10..+1.00) with no monotone
+  relation to width or kind. **Spearman(mse_total, gap) = +0.09, 95% CI
+  [-0.37, +0.51]**; Spearman(mse_state, gap) = +0.03 -- both within noise.
+- `mse_state` -- the decision-relevant slice -- stays small in every cell, **~1e-5
+  to ~3e-3**, trending mildly upward with `high_freq` width (the input-distraction
+  confound disclosed above), i.e. orders of magnitude below `mse_total`.
+
+Three honest caveats:
+
+1. **The learned MLP is at MODEL BOTTLENECK (fails to plan) in nearly every
+   cell** (learned planning success is 0 in 14 of 21 cells, mean 0.11; oracle is
+   0.8-1.0), so `gap` ~ oracle success regardless of observation. The decoupling
+   (one-step MSE moves ~5e4x, the gap does not) is the point, but the outcome
+   held constant is *near-failure*, not a graded success rate -- the same DMC-MLP
+   planning floor that pushed the keystone PoC to the maze toy.
+2. **The low Spearman is consistent-with-decoupling, not positive proof of it.**
+   Because `gap` is near-constant and oracle-pinned, it has little variance to
+   correlate with, which mechanically suppresses any correlation; the CI is
+   correspondingly wide ([-0.37, +0.51]). Read this as "the MSE swing buys no
+   detectable change in the gap," not as an estimated zero relationship.
+3. **The deflation direction did not materialise.** The MLP already fits the
+   clean Cartpole state to ~0 one-step MSE, so the smooth `redundant` features
+   (also fit to ~0) leave `mse_total` at the floor -- there is nothing to deflate.
+   Only the inflation direction (`high_freq`) shows a large, monotone effect.
+
+So the genuinely new content here is not prediction != decision itself (the
+keystone already establishes that) but its **invariance**: a ~5e4x swing in
+observation-space one-step MSE, engineered purely from task-irrelevant
+observation design, buys no detectable change in the closed-loop gap, while the
+decision-relevant `mse_state` stays orders of magnitude smaller throughout. The
+committed JSON has every per-cell row.
+
 ## Run (CPU)
 
 ```bash
