@@ -70,30 +70,65 @@ sequence. The discriminating test -- whether decision-aware M3 predicts where
 naive M1 fails -- needs Stage 2 (DMC/TD-MPC2), where capable models span a range
 of non-floor downstream success.
 
-## Stage 2 — the headline cells (GPU): a DMC/TD-MPC2 sweep
+## Stage 2 — the headline cells (CPU, checkpoint-gated): `tdmpc2_offline_metrics.py`
 
 The discriminating test needs cells where *capable* models span a quality range
-with non-floor, varying downstream success — i.e. TD-MPC2 at several capacities /
-checkpoints across Acrobot, Cartpole, Reacher (the cells already in `results/`,
-whose downstream CPG ranges from −0.27 to +0.93). Computing M1–M3 for those
-requires loading the TD-MPC2 checkpoints (GPU; not committed), so this stage runs
-on the GPU box. Its output appends rows to the same bundle schema, after which
-`correlate.py` reproduces the correlation with no GPU.
+with non-floor, varying downstream success — i.e. the committed TD-MPC2 cells
+across Acrobot, Cartpole, Reacher, whose downstream CPG spans roughly −0.10 to
++0.80. `tdmpc2_offline_metrics.py` loads each cell's trained latent dynamics and
+computes M1/M2/M3 against the matched oracle on a fixed seeded state sample, then
+pairs them with that cell's already committed CPG (`results/dmc_*/tdmpc2_cpg*.json`).
+
+This is **CPU**, not GPU: TD-MPC2 inference defaults to CPU and the planner is
+not run here — only the `(state, action) → next_state` callable is queried. It is
+**checkpoint-gated**: the `.pt` weights are gitignored and not in the repo. Run it
+where they exist (the training box, or after `scp`-ing the checkpoints into
+`results/dmc_*/`), with the TD-MPC2 setup done (`scripts/setup_tdmpc2.sh` + the
+deps listed in `experiments/dmc_reacher/tdmpc2_cpg.py`). On a checkout without the
+weights every cell is reported as skipped, so the script still runs and tells you
+exactly which files are missing.
+
+```bash
+python -m experiments.offline_downstream.tdmpc2_offline_metrics    # writes results/offline_downstream/tdmpc2_offline_scores.json
+python -m experiments.offline_downstream.correlate \
+    --bundle results/offline_downstream/tdmpc2_offline_scores.json --downstream gap
+```
+
+**Scale confound — read this before pooling.** M1 and M2 are L2 distances in each
+environment's own state space, so their magnitudes are **not** comparable across
+Cartpole and Reacher; pooling them into one cross-env correlation would unfairly
+handicap them against the unitless, rank-based M3 — the same apples-to-oranges
+trap the maze PoC review flagged. The fair head-to-head is **within an
+environment**, so `tdmpc2_offline_metrics.py` prints a within-env Spearman for
+every env with ≥3 cells; the pooled `correlate.py` output is meaningful only for
+M3. Cartpole has the widest within-env gap spread (size 1 and size 5, six cells)
+and is the cell group where the M1-vs-M3 question can actually be decided.
 
 ## Bundle schema
 
 `results/offline_downstream/*offline_scores.json`:
 
+The maze bundle (Stage 1) is flat with a `success_rate` downstream:
+
 ```json
-{
-  "cells": [
-    {"<descriptor fields>": "...", "m1_...": 0.0, "m2_...": 0.0, "m3_...": 0.0,
-     "success_rate": 0.0}
-  ]
-}
+{"cells": [{"epochs": 64, "seed": 0, "m1_mismatch": 0.0, "m2_kstep_divergence": 0.0,
+            "m3_action_agreement": 0.0, "success_rate": 0.0}]}
+```
+
+The TD-MPC2 bundle (Stage 2) carries the offline metrics + `gap` flat, and parks
+every non-metric number inside `context` so the auto-detector sees only m1/m2/m3:
+
+```json
+{"cells": [{"env": "dmc_cartpole", "model_size": 5, "seed": 0, "verdict": "MODEL BOTTLENECK",
+            "m1_l2_onestep": 0.0, "m2_l2_kstep": 0.0, "m3_action_agreement": 0.0, "gap": 0.5,
+            "context": {"oracle_success_rate": 0.0, "learned_success_rate": 0.0,
+                        "training_steps": 0, "n_states": 150, "k_steps": 10}}]}
 ```
 
 `correlate.py` auto-detects numeric metric columns (excluding descriptors like
 `epochs`/`seed`/`model`), correlates each against `--downstream` (default
-`success_rate`; use `cpg` for the DMC bundle), and drops non-finite cells per
-metric.
+`success_rate`; use `gap` for the TD-MPC2 bundle), and drops non-finite cells per
+metric. The TD-MPC2 bundle keeps non-metric numbers (success rates, training
+steps, state count) inside a per-cell `context` object so the auto-detector does
+not mistake them for offline metrics, and stores the within-env correlation under
+`within_env_correlation`.
