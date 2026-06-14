@@ -1,0 +1,213 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.18.0",
+  "generated_at": "2026-06-14T13:43:45+00:00",
+  "metric": "paired_intervals_audit",
+  "note": "Paired-aware re-analysis of the non-degenerate CPG cells. AC treats the arms as independent; the measured within-pair correlation phi (per cell) is ~0 on Reacher and slightly negative on Cartpole, so the paired intervals are not tighter than AC here -- the corroboration is that all three intervals agree on clearing zero. McNemar p-values carry a Holm family-wise correction across cells.",
+  "cells": [
+    {
+      "n": 30,
+      "oracle_rate": 1.0,
+      "learned_rate": 0.7,
+      "gap": 0.3,
+      "phi": 0.0,
+      "ac_half_width": 0.1715,
+      "newcombe_half_width": 0.1769,
+      "ac_ci": [
+        0.1097,
+        0.4528
+      ],
+      "paired_bootstrap_ci": [
+        0.1333,
+        0.4667
+      ],
+      "newcombe_ci": [
+        0.1249,
+        0.4788
+      ],
+      "mcnemar": {
+        "table": {
+          "both": 21,
+          "oracle_only": 9,
+          "learned_only": 0,
+          "neither": 0
+        },
+        "n_discordant": 9,
+        "p_value": 0.0039,
+        "p_holm": 0.0195
+      },
+      "verdict": "MODEL BOTTLENECK",
+      "cell": "Reacher-easy | random-shooting | MLP-on-TD-MPC2"
+    },
+    {
+      "n": 30,
+      "oracle_rate": 1.0,
+      "learned_rate": 0.8,
+      "gap": 0.2,
+      "phi": 0.0,
+      "ac_half_width": 0.1554,
+      "newcombe_half_width": 0.1638,
+      "ac_ci": [
+        0.0321,
+        0.3429
+      ],
+      "paired_bootstrap_ci": [
+        0.0667,
+        0.3333
+      ],
+      "newcombe_ci": [
+        0.0454,
+        0.3731
+      ],
+      "mcnemar": {
+        "table": {
+          "both": 24,
+          "oracle_only": 6,
+          "learned_only": 0,
+          "neither": 0
+        },
+        "n_discordant": 6,
+        "p_value": 0.0312,
+        "p_holm": 0.0936
+      },
+      "verdict": "MODEL BOTTLENECK",
+      "cell": "Reacher-easy | random-shooting | TD-MPC2"
+    },
+    {
+      "n": 30,
+      "oracle_rate": 1.0,
+      "learned_rate": 0.6667,
+      "gap": 0.3333,
+      "phi": 0.0,
+      "ac_half_width": 0.1753,
+      "newcombe_half_width": 0.18,
+      "ac_ci": [
+        0.1372,
+        0.4878
+      ],
+      "paired_bootstrap_ci": [
+        0.1667,
+        0.5
+      ],
+      "newcombe_ci": [
+        0.1523,
+        0.5122
+      ],
+      "mcnemar": {
+        "table": {
+          "both": 20,
+          "oracle_only": 10,
+          "learned_only": 0,
+          "neither": 0
+        },
+        "n_discordant": 10,
+        "p_value": 0.002,
+        "p_holm": 0.012
+      },
+      "verdict": "MODEL BOTTLENECK",
+      "cell": "Reacher-easy | CEM | MLP-on-TD-MPC2"
+    },
+    {
+      "n": 30,
+      "oracle_rate": 1.0,
+      "learned_rate": 0.7667,
+      "gap": 0.2333,
+      "phi": 0.0,
+      "ac_half_width": 0.1617,
+      "newcombe_half_width": 0.1689,
+      "ac_ci": [
+        0.0571,
+        0.3804
+      ],
+      "paired_bootstrap_ci": [
+        0.1,
+        0.4
+      ],
+      "newcombe_ci": [
+        0.0715,
+        0.4093
+      ],
+      "mcnemar": {
+        "table": {
+          "both": 23,
+          "oracle_only": 7,
+          "learned_only": 0,
+          "neither": 0
+        },
+        "n_discordant": 7,
+        "p_value": 0.0156,
+        "p_holm": 0.0624
+      },
+      "verdict": "MODEL BOTTLENECK",
+      "cell": "Reacher-easy | CEM | TD-MPC2"
+    },
+    {
+      "n": 30,
+      "oracle_rate": 0.9333,
+      "learned_rate": 0.7667,
+      "gap": 0.1667,
+      "phi": -0.1474,
+      "ac_half_width": 0.1809,
+      "newcombe_half_width": 0.1943,
+      "ac_ci": [
+        -0.0246,
+        0.3371
+      ],
+      "paired_bootstrap_ci": [
+        -0.0333,
+        0.3667
+      ],
+      "newcombe_ci": [
+        -0.0328,
+        0.3558
+      ],
+      "mcnemar": {
+        "table": {
+          "both": 21,
+          "oracle_only": 7,
+          "learned_only": 2,
+          "neither": 0
+        },
+        "n_discordant": 9,
+        "p_value": 0.1797,
+        "p_holm": 0.1797
+      },
+      "verdict": "INCONCLUSIVE",
+      "cell": "Cartpole-swingup | random-shooting | TD-MPC2 (size5)"
+    },
+    {
+      "n": 30,
+      "oracle_rate": 0.4667,
+      "learned_rate": 0.7333,
+      "gap": -0.2667,
+      "phi": -0.0403,
+      "ac_half_width": 0.2327,
+      "newcombe_half_width": 0.2313,
+      "ac_ci": [
+        -0.4827,
+        -0.0173
+      ],
+      "paired_bootstrap_ci": [
+        -0.5,
+        -0.0333
+      ],
+      "newcombe_ci": [
+        -0.477,
+        -0.0144
+      ],
+      "mcnemar": {
+        "table": {
+          "both": 10,
+          "oracle_only": 4,
+          "learned_only": 12,
+          "neither": 4
+        },
+        "n_discordant": 16,
+        "p_value": 0.0768,
+        "p_holm": 0.1536
+      },
+      "verdict": "LEARNED OUTPERFORMS ORACLE",
+      "cell": "Cartpole-swingup | CEM | TD-MPC2 (size5)"
+    }
+  ]
+}
