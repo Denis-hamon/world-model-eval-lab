@@ -85,6 +85,28 @@ The framework is open source\footnote{\url{https://github.com/Denis-hamon/world-
 
 \paragraph{Evaluation platforms.} \citet{maes2026swm} is a concurrent, complementary platform for world-model research that standardises data loading, baseline implementations, planning solvers, and a broad environment suite with controllable factors of variation, reporting success rate as its primary control metric.\footnote{CPG and the \texttt{wmel} framework were developed independently and concurrently; the public repository's version history predates and does not derive from that platform. The contribution here is orthogonal: a single statistic and decision rule, not a platform, and it composes with any benchmark runner that can swap the dynamics callable.} Such platforms report point-estimate success rates; CPG is the decision-grade statistic that a platform of that kind could compute per model per environment to separate the contribution of the model from that of the planner, with a calibrated interval and a decision rule rather than a bare leaderboard number.
 
+\paragraph{Positioning.} Table~\ref{tab:positioning} places CPG against these families by the \emph{output} each standardly reports. CPG is not a new quantity -- it is the model-exploitation gap of \citet{yu2020mopo,kidambi2020morel} -- and we claim no novelty for the subtraction. Its contribution is the \emph{combination} of attributes in the last row: to our knowledge it is the only one of these evaluation outputs that is at once closed-loop, reported with a boundary-robust interval, and read through a verdict gate that returns \textsc{inconclusive} rather than commit when the interval crosses zero. The value-equivalence line is complementary but distinct in kind -- it reshapes \emph{training}, whereas CPG measures a \emph{trained} model a posteriori (\S\ref{sec:interpretation}).
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lcccc}
+\toprule
+Evaluation output & Closed-loop & Calibrated CI & Gated verdict & A-posteriori \\
+\midrule
+Reconstruction / FID / held-out loss & no & no & no & yes \\
+Point-estimate success leaderboard & yes & no & no & yes \\
+Model-exploitation gap~\citep{yu2020mopo,kidambi2020morel} & yes & no & no & yes \\
+Value-equivalence / VAML~\citep{grimm2020value,grimm2021proper,farahmand2017value} & n/a & n/a & n/a & no \\
+Aggregate RL intervals~\citep{agarwal2021precipice} & yes & yes & no & yes \\
+\textbf{CPG (this work)} & yes & yes & yes & yes \\
+\bottomrule
+\end{tabular}
+\caption{Where CPG sits among world-model / RL evaluation outputs, by the output each \emph{standardly reports}. \emph{Closed-loop}: measures planning success, not prediction fidelity. \emph{Calibrated CI}: reports an interval that behaves at the boundary proportions $p \in \{0,1\}$ -- a ``no'' means no such boundary-calibrated interval on the gap is standardly reported, even by methods that report seed-to-seed dispersion. \emph{Gated verdict}: a decision rule that returns \textsc{inconclusive} rather than commit when the interval crosses zero. \emph{A-posteriori}: evaluates a trained model rather than reshaping training (value-equivalence / VAML are training losses, hence ``n/a'' for the reporting and closed-loop columns). CPG's contribution is the combination, not any single column.}
+\label{tab:positioning}
+\end{table}
+
 \section{The Evaluation Contract and a Decision-Grade Taxonomy}
 \label{sec:framework}
 
@@ -357,7 +379,7 @@ Other limitations worth flagging explicitly. The discrete-torque action space is
 
 \section{Conclusion}
 
-We have proposed the Counterfactual Planning Gap -- the success-rate difference between a fixed planner using oracle versus learned dynamics, reported with an Agresti--Caffo interval, a paired bootstrap where the design is paired, and a five-branch verdict gated on the CI lower bound -- and packaged it behind a minimal evaluation contract. Exercised over the task's initial-state distribution on three DMC tasks, the verdict is \emph{heterogeneous}: Acrobot is \textsc{planner bottleneck} (the oracle planner itself solves only $\sim\!3\%$ of random starts), Reacher is uniformly \textsc{model bottleneck} on non-degenerate gaps ($+0.20$ to $+0.33$), and high-capacity Cartpole under CEM reaches \textsc{learned outperforms oracle} ($\mathrm{CPG} = -0.27$; the AC and paired-bootstrap intervals both clear zero), with several cells \textsc{inconclusive}. The sharpest evidence for the metric's purpose is a self-correction: an earlier fixed-initial-state evaluation of this same framework reported a large \textsc{model bottleneck} gap on Acrobot, and re-running over the task distribution -- the design the metric's own honesty discipline demands -- collapsed the oracle and overturned the verdict to \textsc{planner bottleneck}. A calibrated, interval-gated statistic caught a configuration-sensitive artifact that a point estimate would have published. And because the gate is a function of the confidence interval, it doubles as a power tool that sizes a comparison before the rollouts and audits a leaderboard near-tie after them. We argue this kind of calibrated honesty -- a metric that refuses to claim more than the data and the evaluation conditions support, and that says so out loud -- is the right design target for a methodology that wants to sit usefully next to a fast-moving model literature.
+We have proposed the Counterfactual Planning Gap -- the success-rate difference between a fixed planner using oracle versus learned dynamics, reported with an Agresti--Caffo interval, a paired bootstrap where the design is paired, and a five-branch verdict gated on the CI lower bound -- and packaged it behind a minimal evaluation contract. Exercised over the task's initial-state distribution on three DMC tasks, the verdict is \emph{heterogeneous}: \textsc{planner bottleneck} on Acrobot (the oracle planner itself solves only $\sim\!3\%$ of random starts), uniform \textsc{model bottleneck} on Reacher, \textsc{learned outperforms oracle} on high-capacity Cartpole under CEM, and \textsc{inconclusive} on several cells -- the per-cell magnitudes and intervals are in \S\ref{sec:empirical}--\S\ref{sec:reacher}. The sharpest evidence for the metric's purpose is a self-correction: an earlier fixed-initial-state evaluation of this same framework reported a large \textsc{model bottleneck} gap on Acrobot, and re-running over the task distribution -- the design the metric's own honesty discipline demands -- collapsed the oracle and overturned the verdict to \textsc{planner bottleneck}. A calibrated, interval-gated statistic caught a configuration-sensitive artifact that a point estimate would have published. And because the gate is a function of the confidence interval, it doubles as a power tool that sizes a comparison before the rollouts and audits a leaderboard near-tie after them. We argue this kind of calibrated honesty -- a metric that refuses to claim more than the data and the evaluation conditions support, and that says so out loud -- is the right design target for a methodology that wants to sit usefully next to a fast-moving model literature.
 
 \section*{Acknowledgements}
 
