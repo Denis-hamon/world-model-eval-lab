@@ -956,3 +956,155 @@ def paired_bradley_terry_ranking(
         n_boot=n_boot,
         prior=prior,
     )
+
+
+# --- Rank correlation (for offline-metric vs downstream-performance studies) --
+
+@dataclass(frozen=True)
+class CorrelationResult:
+    """A rank correlation with a bootstrap confidence interval.
+
+    Built for the question "does a cheap offline metric predict downstream
+    decision quality?": correlate one value per (model, env, planner) cell
+    against its CPG / success and report the strength with an honest interval.
+    Rank-based because at the handful-of-cells sample sizes this is used for, a
+    monotone (not linear) relationship on incomparable scales is what matters.
+    ``n_boot`` is the number of *valid* (non-degenerate) resamples actually used,
+    which can be fewer than the count requested.
+    """
+
+    rho: float
+    ci_low: float
+    ci_high: float
+    n_pairs: int
+    method: str
+    n_boot: int
+
+
+def _rankdata(xs: Sequence[float]) -> list[float]:
+    """Average (fractional) ranks with tie handling; ranks are 1-based."""
+    n = len(xs)
+    order = sorted(range(n), key=lambda i: xs[i])
+    ranks = [0.0] * n
+    i = 0
+    while i < n:
+        j = i
+        while j + 1 < n and xs[order[j + 1]] == xs[order[i]]:
+            j += 1
+        avg = (i + j) / 2.0 + 1.0  # mean of the 1-based positions i..j
+        for k in range(i, j + 1):
+            ranks[order[k]] = avg
+        i = j + 1
+    return ranks
+
+
+def _pearson(a: Sequence[float], b: Sequence[float]) -> float:
+    """Pearson correlation; raises ValueError if either side has zero variance."""
+    mean_a, mean_b = fmean(a), fmean(b)
+    num = sum((ai - mean_a) * (bi - mean_b) for ai, bi in zip(a, b))
+    den = math.sqrt(sum((ai - mean_a) ** 2 for ai in a)) * math.sqrt(
+        sum((bi - mean_b) ** 2 for bi in b)
+    )
+    if den == 0.0:
+        raise ValueError("correlation undefined: zero variance in an input")
+    return num / den
+
+
+def spearman_rho(xs: Sequence[float], ys: Sequence[float]) -> float:
+    """Spearman rank correlation in [-1, 1] (Pearson on average ranks, tie-safe).
+
+    Raises ValueError on mismatched lengths, fewer than two points, or a
+    constant input (correlation undefined).
+    """
+    if len(xs) != len(ys):
+        raise ValueError(f"length mismatch: {len(xs)} vs {len(ys)}")
+    if len(xs) < 2:
+        raise ValueError("need at least two pairs")
+    return _pearson(_rankdata(xs), _rankdata(ys))
+
+
+def kendall_tau(xs: Sequence[float], ys: Sequence[float]) -> float:
+    """Kendall tau-b in [-1, 1] (tie-corrected). O(n^2); robust at very small n.
+
+    Raises ValueError on mismatched lengths, fewer than two points, or a
+    degenerate denominator (a constant input).
+    """
+    if len(xs) != len(ys):
+        raise ValueError(f"length mismatch: {len(xs)} vs {len(ys)}")
+    n = len(xs)
+    if n < 2:
+        raise ValueError("need at least two pairs")
+    n0 = n * (n - 1) // 2
+    nc = nd = n1 = n2 = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            dx = xs[i] - xs[j]
+            dy = ys[i] - ys[j]
+            if dx == 0 and dy == 0:
+                n1 += 1
+                n2 += 1
+            elif dx == 0:
+                n1 += 1
+            elif dy == 0:
+                n2 += 1
+            elif (dx > 0) == (dy > 0):
+                nc += 1
+            else:
+                nd += 1
+    den = math.sqrt((n0 - n1) * (n0 - n2))
+    if den == 0.0:
+        raise ValueError("Kendall tau-b undefined: a constant input")
+    return (nc - nd) / den
+
+
+def bootstrap_correlation_ci(
+    xs: Sequence[float],
+    ys: Sequence[float],
+    *,
+    method: str = "spearman",
+    n_boot: int = 10_000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> CorrelationResult:
+    """Rank correlation with a paired percentile bootstrap CI.
+
+    Resamples cell indices with replacement (the pair ``(x_i, y_i)`` kept
+    together, like :func:`paired_bootstrap_gap_ci`) and recomputes the
+    correlation each draw. Degenerate resamples (a constant input, which makes
+    the correlation undefined) are skipped; the reported ``n_boot`` is the number
+    of valid resamples. The interval is therefore conditional on non-degenerate
+    resamples -- for a near-constant arm at very small n this can make it
+    optimistically narrow. Deterministic given ``seed``.
+    """
+    if len(xs) != len(ys):
+        raise ValueError(f"length mismatch: {len(xs)} vs {len(ys)}")
+    n = len(xs)
+    if n < 2:
+        raise ValueError("need at least two pairs")
+    if n_boot < 1:
+        raise ValueError("n_boot must be >= 1")
+    if not (0.0 < alpha < 1.0):
+        raise ValueError("alpha must be in (0, 1)")
+    fns = {"spearman": spearman_rho, "kendall": kendall_tau}
+    if method not in fns:
+        raise ValueError(f"method must be one of {sorted(fns)} (got {method!r})")
+    fn = fns[method]
+
+    point = fn(xs, ys)
+    rng = random.Random(seed)
+    rhos: list[float] = []
+    for _ in range(n_boot):
+        idx = [rng.randrange(n) for _ in range(n)]
+        try:
+            rhos.append(fn([xs[i] for i in idx], [ys[i] for i in idx]))
+        except ValueError:
+            continue  # degenerate resample (a constant arm): no information
+    if len(rhos) < 2:
+        raise ValueError("correlation bootstrap degenerate: too few valid resamples")
+    rhos.sort()
+    m = len(rhos)
+    lo = rhos[max(0, min(int((alpha / 2.0) * m), m - 1))]
+    hi = rhos[max(0, min(int((1.0 - alpha / 2.0) * m) - 1, m - 1))]
+    return CorrelationResult(
+        rho=point, ci_low=lo, ci_high=hi, n_pairs=n, method=method, n_boot=m
+    )
