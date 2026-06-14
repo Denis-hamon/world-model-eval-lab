@@ -293,12 +293,14 @@ def paired_bootstrap_gap_ci(
     Resampling episode *indices* (the same index drawn for both arms), rather
     than resampling the two arms independently, preserves the within-episode
     correlation between the arms. When the arms are **positively** correlated --
-    the expected regime, where a hard initial state tends to hurt both at once --
-    that covariance shrinks the variance of the *difference*, so the paired
-    interval is tighter than the independent-proportions Agresti-Caffo interval
-    of :func:`counterfactual_planning_gap`, which ignores the shared state.
-    (Under negative correlation it can instead be wider; it is calibrated to the
-    actual paired structure either way.) AC remains the right tool for unpaired
+    a hard initial state tending to hurt both at once -- that covariance shrinks
+    the variance of the *difference* and the paired interval is tighter than the
+    independent-proportions Agresti-Caffo interval of
+    :func:`counterfactual_planning_gap`, which ignores the shared state; under
+    negative or zero correlation it is instead wider or comparable. It is
+    calibrated to whatever the actual paired structure is (which is an empirical
+    matter: on the cells evaluated here the within-pair correlation is near zero,
+    so the two intervals nearly coincide -- see ``experiments/paired_intervals_audit.py``). AC remains the right tool for unpaired
     or boundary (``0/n``) cells; this is the right tool for the non-degenerate
     paired cells where the two arms can both succeed or both fail on the same
     start.
@@ -337,6 +339,181 @@ def paired_bootstrap_gap_ci(
     lo_idx = max(0, min(int((alpha / 2.0) * n_boot), n_boot - 1))
     hi_idx = max(0, min(int((1.0 - alpha / 2.0) * n_boot) - 1, n_boot - 1))
     return gap_point, gaps[lo_idx], gaps[hi_idx]
+
+
+def _paired_success_arrays(
+    oracle_results: Sequence[EpisodeResult],
+    learned_results: Sequence[EpisodeResult],
+) -> tuple[list[int], list[int]]:
+    """Validate the paired contract and return 0/1 success arrays per arm."""
+    if len(oracle_results) != len(learned_results):
+        raise ValueError(
+            "paired methods require equal-length, index-aligned arms "
+            f"(got {len(oracle_results)} oracle, {len(learned_results)} learned)"
+        )
+    if not oracle_results:
+        raise ValueError("results must not be empty")
+    o = [1 if r.success else 0 for r in oracle_results]
+    l = [1 if r.success else 0 for r in learned_results]
+    return o, l
+
+
+def _wilson_bounds(successes: int, total: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson score interval for a single proportion (stdlib).
+
+    Unlike Wald, it does not collapse at ``successes`` in ``{0, total}``, which
+    is exactly why it is the right building block for Newcombe's paired
+    difference interval at the boundary proportions this framework hits.
+    """
+    if total == 0:
+        return 0.0, 1.0
+    p = successes / total
+    z2 = z * z
+    denom = 1.0 + z2 / total
+    centre = (p + z2 / (2.0 * total)) / denom
+    half = (z * math.sqrt(p * (1.0 - p) / total + z2 / (4.0 * total * total))) / denom
+    return centre - half, centre + half
+
+
+@dataclass(frozen=True)
+class McNemarResult:
+    """Exact McNemar test for two *paired* binary arms (oracle vs learned).
+
+    The two arms are evaluated on the same per-episode initial state, so each
+    episode is a matched pair. McNemar conditions on the *discordant* pairs --
+    episodes where exactly one arm succeeds -- and asks whether their split
+    departs from 50/50. Unlike the Agresti-Caffo interval (which treats the two
+    arms as *independent* proportions and so ignores the pairing), this is the
+    textbook test for the paired binary design; being exact, it stays valid at
+    the boundary (a learned arm at ``0/n`` yields only oracle-only discordant
+    pairs and reduces to a one-sided binomial / sign test).
+
+    The counts form the 2x2 paired table:
+
+        both         : episodes both arms solve
+        oracle_only  : oracle solves, learned fails   (the ``b`` cell)
+        learned_only : learned solves, oracle fails   (the ``c`` cell)
+        neither      : episodes neither arm solves
+
+    ``p_value`` is the two-sided exact probability under H0 (equal marginal
+    success), i.e. ``b ~ Binomial(b + c, 1/2)``; it is ``1.0`` when there are no
+    discordant pairs (the data carry no paired evidence either way).
+    """
+
+    both: int
+    oracle_only: int
+    learned_only: int
+    neither: int
+    n_discordant: int
+    p_value: float
+
+
+def mcnemar_exact(
+    oracle_results: Sequence[EpisodeResult],
+    learned_results: Sequence[EpisodeResult],
+) -> McNemarResult:
+    """Exact two-sided McNemar test on the paired (oracle, learned) arms.
+
+    See :class:`McNemarResult`. The two lists must be equal length and
+    index-aligned (episode ``k`` is the same initial state in both arms) -- the
+    same paired contract as :func:`paired_bootstrap_gap_ci`.
+    """
+    o, l = _paired_success_arrays(oracle_results, learned_results)
+    both = sum(1 for a, b in zip(o, l) if a == 1 and b == 1)
+    oracle_only = sum(1 for a, b in zip(o, l) if a == 1 and b == 0)
+    learned_only = sum(1 for a, b in zip(o, l) if a == 0 and b == 1)
+    neither = sum(1 for a, b in zip(o, l) if a == 0 and b == 0)
+    n_disc = oracle_only + learned_only
+    if n_disc == 0:
+        p_value = 1.0
+    else:
+        k = min(oracle_only, learned_only)
+        # Two-sided exact binomial test at p=1/2: double the smaller tail,
+        # capped at 1.0 (the doubling can exceed 1 when oracle_only == learned_only).
+        tail = sum(math.comb(n_disc, i) for i in range(k + 1)) / (2.0 ** n_disc)
+        p_value = min(1.0, 2.0 * tail)
+    return McNemarResult(
+        both=both,
+        oracle_only=oracle_only,
+        learned_only=learned_only,
+        neither=neither,
+        n_discordant=n_disc,
+        p_value=p_value,
+    )
+
+
+def newcombe_paired_diff_ci(
+    oracle_results: Sequence[EpisodeResult],
+    learned_results: Sequence[EpisodeResult],
+    z: float = 1.96,
+) -> tuple[float, float, float]:
+    """Newcombe (1998) CI for the difference of two *paired* proportions.
+
+    Returns ``(diff_point, ci_low, ci_high)`` for ``p_oracle - p_learned`` via
+    Newcombe's square-and-add method: combine each arm's Wilson score interval
+    with a correction for the paired correlation ``phi`` estimated from the 2x2
+    table. The interval is bounded in ``[-1, 1]`` and stays well-defined at the
+    boundary (the Wilson components never collapse), so it is the closed-form
+    paired analogue of the Agresti-Caffo interval and the companion to the
+    nonparametric :func:`paired_bootstrap_gap_ci`. Signature mirrors that
+    function; the two lists must be equal length and index-aligned.
+
+    Reference: Newcombe (1998), "Improved confidence intervals for the difference
+    between binomial proportions based on paired data", Statistics in Medicine
+    17(22):2635-2650 (the phi-corrected square-and-add on Wilson intervals).
+    """
+    o, l = _paired_success_arrays(oracle_results, learned_results)
+    n = len(o)
+    a = sum(1 for x, y in zip(o, l) if x == 1 and y == 1)  # both
+    b = sum(1 for x, y in zip(o, l) if x == 1 and y == 0)  # oracle only
+    c = sum(1 for x, y in zip(o, l) if x == 0 and y == 1)  # learned only
+    d = sum(1 for x, y in zip(o, l) if x == 0 and y == 0)  # neither
+    p1 = (a + b) / n  # oracle success rate
+    p2 = (a + c) / n  # learned success rate
+    diff = p1 - p2
+
+    l1, u1 = _wilson_bounds(a + b, n, z)
+    l2, u2 = _wilson_bounds(a + c, n, z)
+
+    # Paired correlation correction; 0 when any margin is degenerate.
+    margin = (a + b) * (c + d) * (a + c) * (b + d)
+    phi = ((a * d - b * c) / math.sqrt(margin)) if margin > 0 else 0.0
+
+    lower = diff - math.sqrt(
+        max(0.0, (p1 - l1) ** 2 - 2.0 * phi * (p1 - l1) * (u2 - p2) + (u2 - p2) ** 2)
+    )
+    upper = diff + math.sqrt(
+        max(0.0, (u1 - p1) ** 2 - 2.0 * phi * (u1 - p1) * (p2 - l2) + (p2 - l2) ** 2)
+    )
+    return diff, lower, upper
+
+
+def holm_correction(pvalues: Sequence[float]) -> list[float]:
+    """Holm-Bonferroni step-down adjusted p-values (family-wise error control).
+
+    Given a family of raw p-values -- e.g. one :func:`mcnemar_exact` test per
+    evaluated cell -- returns adjusted p-values in the **same order** as the
+    input. Controls the family-wise error rate without assuming independence and
+    is uniformly more powerful than plain Bonferroni. Compare each adjusted value
+    to ``alpha`` as usual. This is the multiplicity correction a heterogeneous
+    grid of (env, planner, model) verdicts needs before any cell is called
+    significant.
+    """
+    m = len(pvalues)
+    if m == 0:
+        return []
+    for p in pvalues:
+        if not (0.0 <= p <= 1.0):
+            raise ValueError(f"p-values must be in [0, 1] (got {p})")
+    order = sorted(range(m), key=lambda i: pvalues[i])
+    adjusted = [0.0] * m
+    running = 0.0
+    for rank, idx in enumerate(order):
+        # (m - rank) multiplier for the rank-th smallest (0-indexed); enforce
+        # monotonic non-decreasing adjusted values down the sorted order.
+        running = max(running, min(1.0, (m - rank) * pvalues[idx]))
+        adjusted[idx] = running
+    return adjusted
 
 
 CPG_VERDICT_MODEL_BOTTLENECK = "MODEL BOTTLENECK"

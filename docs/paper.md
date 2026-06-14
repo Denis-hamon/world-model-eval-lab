@@ -119,6 +119,28 @@ Default tolerance $\tau = 0.05$. Crucially, `MODEL BOTTLENECK` is *not* the defa
 
 CPG is bounded in $[-1, 1]$, antisymmetric in the role of the two dynamics, and additive: on a benchmark suite split into disjoint sub-tasks, CPG on the union is the episode-weighted mean of the per-sub-task CPGs. The metric is silent about *why* the model degrades planning (latent shift, prediction-error accumulation, score-function mismatch); follow-up diagnostics are needed to attribute. It is, however, sufficient to distinguish model-side failures from planner-side failures at the verdict granularity.
 
+### 3.5 Robustness to the paired design {#sec-paired}
+
+Under varied-init sampling the two arms share each episode's initial state, so the design is *paired* and the AC variance above is written for *independent* proportions. Whether that assumption distorts the verdicts is an empirical question about the within-pair correlation $\phi$, which we measure directly (table below): it is $\approx 0$ in the four Reacher cells and only slightly negative on Cartpole ($-0.15$ and $-0.04$), so the paired intervals here are essentially interchangeable with AC — Newcombe's half-width is within a few points of AC's, never tighter — and the independence assumption is neither inflating nor deflating the verdict. We keep AC as the primary report (it is the only estimator whose half-width is a closed form in $(n, p_o, p_\ell)$ invertible *before* any rollouts, and the right tool for the boundary $0/n$ cells where a paired bootstrap degenerates), but we nonetheless corroborate every non-degenerate cell with two paired-design estimators — Newcombe's paired-difference interval [Newcombe, 1998, paired-data method] and a paired percentile bootstrap — and a stricter exact McNemar test [McNemar, 1947] with a Holm family-wise correction across cells.
+
+The three intervals agree on whether the interval clears zero in *every* one of the six non-degenerate cells, so the CI-gated verdicts are **not** artifacts of the independence assumption. The exact McNemar test is more demanding: after Holm correction the larger-gap MLP cells stay significant, while the smaller-gap TD-MPC2 cells at $n = 30$ — including the `LEARNED OUTPERFORMS ORACLE` cell — fall short of family-wise significance, exactly the regime the power analysis flags for the pooled-$150$ follow-up.
+
+<table class="paper-table">
+  <thead>
+    <tr><th>Cell ($n=30$)</th><th>$\hat\Delta$</th><th>$\phi$</th><th>AC CI</th><th>Newcombe CI</th><th>paired-boot CI</th><th>McNemar $p$ (Holm)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Reacher RS &times; MLP</td><td>+0.300</td><td>0.00</td><td>[+0.11, +0.45]</td><td>[+0.12, +0.48]</td><td>[+0.13, +0.47]</td><td>0.004 (0.019)</td></tr>
+    <tr><td>Reacher RS &times; TD-MPC2</td><td>+0.200</td><td>0.00</td><td>[+0.03, +0.34]</td><td>[+0.05, +0.37]</td><td>[+0.07, +0.33]</td><td>0.031 (0.094)</td></tr>
+    <tr><td>Reacher CEM &times; MLP</td><td>+0.333</td><td>0.00</td><td>[+0.14, +0.49]</td><td>[+0.15, +0.51]</td><td>[+0.17, +0.50]</td><td>0.002 (0.012)</td></tr>
+    <tr><td>Reacher CEM &times; TD-MPC2</td><td>+0.233</td><td>0.00</td><td>[+0.06, +0.38]</td><td>[+0.07, +0.41]</td><td>[+0.10, +0.40]</td><td>0.016 (0.062)</td></tr>
+    <tr><td>Cartpole RS &times; TD-MPC2 (size 5)</td><td>+0.167</td><td>&minus;0.15</td><td>[-0.02, +0.34]</td><td>[-0.03, +0.36]</td><td>[-0.03, +0.37]</td><td>0.180 (0.180)</td></tr>
+    <tr><td>Cartpole CEM &times; TD-MPC2 (size 5)</td><td>&minus;0.267</td><td>&minus;0.04</td><td>[-0.48, -0.02]</td><td>[-0.48, -0.01]</td><td>[-0.50, -0.03]</td><td>0.077 (0.154)</td></tr>
+  </tbody>
+</table>
+
+The measured within-pair correlation $\phi$, three interval estimators (independent-proportions AC plus two paired-design estimators), and the exact McNemar test (Holm-adjusted $p$ in parentheses), $n = 30$ pooled. With $\phi \approx 0$ to slightly negative the paired intervals are not tighter than AC; they nonetheless agree on clearing zero in every cell. Regenerated from committed per-episode data by [`experiments/paired_intervals_audit.py`](https://github.com/Denis-hamon/world-model-eval-lab/blob/main/experiments/paired_intervals_audit.py).
+
 ## 4. Empirical Study {#sec-empirical}
 
 ### 4.1 Setup
