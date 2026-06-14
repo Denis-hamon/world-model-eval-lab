@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.18.0",
+  "generated_at": "2026-06-14T15:36:51+00:00",
+  "metric": "offline_vs_downstream_correlation",
+  "source_bundle": "results/offline_downstream/maze_offline_scores.json",
+  "note": "Rank correlation of each offline metric with the downstream target, with a paired bootstrap CI. A metric whose CI clears zero predicts downstream performance at this sample of cells; sign follows the metric's direction (error metrics positive vs a gap target, negative vs a success target).",
+  "result": {
+    "downstream": "success_rate",
+    "method": "spearman",
+    "n_cells": 24,
+    "metrics": [
+      {
+        "metric": "m1_mismatch",
+        "n": 24,
+        "rho": -0.726,
+        "ci": [
+          -0.928,
+          -0.3364
+        ],
+        "clears_zero": true,
+        "n_boot": 10000
+      },
+      {
+        "metric": "m2_kstep_divergence",
+        "n": 24,
+        "rho": -0.7339,
+        "ci": [
+          -0.9307,
+          -0.3526
+        ],
+        "clears_zero": true,
+        "n_boot": 10000
+      },
+      {
+        "metric": "m3_action_agreement",
+        "n": 17,
+        "rho": 0.8989,
+        "ci": [
+          0.6316,
+          0.989
+        ],
+        "clears_zero": true,
+        "n_boot": 10000
+      }
+    ],
+    "common_subset": {
+      "n": 17,
+      "metrics": [
+        {
+          "metric": "m1_mismatch",
+          "n": 17,
+          "rho": -0.8989,
+          "ci": [
+            -0.989,
+            -0.6316
+          ],
+          "clears_zero": true
+        },
+        {
+          "metric": "m2_kstep_divergence",
+          "n": 17,
+          "rho": -0.9125,
+          "ci": [
+            -0.9903,
+            -0.6877
+          ],
+          "clears_zero": true
+        },
+        {
+          "metric": "m3_action_agreement",
+          "n": 17,
+          "rho": 0.8989,
+          "ci": [
+            0.6316,
+            0.989
+          ],
+          "clears_zero": true
+        }
+      ]
+    },
+    "comparability_note": "Per-metric rows use each metric's own usable (finite) cells, whose counts differ; their magnitudes are NOT comparable across metrics. Only common_subset (cells where every metric is finite) is a fair head-to-head."
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.18.0",
+  "generated_at": "2026-06-14T15:34:53+00:00",
+  "metric": "maze_offline_downstream_sweep",
+  "env": "maze_toy",
+  "note": "CPU proof-of-concept for the offline->downstream keystone. Quality knob is training epochs (under-training degrades the learned maze dynamics). M1 one-step mismatch (naive), M2 k-step divergence (compounding), M3 action-ranking agreement (decision-aware); downstream is planning success_rate. correlate.py turns these into rank correlations. The DMC/TD-MPC2 cells (the headline) need GPU.",
+  "config": {
+    "hidden": 32,
+    "k_steps": 8,
+    "episodes": 20,
+    "episode_horizon": 50,
+    "plan_horizon": 20,
+    "num_candidates": 100
+  },
+  "cells": [
+    {
+      "epochs": 2,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 2,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.05
+    },
+    {
+      "epochs": 2,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 4,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 4,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.05
+    },
+    {
+      "epochs": 4,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 8,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.2344,
+      "m2_kstep_divergence": 0.75,
+      "m3_action_agreement": 0.7468,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 8,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.4688,
+      "m2_kstep_divergence": 1.375,
+      "m3_action_agreement": null,
+      "success_rate": 0.05
+    },
+    {
+      "epochs": 8,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.3594,
+      "m2_kstep_divergence": 0.8125,
+      "m3_action_agreement": 0.7167,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 16,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.1875,
+      "m2_kstep_divergence": 0.5625,
+      "m3_action_agreement": 0.7799,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 16,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.25,
+      "m2_kstep_divergence": 0.75,
+      "m3_action_agreement": 0.7252,
+      "success_rate": 0.05
+    },
+    {
+      "epochs": 16,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.2188,
+      "m2_kstep_divergence": 0.625,
+      "m3_action_agreement": 0.7486,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 32,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.1719,
+      "m2_kstep_divergence": 0.6875,
+      "m3_action_agreement": 0.794,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 32,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.1406,
+      "m2_kstep_divergence": 0.75,
+      "m3_action_agreement": 0.8097,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 32,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.1562,
+      "m2_kstep_divergence": 0.625,
+      "m3_action_agreement": 0.7956,
+      "success_rate": 0.0
+    },
+    {
+      "epochs": 64,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.0469,
+      "m2_kstep_divergence": 0.1875,
+      "m3_action_agreement": 0.9669,
+      "success_rate": 0.6
+    },
+    {
+      "epochs": 64,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.0781,
+      "m2_kstep_divergence": 0.3125,
+      "m3_action_agreement": 0.9125,
+      "success_rate": 0.3
+    },
+    {
+      "epochs": 64,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.0469,
+      "m2_kstep_divergence": 0.1875,
+      "m3_action_agreement": 0.9669,
+      "success_rate": 0.35
+    },
+    {
+      "epochs": 150,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.0,
+      "m2_kstep_divergence": 0.0,
+      "m3_action_agreement": 1.0,
+      "success_rate": 1.0
+    },
+    {
+      "epochs": 150,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.0,
+      "m2_kstep_divergence": 0.0,
+      "m3_action_agreement": 1.0,
+      "success_rate": 1.0
+    },
+    {
+      "epochs": 150,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.0,
+      "m2_kstep_divergence": 0.0,
+      "m3_action_agreement": 1.0,
+      "success_rate": 1.0
+    },
+    {
+      "epochs": 400,
+      "seed": 0,
+      "hidden": 32,
+      "m1_mismatch": 0.0,
+      "m2_kstep_divergence": 0.0,
+      "m3_action_agreement": 1.0,
+      "success_rate": 1.0
+    },
+    {
+      "epochs": 400,
+      "seed": 1,
+      "hidden": 32,
+      "m1_mismatch": 0.0,
+      "m2_kstep_divergence": 0.0,
+      "m3_action_agreement": 1.0,
+      "success_rate": 1.0
+    },
+    {
+      "epochs": 400,
+      "seed": 2,
+      "hidden": 32,
+      "m1_mismatch": 0.0,
+      "m2_kstep_divergence": 0.0,
+      "m3_action_agreement": 1.0,
+      "success_rate": 1.0
+    }
+  ]
+}
