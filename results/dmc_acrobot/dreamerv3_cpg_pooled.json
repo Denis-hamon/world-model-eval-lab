@@ -1,0 +1,35 @@
+{
+  "environment": "dmc_acrobot_swingup",
+  "metric": "counterfactual_planning_gap",
+  "learned_model": "dreamerv3",
+  "pooling": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_per_seed": [
+      10,
+      10,
+      10
+    ],
+    "n_total": 30
+  },
+  "cpg": {
+    "oracle_success_rate": 0.03333333333333333,
+    "learned_success_rate": 0.03333333333333333,
+    "gap": 0.0,
+    "n_episodes_oracle": 30,
+    "n_episodes_learned": 30,
+    "gap_ci_low": -0.11861011497760214,
+    "gap_ci_high": 0.11861011497760214,
+    "verdict": "PLANNER BOTTLENECK"
+  },
+  "training": {
+    "training_steps": 500000,
+    "implementation": "dreamerv3-torch (dmc_proprio)",
+    "frame_skip": 1,
+    "markovian_projection": "recurrent latent truncated to one-frame posterior per dynamics call; see wmel.adapters.dreamerv3_adapter docstring"
+  },
+  "varied_init": true
+}
