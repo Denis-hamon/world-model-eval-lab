@@ -206,7 +206,12 @@ first recurrent model is now in `results/MODEL_TABLE.md` next to TD-MPC2.
 **Branch**: `phase-6a-dreamerv3-cem`
 **Effort**: ~6-12 h, planner-bound (mostly CPU; see note)
 **Priority**: MEDIUM (after Tasks 6-7 land their checkpoints)
-**Status**: queued
+**Status**: done (PR pending). Added `make_dreamerv3_batched_dynamics` to the
+adapter and `experiments/dmc_acrobot/dreamerv3_cem_cpg.py`, which re-plans the
+Task 6 Acrobot checkpoint under the batched CEM planner (no retraining).
+Acrobot CEM: oracle 0.200 / DreamerV3 0.100, CPG +0.100 [-0.240, +0.407],
+INCONCLUSIVE at n=10. Planner column of the multi-model table now populated
+for DreamerV3.
 
 **Steps**:
 
@@ -227,7 +232,13 @@ first recurrent model is now in `results/MODEL_TABLE.md` next to TD-MPC2.
 **Branch**: `phase-6b-dreamerv3-latent-rollout`
 **Effort**: ~2-4 h GPU + adapter work (reuses Task 6 checkpoint)
 **Priority**: MEDIUM-HIGH scientific payoff, small compute
-**Status**: queued
+**Status**: done (PR pending). Added `DreamerV3LatentPlanner` (encode once,
+imagine in latent via repeated `_img_step`, decode to score) plus
+`experiments/dmc_acrobot/dreamerv3_latent_cpg.py`, running three Acrobot arms
+(oracle / Markovian projection / latent rollout). At n=10 both DreamerV3 arms
+land CPG +0.000 -> recurrence-truncation cost +0.000, i.e. undetectable at this
+power on Acrobot (honest null, not a proven zero). Adapter unit tests assert
+the latent rollout diverges from the Markovian chaining.
 
 **Steps**:
 
