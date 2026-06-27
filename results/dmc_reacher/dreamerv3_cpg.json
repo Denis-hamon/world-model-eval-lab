@@ -1,0 +1,516 @@
+{
+  "schema_version": "1.0",
+  "wmel_version": "0.18.0",
+  "generated_at": "2026-06-26T09:59:51+00:00",
+  "environment": "dmc_reacher_easy",
+  "metric": "counterfactual_planning_gap",
+  "learned_model": "dreamerv3",
+  "cpg": {
+    "oracle_success_rate": 1.0,
+    "learned_success_rate": 0.7,
+    "gap": 0.30000000000000004,
+    "n_episodes_oracle": 10,
+    "n_episodes_learned": 10,
+    "gap_ci_low": -0.0591850099380149,
+    "gap_ci_high": 0.5591850099380149,
+    "verdict": "INCONCLUSIVE"
+  },
+  "config": {
+    "training_steps": 500000,
+    "num_candidates": 50,
+    "plan_horizon": 15,
+    "benchmark_episodes": 10,
+    "benchmark_horizon": 500
+  },
+  "training": {
+    "training_steps": 500000,
+    "implementation": "dreamerv3-torch (dmc_proprio)",
+    "frame_skip": 1,
+    "markovian_projection": "recurrent latent truncated to one-frame posterior per dynamics call; see wmel.adapters.dreamerv3_adapter docstring"
+  },
+  "seed": 0,
+  "smoke_mode": false,
+  "varied_init": true,
+  "oracle_scorecard": {
+    "policy_name": "tabular-world-model (oracle dynamics)",
+    "success_rate": 1.0,
+    "average_steps_to_success": 29.7,
+    "average_planning_latency_ms": 37.96743425925926,
+    "average_compute_per_decision": 68.18181818181819,
+    "episodes": 10
+  },
+  "learned_scorecard": {
+    "policy_name": "tabular-world-model (DreamerV3 dynamics)",
+    "success_rate": 0.7,
+    "average_steps_to_success": 119.71428571428571,
+    "average_planning_latency_ms": 3160.965894224215,
+    "average_compute_per_decision": 71.535500427716,
+    "episodes": 10
+  },
+  "oracle_full": {
+    "schema_version": "1.0",
+    "wmel_version": "0.18.0",
+    "generated_at": "2026-06-26T09:59:51+00:00",
+    "scorecard": {
+      "policy_name": "tabular-world-model (oracle dynamics)",
+      "episodes": 10,
+      "success_rate": 1.0,
+      "average_steps_to_success": 29.7,
+      "average_planning_latency_ms": 37.96743425925926,
+      "perturbation_recovery_rate": null,
+      "average_compute_per_decision": 68.18181818181819,
+      "perturbation_name": "env-default",
+      "extras": {}
+    },
+    "results": [
+      {
+        "success": true,
+        "steps": 97,
+        "planning_latencies_ms": [
+          37.917072,
+          39.603494,
+          38.017724,
+          38.820594,
+          38.666791,
+          38.56369,
+          38.108025
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 22,
+        "planning_latencies_ms": [
+          37.525977,
+          37.295475
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 1,
+        "planning_latencies_ms": [
+          39.509322
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 33,
+        "planning_latencies_ms": [
+          37.680279,
+          37.661249,
+          37.629759
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 30,
+        "planning_latencies_ms": [
+          37.808581,
+          37.591569,
+          37.259925
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 19,
+        "planning_latencies_ms": [
+          37.653829,
+          37.454007
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 40,
+        "planning_latencies_ms": [
+          37.500717,
+          37.455047,
+          37.283715
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 7,
+        "planning_latencies_ms": [
+          37.6641
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 15,
+        "planning_latencies_ms": [
+          39.830586,
+          37.706961
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 33,
+        "planning_latencies_ms": [
+          37.812682,
+          37.506457,
+          37.593098
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      }
+    ]
+  },
+  "learned_full": {
+    "schema_version": "1.0",
+    "wmel_version": "0.18.0",
+    "generated_at": "2026-06-26T09:59:51+00:00",
+    "scorecard": {
+      "policy_name": "tabular-world-model (DreamerV3 dynamics)",
+      "episodes": 10,
+      "success_rate": 0.7,
+      "average_steps_to_success": 119.71428571428571,
+      "average_planning_latency_ms": 3160.965894224215,
+      "perturbation_recovery_rate": null,
+      "average_compute_per_decision": 71.535500427716,
+      "perturbation_name": "env-default",
+      "extras": {}
+    },
+    "results": [
+      {
+        "success": true,
+        "steps": 171,
+        "planning_latencies_ms": [
+          3217.618872,
+          3226.797204,
+          3223.704787,
+          3222.31348,
+          3215.891142,
+          3216.161534,
+          3214.737307,
+          3216.417287,
+          3206.339785,
+          3207.736881,
+          3210.79632,
+          3208.466891,
+          3209.716836,
+          3208.145187,
+          3211.517488,
+          3210.601646
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 42,
+        "planning_latencies_ms": [
+          3217.819035,
+          3212.205296,
+          3229.231164,
+          3217.147327
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 1,
+        "planning_latencies_ms": [
+          3212.599271
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": false,
+        "steps": 500,
+        "planning_latencies_ms": [
+          3215.151242,
+          3223.276412,
+          3222.697754,
+          3214.580865,
+          3215.030211,
+          3214.193231,
+          3216.002793,
+          3216.386308,
+          3218.914888,
+          3216.118795,
+          3220.029398,
+          3218.860501,
+          3220.519582,
+          3218.948722,
+          3222.031781,
+          3215.836053,
+          3216.37541,
+          3218.693899,
+          3214.994662,
+          3214.79529,
+          3214.475835,
+          3213.831537,
+          3215.070914,
+          3216.901256,
+          3218.558767,
+          3227.119155,
+          3229.672487,
+          3230.277165,
+          3233.941531,
+          3229.814279,
+          3217.807228,
+          3215.219765,
+          3215.853953,
+          3228.369391,
+          3217.735307,
+          3221.763927,
+          3216.602712,
+          3222.918232,
+          3223.881644,
+          3221.612875,
+          3224.413221,
+          3222.046151,
+          3221.271461,
+          3219.041033,
+          2793.280986,
+          1293.247304
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 209,
+        "planning_latencies_ms": [
+          3222.73462,
+          3221.740248,
+          3221.031918,
+          3219.119494,
+          3176.180203,
+          3177.520009,
+          3186.206589,
+          3179.300902,
+          3179.425173,
+          3188.020022,
+          3180.785801,
+          3181.185556,
+          3177.770903,
+          3178.878476,
+          3179.270522,
+          3179.594006,
+          3177.530659,
+          3180.441727,
+          3179.551695,
+          3180.430166,
+          3179.154821,
+          3175.616405
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 122,
+        "planning_latencies_ms": [
+          3171.065559,
+          3173.58854,
+          3170.483071,
+          3173.929704,
+          3172.628718,
+          3170.714004,
+          3174.996298,
+          3183.12134,
+          3173.030533,
+          3172.843321,
+          3173.287467,
+          3180.140262,
+          3173.833253,
+          3170.506671,
+          3172.085371,
+          3171.683886,
+          3173.093554
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": false,
+        "steps": 500,
+        "planning_latencies_ms": [
+          3168.712488,
+          3165.682791,
+          3167.297521,
+          3168.089982,
+          3171.895598,
+          3169.887633,
+          3167.050097,
+          3170.247978,
+          3167.512113,
+          3170.671843,
+          3177.659421,
+          3169.895854,
+          3170.995757,
+          3168.04425,
+          3167.299141,
+          3176.970723,
+          3167.18811,
+          3166.905596,
+          3168.552167,
+          3167.652155,
+          3171.496644,
+          3169.60158,
+          3171.1749,
+          3166.978827,
+          3171.826247,
+          3167.418283,
+          3170.035365,
+          3166.322507,
+          3168.576593,
+          3167.55072,
+          3171.284755,
+          3166.279474,
+          3169.763147,
+          3166.196103,
+          3169.850948,
+          3169.555514,
+          3169.140419,
+          3166.462746,
+          3170.598307,
+          1901.716463,
+          636.087657
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 9,
+        "planning_latencies_ms": [
+          3183.708627
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": false,
+        "steps": 500,
+        "planning_latencies_ms": [
+          3182.936137,
+          3181.784363,
+          3185.445538,
+          3182.024766,
+          3185.341477,
+          3182.159778,
+          3185.885643,
+          3179.07003,
+          3184.010439,
+          3179.311423,
+          3182.561722,
+          3181.276557,
+          3183.340882,
+          3190.58202,
+          3181.4769,
+          3181.929565,
+          3184.211873,
+          3182.891746,
+          3185.181874,
+          3184.443696,
+          3193.88785,
+          3184.518846,
+          3182.530242,
+          3186.174286,
+          3192.140058,
+          3375.612401,
+          3372.863527,
+          3251.354299,
+          3214.877076,
+          3209.578481,
+          3207.220893,
+          3208.483967,
+          3208.130724,
+          3207.653298,
+          3206.384423,
+          3207.517976,
+          3209.357269,
+          3209.117676,
+          3214.608482,
+          644.445159
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      },
+      {
+        "success": true,
+        "steps": 284,
+        "planning_latencies_ms": [
+          3239.976611,
+          3224.045887,
+          3221.999732,
+          3223.151217,
+          3220.98499,
+          3237.45154,
+          3239.06905,
+          3236.574316,
+          3222.213263,
+          3221.508395,
+          3222.963483,
+          3222.608208,
+          3213.991753,
+          3214.477599,
+          3214.54043,
+          3214.540431,
+          3217.168162,
+          3230.397273,
+          3217.049231,
+          3223.962155,
+          3223.413908,
+          3214.955075,
+          3214.408059,
+          3215.760995,
+          3218.266475,
+          3217.79171,
+          3217.191102,
+          3216.047479,
+          3212.82224,
+          3215.938068,
+          3217.719759,
+          3217.006891,
+          3216.829228,
+          3198.853799,
+          3180.903372
+        ],
+        "perturbed": false,
+        "recovered": false,
+        "compute_per_decision": null
+      }
+    ]
+  }
+}

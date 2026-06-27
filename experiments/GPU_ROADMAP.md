@@ -178,7 +178,12 @@ first recurrent model is now in `results/MODEL_TABLE.md` next to TD-MPC2.
 **Branch**: `phase-5z-dreamerv3-crossenv`
 **Effort**: ~20-40 h GPU (2 x 500k env steps; one env per L40S in parallel)
 **Priority**: HIGH (after Task 6 validates the pipeline on Acrobot)
-**Status**: queued
+**Status**: done (PR pending). Cartpole + Reacher trained on 2x L40S (500k each,
+`--varied-init`, seed 0). Cartpole: oracle 1.000 / DreamerV3 0.000, CPG +1.000
+-> MODEL BOTTLENECK (decisive even at n=10). Reacher: oracle 1.000 / DreamerV3
+0.700, CPG +0.300 -> INCONCLUSIVE at n=10 (n=30 pooling in flight). DreamerV3
+now spans all three DMC envs in `results/MODEL_TABLE.md`, a 2-model x 3-env
+random-shooting matrix.
 
 **Steps**:
 
