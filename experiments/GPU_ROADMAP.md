@@ -145,7 +145,12 @@ pooled-30 cells are MODEL BOTTLENECK; see PR.
 **Branch**: `phase-5y-dreamerv3-acrobot`
 **Effort**: ~10-20 h GPU (500k env steps, dmc_proprio config, single env)
 **Priority**: HIGH (multi-model generality claim; everything but GPU time is already shipped)
-**Status**: queued
+**Status**: done (PR #49). Trained on 2x L40S; seeds {0,1,2} pooled to n=30
+(`--varied-init`). Pooled cell: oracle 0.100 / DreamerV3 0.100, CPG +0.000,
+verdict INCONCLUSIVE -- the acrobot random-shooting arm is underpowered even
+for the oracle (same n=10/INCONCLUSIVE pattern as the TD-MPC2 and MLP
+random-shooting cells; the decisive acrobot cells are CEM at n=150). The
+first recurrent model is now in `results/MODEL_TABLE.md` next to TD-MPC2.
 
 **Steps**:
 

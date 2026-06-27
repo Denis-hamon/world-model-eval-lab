@@ -212,7 +212,13 @@ def _train_dreamerv3(
         cmd += ["--prefill", "500", "--eval_every", "1000", "--log_every", "500"]
     workdir.mkdir(parents=True, exist_ok=True)
     print(f"[train] {' '.join(cmd)}")
-    subprocess.run(cmd, cwd=str(_DREAMER_PKG), check=True)
+    # Upstream's dreamer.py hard-sets MUJOCO_GL=osmesa, but this process
+    # defaults MUJOCO_GL=egl (line ~76) for the CPG arms' dm_control import.
+    # That egl leaks into the child env and dm_control then refuses to start
+    # ("PYOPENGL_PLATFORM is set to 'egl', should be unset or 'osmesa'").
+    # Force the osmesa render path the subprocess actually uses.
+    train_env = {**os.environ, "MUJOCO_GL": "osmesa", "PYOPENGL_PLATFORM": "osmesa"}
+    subprocess.run(cmd, cwd=str(_DREAMER_PKG), check=True, env=train_env)
 
 
 def _port_agent_checkpoint(

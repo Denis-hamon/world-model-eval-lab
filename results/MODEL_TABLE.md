@@ -12,6 +12,7 @@ planner outperforms the same planner on the learned dynamics.
 
 | Environment | Model | Planner | Init | n/arm | Oracle | Learned | CPG | 95% AC CI | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| dmc_acrobot_swingup | dreamerv3 | random-shooting | varied | 30 | 0.033 | 0.033 | +0.000 | [-0.119, +0.119] | PLANNER BOTTLENECK |
 | dmc_acrobot_swingup | learned MLP | random-shooting | varied | 10 | 0.100 | 0.100 | +0.000 | [-0.298, +0.298] | INCONCLUSIVE |
 | dmc_acrobot_swingup | mlp_on_tdmpc2_data | cem | varied | 150 | 0.033 | 0.020 | +0.013 | [-0.027, +0.053] | PLANNER BOTTLENECK |
 | dmc_acrobot_swingup | mlp_on_tdmpc2_data | random-shooting | varied | 10 | 0.100 | 0.100 | +0.000 | [-0.298, +0.298] | INCONCLUSIVE |
@@ -32,6 +33,7 @@ planner outperforms the same planner on the learned dynamics.
 
 ## Row sources
 
+- `dmc_acrobot_swingup` / `dreamerv3` / `random-shooting` / varied: `results/dmc_acrobot/dreamerv3_cpg_pooled.json`
 - `dmc_acrobot_swingup` / `learned MLP` / `random-shooting` / varied: `results/dmc_acrobot/cpg.json`
 - `dmc_acrobot_swingup` / `mlp_on_tdmpc2_data` / `cem` / varied: `results/dmc_acrobot/cem_cpg_sweep.json`
 - `dmc_acrobot_swingup` / `mlp_on_tdmpc2_data` / `random-shooting` / varied: `results/dmc_acrobot/coverage_mlp_on_tdmpc2_cpg.json`
