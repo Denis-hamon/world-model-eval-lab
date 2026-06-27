@@ -39,6 +39,7 @@ deterministic and pure.
 
 from __future__ import annotations
 
+import random
 from pathlib import Path
 from typing import Callable, Mapping, Sequence, Tuple
 
@@ -52,6 +53,8 @@ except ImportError as exc:  # pragma: no cover
         "Install with `pip install -e \".[learned]\"`."
     ) from exc
 
+
+from wmel.adapters.lewm_adapter_stub import LeWMAdapterStub
 
 Observation = Tuple[float, ...]
 Action = Tuple[float, ...]
@@ -409,3 +412,222 @@ def make_dreamerv3_dynamics(
         return tuple(float(x) for x in next_t)
 
     return _dynamics
+
+
+def make_dreamerv3_batched_dynamics(
+    checkpoint_path: str | Path,
+    device: str = "cpu",
+) -> Callable[[Sequence[Observation], Sequence[Action]], list[Observation]]:
+    """Batched `(states, actions) -> next_states` variant of
+    `make_dreamerv3_dynamics`.
+
+    `DreamerV3Dynamics.forward(obs, action)` is already vectorised over the
+    batch dim (the Markovian projection runs per row independently), but the
+    scalar factory above wraps it in a one-row tensor per call. For CEM the
+    candidate batch is large and the dmc_proprio RSSM (5x1024 encoder/decoder,
+    512-d GRU) is roughly an order of magnitude slower per call than the
+    TD-MPC2 adapter, so the per-call launch overhead dominates; staging all
+    `num_samples` rollouts into a single `(B, obs_dim)` / `(B, action_dim)`
+    forward and running it on `device="cuda"` amortises that overhead. Math is
+    identical to `make_dreamerv3_dynamics(...)` called B times: same model
+    state, same deterministic mode-based forward, fresh tensors per call, no
+    mutation. Mirrors `experiments.dmc_acrobot._batched_cem` adapters and
+    plugs into its `BatchedCEMPlanner`.
+    """
+    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    arch = ckpt["arch"]
+    if "action_set" in ckpt:
+        action_set = {tuple(float(x) for x in a) for a in ckpt["action_set"]}
+    else:
+        levels: Tuple[float, ...] = tuple(float(t) for t in ckpt["action_levels"])
+        action_set = {(t,) for t in levels}
+
+    model = DreamerV3Dynamics(**arch).to(device).eval()
+    model.load_state_dict(ckpt["model_state"])
+
+    @torch.no_grad()
+    def _batched(
+        states: Sequence[Observation], actions: Sequence[Action]
+    ) -> list[Observation]:
+        if len(states) != len(actions):
+            raise ValueError(
+                "batched dynamics needs equal-length states and actions; "
+                f"got {len(states)} vs {len(actions)}"
+            )
+        for a in actions:
+            if a not in action_set:
+                raise KeyError(
+                    f"action {a!r} is not in the checkpoint's discrete action set {sorted(action_set)}"
+                )
+        if not states:
+            return []
+        obs_t = torch.tensor([list(s) for s in states], dtype=torch.float32, device=device)
+        a_t = torch.tensor([list(a) for a in actions], dtype=torch.float32, device=device)
+        next_t = model(obs_t, a_t)
+        return [tuple(float(x) for x in row) for row in next_t]
+
+    return _batched
+
+
+# A latent is the recurrent RSSM state carried across an imagined rollout.
+LatentState = Tuple[torch.Tensor, torch.Tensor]  # (deter, stoch)
+
+
+class DreamerV3LatentPlanner(LeWMAdapterStub):
+    """Random-shooting MPC that imagines forward in DreamerV3's latent space.
+
+    This is the *native* DreamerV3 planning mode and the counterpart to the
+    Markovian-projection arm returned by `make_dreamerv3_dynamics`. The
+    difference is exactly the recurrence-truncation cost the CPG protocol
+    measures (experiments/GPU_ROADMAP.md, Task 9):
+
+    - The Markovian arm re-encodes from the observation on *every* dynamics
+      call and truncates the recurrent state to a one-frame posterior, so it
+      throws away all imagined history between planner steps.
+    - This planner `encode`s the observation *once* into `(deter, stoch)` and
+      then `rollout`s by repeatedly applying `DreamerV3Dynamics._img_step`
+      in latent space, decoding to observation space only to score. The
+      recurrent state accumulates across the horizon, exactly as DreamerV3
+      plans natively.
+
+    The search procedure (random shooting, earliest-best truncation, RNG
+    order) is identical to `TabularWorldModelPlanner.plan`, so the two arms
+    differ *only* in how the world model is unrolled. The goal is kept in
+    observation space and passed to the same `score` callable the other arms
+    use (e.g. `acrobot_upright_score`), so scores are directly comparable.
+
+    All stochastic nodes use the distribution mode (`_img_step`/`decode` are
+    deterministic), so the planner is reproducible at a fixed seed.
+    """
+
+    def __init__(
+        self,
+        model: "DreamerV3Dynamics",
+        action_space: Sequence[Action],
+        action_set: set[Action],
+        num_candidates: int = 200,
+        plan_horizon: int = 20,
+        score: Callable[[Observation, Observation], float] | None = None,
+        seed: int | None = None,
+        device: str = "cpu",
+    ) -> None:
+        if num_candidates <= 0:
+            raise ValueError("num_candidates must be positive")
+        if plan_horizon <= 0:
+            raise ValueError("plan_horizon must be positive")
+        if not action_space:
+            raise ValueError("action_space must not be empty")
+        self._model = model.to(device).eval()
+        self._device = device
+        self._actions = list(action_space)
+        self._action_set = action_set
+        self._num_candidates = num_candidates
+        self._plan_horizon = plan_horizon
+        if score is None:
+            raise ValueError("DreamerV3LatentPlanner needs an explicit obs-space score")
+        self._score = score
+        self._rng = random.Random(seed)
+        self.compute_per_plan_call = float(num_candidates * plan_horizon)
+
+    @property
+    def name(self) -> str:
+        return "dreamerv3-latent"
+
+    @torch.no_grad()
+    def encode(self, observation: Observation) -> LatentState:
+        obs_t = torch.tensor([list(observation)], dtype=torch.float32, device=self._device)
+        deter, stoch = self._model.posterior_from_obs(obs_t)
+        return deter, stoch
+
+    @torch.no_grad()
+    def rollout(self, latent: LatentState, actions: Sequence[Action]) -> list[LatentState]:
+        trajectory: list[LatentState] = [latent]
+        deter, stoch = latent
+        for action in actions:
+            a_t = torch.tensor([list(action)], dtype=torch.float32, device=self._device)
+            deter, stoch = self._model._img_step(deter, stoch, a_t)
+            trajectory.append((deter, stoch))
+        return trajectory
+
+    @torch.no_grad()
+    def _decode_obs(self, latent: LatentState) -> Observation:
+        deter, stoch = latent
+        obs_t = self._model.decode(deter, stoch).squeeze(0)
+        return tuple(float(x) for x in obs_t)
+
+    def score(self, latent: LatentState, goal_latent: Observation) -> float:
+        # `goal_latent` is kept in observation space (see plan): decode the
+        # imagined latent and score in obs space, identical to the other arms.
+        return self._score(self._decode_obs(latent), goal_latent)
+
+    def plan(
+        self,
+        observation: Observation,
+        goal: Observation,
+        horizon: int,
+    ) -> list[Action]:
+        if horizon <= 0:
+            return []
+
+        z0 = self.encode(observation)
+        gz = goal  # obs-space goal for the shared score callable
+        candidate_length = min(horizon, self._plan_horizon)
+
+        best_sequence: list[Action] = []
+        best_score = float("inf")
+
+        for _ in range(self._num_candidates):
+            candidate = [self._rng.choice(self._actions) for _ in range(candidate_length)]
+            trajectory = self.rollout(z0, candidate)
+
+            # Same earliest-best truncation rule as TabularWorldModelPlanner.
+            best_step_score = self.score(trajectory[-1], gz)
+            best_step_idx = len(candidate)
+            for idx, state in enumerate(trajectory[1:], start=1):
+                s = self.score(state, gz)
+                if s < best_step_score:
+                    best_step_score = s
+                    best_step_idx = idx
+
+            if best_step_score < best_score:
+                best_score = best_step_score
+                best_sequence = candidate[:best_step_idx]
+
+        return best_sequence
+
+
+def make_dreamerv3_latent_planner(
+    checkpoint_path: str | Path,
+    action_space: Sequence[Action],
+    num_candidates: int = 200,
+    plan_horizon: int = 20,
+    score: Callable[[Observation, Observation], float] | None = None,
+    seed: int | None = None,
+    device: str = "cpu",
+) -> DreamerV3LatentPlanner:
+    """Load a ported DreamerV3 checkpoint and build a `DreamerV3LatentPlanner`.
+
+    Same checkpoint schema as `make_dreamerv3_dynamics`. The `action_space`
+    and `score` are supplied by the caller so the latent arm matches the
+    other CPG arms' planner construction one-for-one.
+    """
+    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    arch = ckpt["arch"]
+    if "action_set" in ckpt:
+        action_set = {tuple(float(x) for x in a) for a in ckpt["action_set"]}
+    else:
+        levels: Tuple[float, ...] = tuple(float(t) for t in ckpt["action_levels"])
+        action_set = {(t,) for t in levels}
+
+    model = DreamerV3Dynamics(**arch)
+    model.load_state_dict(ckpt["model_state"])
+    return DreamerV3LatentPlanner(
+        model=model,
+        action_space=action_space,
+        action_set=action_set,
+        num_candidates=num_candidates,
+        plan_horizon=plan_horizon,
+        score=score,
+        seed=seed,
+        device=device,
+    )

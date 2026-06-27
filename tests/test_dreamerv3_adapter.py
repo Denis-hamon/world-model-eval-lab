@@ -230,3 +230,106 @@ def test_forward_batches_consistently() -> None:
         batched = model(obs, act)
         single = torch.stack([model(obs[i : i + 1], act[i : i + 1]).squeeze(0) for i in range(3)])
     assert torch.allclose(batched, single, atol=1e-6)
+
+
+# --- Task 8: batched dynamics adapter ---------------------------------------
+
+
+def test_batched_dynamics_matches_percall(tmp_path) -> None:
+    """make_dreamerv3_batched_dynamics must equal the scalar factory row-by-row."""
+    from wmel.adapters.dreamerv3_adapter import make_dreamerv3_batched_dynamics
+
+    path = _checkpoint(tmp_path)
+    scalar = make_dreamerv3_dynamics(path)
+    batched = make_dreamerv3_batched_dynamics(path)
+
+    states = [
+        (0.1, -0.2, 0.9, 0.8, 0.0, 0.3),
+        (-0.5, 0.4, 0.1, -0.1, 0.2, -0.3),
+        (0.0, 0.0, 1.0, 0.0, 0.0, 0.0),
+    ]
+    actions = [(-1.0,), (0.5,), (1.0,)]
+    out = batched(states, actions)
+    assert len(out) == len(states)
+    for s, a, row in zip(states, actions, out):
+        assert row == scalar(s, a)  # bit-identical: same model, same forward
+
+
+def test_batched_dynamics_validates_inputs(tmp_path) -> None:
+    from wmel.adapters.dreamerv3_adapter import make_dreamerv3_batched_dynamics
+
+    batched = make_dreamerv3_batched_dynamics(_checkpoint(tmp_path))
+    assert batched([], []) == []
+    with pytest.raises(ValueError):
+        batched([(0.0,) * 6], [(0.0,), (0.5,)])  # length mismatch
+    with pytest.raises(KeyError):
+        batched([(0.0,) * 6], [(0.25,)])  # action not in the discrete set
+
+
+# --- Task 9: latent-rollout planner -----------------------------------------
+
+
+def _upright_score(state, goal=()):
+    """Toy obs-space score (lower is better), enough to drive the planner."""
+    return float(abs(state[0]))
+
+
+def test_latent_planner_encodes_once_and_imagines(tmp_path) -> None:
+    """rollout() must imagine in latent space without re-encoding from obs.
+
+    The latent arm's trajectory of decoded states must differ from the
+    Markovian arm chaining make_dreamerv3_dynamics (which re-encodes each
+    step) -- that difference is exactly the recurrence-truncation cost.
+    """
+    from wmel.adapters.dreamerv3_adapter import (
+        make_dreamerv3_dynamics,
+        make_dreamerv3_latent_planner,
+    )
+
+    path = _checkpoint(tmp_path)
+    actions = [(-1.0,), (-0.5,), (0.0,), (0.5,), (1.0,)]
+    planner = make_dreamerv3_latent_planner(
+        path, action_space=actions, num_candidates=8, plan_horizon=5,
+        score=_upright_score, seed=0,
+    )
+
+    obs = (0.1, -0.2, 0.9, 0.8, 0.0, 0.3)
+    z0 = planner.encode(obs)
+    seq = [(0.5,), (0.5,), (-1.0,)]
+    traj = planner.rollout(z0, seq)
+    assert len(traj) == len(seq) + 1  # includes the initial latent
+
+    # Latent rollout (no re-encode) vs Markovian chaining (re-encode each step).
+    scalar = make_dreamerv3_dynamics(path)
+    markov = obs
+    for a in seq:
+        markov = scalar(markov, a)
+    latent_final = planner._decode_obs(traj[-1])
+    assert latent_final != markov
+
+
+def test_latent_planner_is_deterministic_and_plans(tmp_path) -> None:
+    from wmel.adapters.dreamerv3_adapter import make_dreamerv3_latent_planner
+
+    path = _checkpoint(tmp_path)
+    actions = [(-1.0,), (-0.5,), (0.0,), (0.5,), (1.0,)]
+    kw = dict(action_space=actions, num_candidates=12, plan_horizon=6,
+              score=_upright_score, seed=7)
+    p1 = make_dreamerv3_latent_planner(path, **kw)
+    p2 = make_dreamerv3_latent_planner(path, **kw)
+    obs = (0.4, -0.2, 0.9, 0.8, 0.0, 0.3)
+    plan1 = p1.plan(obs, (), horizon=6)
+    plan2 = p2.plan(obs, (), horizon=6)
+    assert plan1 == plan2  # same seed -> identical search
+    assert all(a in actions for a in plan1)
+    assert len(plan1) <= 6
+    assert p1.plan(obs, (), horizon=0) == []
+
+
+def test_latent_planner_requires_score(tmp_path) -> None:
+    from wmel.adapters.dreamerv3_adapter import make_dreamerv3_latent_planner
+
+    with pytest.raises(ValueError):
+        make_dreamerv3_latent_planner(
+            _checkpoint(tmp_path), action_space=[(0.0,)], score=None,
+        )
