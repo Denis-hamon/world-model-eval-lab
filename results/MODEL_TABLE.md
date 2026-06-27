@@ -18,6 +18,7 @@ planner outperforms the same planner on the learned dynamics.
 | dmc_acrobot_swingup | mlp_on_tdmpc2_data | random-shooting | varied | 10 | 0.100 | 0.100 | +0.000 | [-0.298, +0.298] | INCONCLUSIVE |
 | dmc_acrobot_swingup | tdmpc2 | cem | varied | 150 | 0.033 | 0.027 | +0.007 | [-0.035, +0.049] | PLANNER BOTTLENECK |
 | dmc_acrobot_swingup | tdmpc2 | random-shooting | varied | 10 | 0.100 | 0.100 | +0.000 | [-0.298, +0.298] | INCONCLUSIVE |
+| dmc_cartpole_swingup | dreamerv3 | random-shooting | varied | 10 | 1.000 | 0.000 | +1.000 | [+0.612, +1.054] | MODEL BOTTLENECK |
 | dmc_cartpole_swingup | mlp_on_tdmpc2_data | cem | varied | 30 | 0.467 | 0.067 | +0.400 | [+0.175, +0.575] | MODEL BOTTLENECK |
 | dmc_cartpole_swingup | mlp_on_tdmpc2_data | random-shooting | varied | 30 | 0.933 | 0.067 | +0.867 | [+0.670, +0.955] | MODEL BOTTLENECK |
 | dmc_cartpole_swingup | mlp_on_tdmpc2_data (size=5) | cem | varied | 30 | 0.467 | 0.000 | +0.467 | [+0.254, +0.621] | MODEL BOTTLENECK |
@@ -26,6 +27,7 @@ planner outperforms the same planner on the learned dynamics.
 | dmc_cartpole_swingup | tdmpc2 | random-shooting | varied | 30 | 0.933 | 0.300 | +0.633 | [+0.404, +0.783] | MODEL BOTTLENECK |
 | dmc_cartpole_swingup | tdmpc2 (size=5) | cem | varied | 30 | 0.467 | 0.733 | -0.267 | [-0.483, -0.017] | LEARNED OUTPERFORMS ORACLE |
 | dmc_cartpole_swingup | tdmpc2 (size=5) | random-shooting | varied | 30 | 0.933 | 0.767 | +0.167 | [-0.025, +0.337] | INCONCLUSIVE |
+| dmc_reacher_easy | dreamerv3 | random-shooting | varied | 10 | 1.000 | 0.700 | +0.300 | [-0.059, +0.559] | INCONCLUSIVE |
 | dmc_reacher_easy | mlp_on_tdmpc2_data | cem | varied | 30 | 1.000 | 0.667 | +0.333 | [+0.137, +0.488] | MODEL BOTTLENECK |
 | dmc_reacher_easy | mlp_on_tdmpc2_data | random-shooting | varied | 30 | 1.000 | 0.700 | +0.300 | [+0.110, +0.453] | MODEL BOTTLENECK |
 | dmc_reacher_easy | tdmpc2 | cem | varied | 30 | 1.000 | 0.767 | +0.233 | [+0.057, +0.380] | MODEL BOTTLENECK |
@@ -39,6 +41,7 @@ planner outperforms the same planner on the learned dynamics.
 - `dmc_acrobot_swingup` / `mlp_on_tdmpc2_data` / `random-shooting` / varied: `results/dmc_acrobot/coverage_mlp_on_tdmpc2_cpg.json`
 - `dmc_acrobot_swingup` / `tdmpc2` / `cem` / varied: `results/dmc_acrobot/cem_cpg_sweep.json`
 - `dmc_acrobot_swingup` / `tdmpc2` / `random-shooting` / varied: `results/dmc_acrobot/tdmpc2_cpg.json`
+- `dmc_cartpole_swingup` / `dreamerv3` / `random-shooting` / varied: `results/dmc_cartpole/dreamerv3_cpg.json`
 - `dmc_cartpole_swingup` / `mlp_on_tdmpc2_data` / `cem` / varied: `results/dmc_cartpole/cem_cpg_pooled.json`
 - `dmc_cartpole_swingup` / `mlp_on_tdmpc2_data` / `random-shooting` / varied: `results/dmc_cartpole/coverage_mlp_on_tdmpc2_cpg_pooled.json`
 - `dmc_cartpole_swingup` / `mlp_on_tdmpc2_data (size=5)` / `cem` / varied: `results/dmc_cartpole/cem_cpg_size5_pooled.json`
@@ -47,6 +50,7 @@ planner outperforms the same planner on the learned dynamics.
 - `dmc_cartpole_swingup` / `tdmpc2` / `random-shooting` / varied: `results/dmc_cartpole/tdmpc2_cpg_pooled.json`
 - `dmc_cartpole_swingup` / `tdmpc2 (size=5)` / `cem` / varied: `results/dmc_cartpole/cem_cpg_size5_pooled.json`
 - `dmc_cartpole_swingup` / `tdmpc2 (size=5)` / `random-shooting` / varied: `results/dmc_cartpole/tdmpc2_cpg_size5_pooled.json`
+- `dmc_reacher_easy` / `dreamerv3` / `random-shooting` / varied: `results/dmc_reacher/dreamerv3_cpg.json`
 - `dmc_reacher_easy` / `mlp_on_tdmpc2_data` / `cem` / varied: `results/dmc_reacher/cem_cpg_pooled.json`
 - `dmc_reacher_easy` / `mlp_on_tdmpc2_data` / `random-shooting` / varied: `results/dmc_reacher/coverage_mlp_on_tdmpc2_cpg_pooled.json`
 - `dmc_reacher_easy` / `tdmpc2` / `cem` / varied: `results/dmc_reacher/cem_cpg_pooled.json`
