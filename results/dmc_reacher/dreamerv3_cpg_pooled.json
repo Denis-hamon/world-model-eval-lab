@@ -1,0 +1,35 @@
+{
+  "environment": "dmc_reacher_easy",
+  "metric": "counterfactual_planning_gap",
+  "learned_model": "dreamerv3",
+  "pooling": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_per_seed": [
+      10,
+      10,
+      10
+    ],
+    "n_total": 30
+  },
+  "cpg": {
+    "oracle_success_rate": 1.0,
+    "learned_success_rate": 0.6666666666666666,
+    "gap": 0.33333333333333337,
+    "n_episodes_oracle": 30,
+    "n_episodes_learned": 30,
+    "gap_ci_low": 0.13724042688414992,
+    "gap_ci_high": 0.48775957311585005,
+    "verdict": "MODEL BOTTLENECK"
+  },
+  "training": {
+    "training_steps": 500000,
+    "implementation": "dreamerv3-torch (dmc_proprio)",
+    "frame_skip": 1,
+    "markovian_projection": "recurrent latent truncated to one-frame posterior per dynamics call; see wmel.adapters.dreamerv3_adapter docstring"
+  },
+  "varied_init": true
+}

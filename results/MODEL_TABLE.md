@@ -28,7 +28,7 @@ planner outperforms the same planner on the learned dynamics.
 | dmc_cartpole_swingup | tdmpc2 | random-shooting | varied | 30 | 0.933 | 0.300 | +0.633 | [+0.404, +0.783] | MODEL BOTTLENECK |
 | dmc_cartpole_swingup | tdmpc2 (size=5) | cem | varied | 30 | 0.467 | 0.733 | -0.267 | [-0.483, -0.017] | LEARNED OUTPERFORMS ORACLE |
 | dmc_cartpole_swingup | tdmpc2 (size=5) | random-shooting | varied | 30 | 0.933 | 0.767 | +0.167 | [-0.025, +0.337] | INCONCLUSIVE |
-| dmc_reacher_easy | dreamerv3 | random-shooting | varied | 10 | 1.000 | 0.700 | +0.300 | [-0.059, +0.559] | INCONCLUSIVE |
+| dmc_reacher_easy | dreamerv3 | random-shooting | varied | 30 | 1.000 | 0.667 | +0.333 | [+0.137, +0.488] | MODEL BOTTLENECK |
 | dmc_reacher_easy | mlp_on_tdmpc2_data | cem | varied | 30 | 1.000 | 0.667 | +0.333 | [+0.137, +0.488] | MODEL BOTTLENECK |
 | dmc_reacher_easy | mlp_on_tdmpc2_data | random-shooting | varied | 30 | 1.000 | 0.700 | +0.300 | [+0.110, +0.453] | MODEL BOTTLENECK |
 | dmc_reacher_easy | tdmpc2 | cem | varied | 30 | 1.000 | 0.767 | +0.233 | [+0.057, +0.380] | MODEL BOTTLENECK |
@@ -52,7 +52,7 @@ planner outperforms the same planner on the learned dynamics.
 - `dmc_cartpole_swingup` / `tdmpc2` / `random-shooting` / varied: `results/dmc_cartpole/tdmpc2_cpg_pooled.json`
 - `dmc_cartpole_swingup` / `tdmpc2 (size=5)` / `cem` / varied: `results/dmc_cartpole/cem_cpg_size5_pooled.json`
 - `dmc_cartpole_swingup` / `tdmpc2 (size=5)` / `random-shooting` / varied: `results/dmc_cartpole/tdmpc2_cpg_size5_pooled.json`
-- `dmc_reacher_easy` / `dreamerv3` / `random-shooting` / varied: `results/dmc_reacher/dreamerv3_cpg.json`
+- `dmc_reacher_easy` / `dreamerv3` / `random-shooting` / varied: `results/dmc_reacher/dreamerv3_cpg_pooled.json`
 - `dmc_reacher_easy` / `mlp_on_tdmpc2_data` / `cem` / varied: `results/dmc_reacher/cem_cpg_pooled.json`
 - `dmc_reacher_easy` / `mlp_on_tdmpc2_data` / `random-shooting` / varied: `results/dmc_reacher/coverage_mlp_on_tdmpc2_cpg_pooled.json`
 - `dmc_reacher_easy` / `tdmpc2` / `cem` / varied: `results/dmc_reacher/cem_cpg_pooled.json`
