@@ -107,6 +107,7 @@ Success rate plateaus at horizon 15. Per-call latency keeps rising past the plat
 - Sample Efficiency
 - Surprise Detection
 - Latent Interpretability
+- Selective Risk / Risk-Coverage (AURC)
 
 See [docs/02_metric_taxonomy.md](docs/02_metric_taxonomy.md) for definitions and example measurements.
 

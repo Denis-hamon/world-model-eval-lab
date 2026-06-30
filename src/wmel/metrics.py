@@ -41,6 +41,10 @@ class EpisodeResult:
     perturbed: bool = False
     recovered: bool = False
     compute_per_decision: float | None = None
+    confidence: float | None = field(default=None, kw_only=True)
+    """Optional deployable confidence the policy attached to this episode's
+    decision (higher = more trusted), used only by the selective-prediction
+    metrics. ``None`` means the policy exposed no abstention signal."""
 
     @property
     def total_planning_latency_ms(self) -> float:
@@ -650,6 +654,75 @@ def detectable_gap_at_n(
     tilde_gap = tilde_p_o - tilde_p_l
     hw = ac_ci_half_width(oracle_success_rate, learned_success_rate, n_per_arm, z)
     return (tilde_gap - hw) > 0 or (tilde_gap + hw) < 0
+
+
+def selective_risk_at_coverage(
+    results: Sequence[EpisodeResult],
+    coverage: float,
+) -> float | None:
+    """Selective risk at a target coverage, for a policy with a reject option.
+
+    Rank episodes by ``confidence`` (descending), keep the most-confident
+    ``coverage`` fraction (the rest are deferred / abstained), and return the
+    error rate (``1 - success_rate``) on the kept set. This is the decision-grade
+    way to score a world model used as a *verifier*: it should act where it is
+    confident and defer elsewhere, so the question is "how low is the risk on the
+    slice it chooses to act on?" rather than "what is its average fidelity?".
+
+    Decision-grade: the unit is a risk fraction in ``[0, 1]`` at a chosen
+    coverage fraction, computable only from a closed-loop run whose policy
+    exposed a per-episode ``confidence``.
+
+    Returns ``None`` if no episode carries a ``confidence`` (nothing to rank on).
+    Raises ``ValueError`` if ``coverage`` is not in ``(0, 1]``.
+    """
+    if not 0.0 < coverage <= 1.0:
+        raise ValueError("coverage must be in (0, 1]")
+    scored = [r for r in results if r.confidence is not None]
+    if not scored:
+        return None
+    ranked = sorted(scored, key=lambda r: r.confidence, reverse=True)
+    k = max(1, round(coverage * len(ranked)))
+    kept = ranked[:k]
+    return 1.0 - sum(1 for r in kept if r.success) / len(kept)
+
+
+def risk_coverage_curve(
+    results: Sequence[EpisodeResult],
+    coverages: Sequence[float] = (1.0, 0.9, 0.75, 0.5, 0.25, 0.1),
+) -> list[tuple[float, float]] | None:
+    """The risk-coverage curve: selective risk at several coverages.
+
+    A monotone-decreasing curve (risk falls as coverage shrinks) means the
+    confidence signal is useful for abstention; a flat or non-monotone curve
+    means it is not. Returns ``None`` if no episode carries a ``confidence``.
+    """
+    scored = [r for r in results if r.confidence is not None]
+    if not scored:
+        return None
+    return [(c, selective_risk_at_coverage(scored, c)) for c in coverages]
+
+
+def area_under_risk_coverage(results: Sequence[EpisodeResult]) -> float | None:
+    """Area under the risk-coverage curve (AURC); lower is better.
+
+    The standard scalar summary of a selective predictor: the mean selective
+    risk as coverage sweeps from the single most-confident episode up to full
+    coverage. A confidence that orders episodes perfectly by correctness attains
+    the lowest AURC the data allow; an uninformative confidence sits at the base
+    error rate. Returns ``None`` if no episode carries a ``confidence``.
+    """
+    scored = [r for r in results if r.confidence is not None]
+    if not scored:
+        return None
+    ranked = sorted(scored, key=lambda r: r.confidence, reverse=True)
+    errors = 0
+    risks: list[float] = []
+    for i, r in enumerate(ranked, start=1):
+        if not r.success:
+            errors += 1
+        risks.append(errors / i)
+    return sum(risks) / len(risks)
 
 
 @dataclass(frozen=True)

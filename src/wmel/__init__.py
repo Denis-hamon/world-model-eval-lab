@@ -35,6 +35,7 @@ from wmel.metrics import (
     Scorecard,
     ac_ci_half_width,
     action_success_rate,
+    area_under_risk_coverage,
     average_planning_latency_ms,
     average_steps_to_success,
     bootstrap_correlation_ci,
@@ -47,6 +48,8 @@ from wmel.metrics import (
     paired_bradley_terry_ranking,
     perturbation_recovery_rate,
     required_n_for_half_width,
+    risk_coverage_curve,
+    selective_risk_at_coverage,
     spearman_rho,
 )
 
@@ -69,6 +72,7 @@ __all__ = [
     "Scorecard",
     "ac_ci_half_width",
     "action_success_rate",
+    "area_under_risk_coverage",
     "average_planning_latency_ms",
     "average_steps_to_success",
     "bootstrap_correlation_ci",
@@ -79,6 +83,8 @@ __all__ = [
     "kendall_tau",
     "mcnemar_exact",
     "newcombe_paired_diff_ci",
+    "risk_coverage_curve",
+    "selective_risk_at_coverage",
     "paired_bradley_terry_ranking",
     "perturbation_recovery_rate",
     "required_n_for_half_width",
