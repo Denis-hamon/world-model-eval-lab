@@ -178,6 +178,19 @@ Hover (or focus) any metric name to see its formula in a popover. The popover is
       <td>Decomposes model error from planner capacity. The packaged-scalar form (with CI and gated verdict) is new in this framework; the underlying oracle-vs-learned-rollout comparison is in the spirit of model-exploitation analyses in MOPO and MOReL.</td>
       <td>On DMC Acrobot-swingup with random-shooting MPC at one fixed initial state, 10 episodes each: raw $\mathrm{CPG} = +0.30$, AC 95% CI $[-0.06, +0.56]$ (crosses zero), verdict <code>INCONCLUSIVE</code> at $n=10$. Sampling the task's initial-state distribution rather than that fixed start collapses the oracle and flips the verdict to <code>PLANNER BOTTLENECK</code> -- the metric correcting itself (<a href="07_cpg.html#example">CPG page</a>).</td>
     </tr>
+    <tr>
+      <td class="metric-cell">
+        <a href="#" class="metric-link" tabindex="0">Selective Risk / Risk-Coverage (AURC)</a>
+        <div class="formula-popover formula-popover-wide" role="tooltip">
+          <p class="popover-reads">Reads as: when the policy may abstain, how low is the error on the slice it chooses to act on?</p>
+          $$\mathrm{risk}(\tau) \;=\; 1 - \mathrm{success\_rate}\bigl(\text{top-}\tau\text{ by confidence}\bigr), \qquad \mathrm{AURC} \;=\; \tfrac{1}{n}\sum_{k=1}^{n}\mathrm{risk}\!\left(\tfrac{k}{n}\right)$$
+          <p class="popover-note">Rank episodes by a per-episode <code>confidence</code> (a new optional <code>EpisodeResult</code> field), keep the most-confident coverage fraction $\tau$, report error on the kept set. AURC sweeps coverage from the single most-confident episode to full coverage; lower is better. Returns <code>None</code> when no episode carries a confidence. See <code>selective_risk_at_coverage</code>, <code>risk_coverage_curve</code>, <code>area_under_risk_coverage</code>.</p>
+        </div>
+      </td>
+      <td>For a world model used as a verifier with a reject option (predict where confident, defer to real execution elsewhere), the selective risk at a coverage and the area under the risk-coverage curve.</td>
+      <td>Average fidelity is the wrong target for a verifier whose value is knowing when <em>not</em> to trust itself. Risk-coverage scores exactly that calibrated abstention, and turns a hardcoded confidence threshold into something measurable. (Contributed from applying this framework to textual LLM-as-world-model verifiers, where a learned confidence calibrator drove risk down monotonically as coverage shrank.)</td>
+      <td>A confidence that ranks correct predictions above incorrect ones drives selective risk to 0 on the high-confidence half while full coverage sits at the base error rate; an uninformative confidence leaves AURC at the base rate.</td>
+    </tr>
   </tbody>
 </table>
 

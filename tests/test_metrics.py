@@ -7,10 +7,13 @@ import pytest
 from wmel.metrics import (
     EpisodeResult,
     action_success_rate,
+    area_under_risk_coverage,
     average_planning_latency_ms,
     average_steps_to_success,
     compute_scorecard,
     perturbation_recovery_rate,
+    risk_coverage_curve,
+    selective_risk_at_coverage,
 )
 
 
@@ -139,3 +142,54 @@ def test_paired_bootstrap_is_deterministic_given_seed() -> None:
     # different seed -> generally different bounds (point estimate unchanged)
     c = paired_bootstrap_gap_ci(oracle, learned, n_boot=3000, seed=8)
     assert c[0] == pytest.approx(a[0])
+
+
+# --- selective prediction / risk-coverage (reject option) ---
+
+def _conf_results(pairs: list[tuple[bool, float | None]]) -> list[EpisodeResult]:
+    """Build episodes from (success, confidence) pairs."""
+    return [EpisodeResult(success=s, steps=1, confidence=c) for s, c in pairs]
+
+
+_PERFECT = _conf_results(
+    [(True, 0.9), (True, 0.8), (True, 0.7), (True, 0.6), (False, 0.2), (False, 0.1)]
+)
+
+
+def test_selective_risk_high_confidence_slice_is_clean() -> None:
+    # keeping the most-confident half (3 of 6) selects only successes -> risk 0
+    assert selective_risk_at_coverage(_PERFECT, 0.5) == pytest.approx(0.0)
+    # full coverage is the base error rate (2 of 6)
+    assert selective_risk_at_coverage(_PERFECT, 1.0) == pytest.approx(2 / 6)
+
+
+def test_risk_coverage_curve_is_monotone_for_good_confidence() -> None:
+    curve = risk_coverage_curve(_PERFECT, coverages=(1.0, 0.75, 0.5, 0.25))
+    assert curve is not None
+    risks = [r for _, r in curve]
+    assert risks == sorted(risks, reverse=True)  # risk falls as coverage shrinks
+    assert risks[-1] == pytest.approx(0.0)
+
+
+def test_aurc_rewards_correct_ordering() -> None:
+    base_error = 2 / 6
+    good = area_under_risk_coverage(_PERFECT)
+    reversed_conf = area_under_risk_coverage(
+        _conf_results([(True, 0.1), (True, 0.2), (True, 0.3),
+                       (True, 0.4), (False, 0.8), (False, 0.9)])
+    )
+    assert good is not None and reversed_conf is not None
+    assert good < base_error < reversed_conf
+
+
+def test_selective_metrics_are_none_without_confidence() -> None:
+    no_conf = [EpisodeResult(success=True, steps=1), EpisodeResult(success=False, steps=1)]
+    assert selective_risk_at_coverage(no_conf, 0.5) is None
+    assert risk_coverage_curve(no_conf) is None
+    assert area_under_risk_coverage(no_conf) is None
+
+
+def test_selective_risk_rejects_bad_coverage() -> None:
+    for bad in (0.0, -0.1, 1.5):
+        with pytest.raises(ValueError):
+            selective_risk_at_coverage(_PERFECT, bad)
